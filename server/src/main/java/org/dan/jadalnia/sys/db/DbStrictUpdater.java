@@ -1,10 +1,10 @@
 package org.dan.jadalnia.sys.db;
 
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 import static org.eclipse.jetty.http.HttpStatus.LOCKED_423;
 
 import org.dan.jadalnia.sys.error.Error;
-import org.dan.jadalnia.sys.error.JadalniaEx;
+import org.dan.jadalnia.sys.error.JadEx;
 
 public class DbStrictUpdater implements DbUpdater {
     public static final DbStrictUpdater DB_STRICT_UPDATER = new DbStrictUpdater();
@@ -16,7 +16,7 @@ public class DbStrictUpdater implements DbUpdater {
 
     @Override
     public void rollback() {
-        throw new JadalniaEx(LOCKED_423, new Error("Rollback transaction"), null);
+        throw new JadEx(LOCKED_423, new Error("Rollback transaction"), null);
     }
 
     @Override

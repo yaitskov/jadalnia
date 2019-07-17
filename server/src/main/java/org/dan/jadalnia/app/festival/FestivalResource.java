@@ -9,8 +9,8 @@ import static org.dan.jadalnia.app.category.CategoryResource.CID_JP;
 import static org.dan.jadalnia.app.order.OrderResource.TID_JP;
 import static org.dan.jadalnia.app.festival.FestivalCache.FESTIVAL_CACHE;
 import static org.dan.jadalnia.app.festival.Festival.TID;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
-import static org.dan.jadalnia.sys.error.JadalniaEx.forbidden;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.forbidden;
 
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
@@ -25,6 +25,7 @@ import org.dan.jadalnia.sys.validation.FidBodyRequired;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -87,13 +88,13 @@ public class FestivalResource {
     public void setState(
             @HeaderParam(SESSION) UserSession session,
             FestivalState state) {
-        final Fid fid = authService.userInfoBySession(session).getFid();
+        final Fid fid = authService.find(session).getFid();
         festivalService.setState(fid, state);
     }
 
     @GET
     @Path(FESTIVAL + "/menu/" + "{fid}")
-    public List<MenuItem> listMenu(@PathParam("fid") Fid fid) {
+    public CompletableFuture<List<MenuItem>> listMenu(@PathParam("fid") Fid fid) {
         return festivalService.listMenu(fid);
     }
 
@@ -102,7 +103,7 @@ public class FestivalResource {
     public void updateMenu(
             @HeaderParam(SESSION) UserSession session,
             List<MenuItem> items) {
-        final Fid fid = authService.userInfoBySession(session).getFid();
+        final Fid fid = authService.find(session).getFid();
         festivalService.updateMenu(fid, items);
     }
 
@@ -117,7 +118,7 @@ public class FestivalResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             @FidBodyRequired @Valid Fid fid) {
-        final Uid adminUid = authService.userInfoBySession(session).getUid();
+        final Uid adminUid = authService.find(session).getUid();
         tournamentAccessor.update(fid, response, (tournament, batch) -> {
             tournament.checkAdmin(adminUid);
             log.info("invalidate tournament cache {}", fid);
@@ -132,7 +133,7 @@ public class FestivalResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             @Valid EnlistOffline enlistment) {
-        final Uid adminUid = authService.userInfoBySession(session).getUid();
+        final Uid adminUid = authService.find(session).getUid();
         tournamentAccessor.update(enlistment.getTid(), response, (tournament, batch) -> {
             tournament.checkAdmin(adminUid);
             return festivalService.enlistOffline(adminUid, tournament, enlistment, batch);
@@ -146,7 +147,7 @@ public class FestivalResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             TournamentUpdate update) {
-        final Uid adminUid = authService.userInfoBySession(session).getUid();
+        final Uid adminUid = authService.find(session).getUid();
         tournamentAccessor.update(update.getTid(), response, (tournament, batch) -> {
             tournament.checkAdmin(adminUid);
             festivalService.update(tournament, update, batch);
@@ -160,7 +161,7 @@ public class FestivalResource {
             @HeaderParam(SESSION) String session,
             @Suspended AsyncResponse response,
             ResignTournament resign) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         tournamentAccessor.update(resign.getTid(), response, (tournament, batch) -> {
             tournament.findBidsByUid(uid).stream()
                     .map(tournament::getParticipant)
@@ -187,7 +188,7 @@ public class FestivalResource {
         if (!acceptableBidExpelTargetStates.contains(expelParticipant.getTargetBidState())) {
             throw badRequest("bid target state is out of range");
         }
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         tournamentAccessor.update(expelParticipant.getTid(), response, (tournament, batch) -> {
             tournament.checkAdmin(uid);
             festivalService.leaveTournament(
@@ -211,7 +212,7 @@ public class FestivalResource {
             @HeaderParam(SESSION) String session,
             @PathParam("days") int days) {
         return festivalService.findInWithEnlisted(
-                authService.userInfoBySession(session).getUid(), days);
+                authService.find(session).getUid(), days);
     }
 
     @GET
@@ -275,7 +276,7 @@ public class FestivalResource {
             @HeaderParam(SESSION) String session,
             TidIdentifiedRules parameters) {
         rulesValidator.validate(parameters.getRules());
-        Uid uid = authService.userInfoBySession(session).getUid();
+        Uid uid = authService.find(session).getUid();
         tournamentAccessor.update(parameters.getTid(), response, (tournament, batch) -> {
             tournament.checkAdmin(uid);
             festivalService.updateTournamentParams(tournament, parameters, batch);
@@ -289,7 +290,7 @@ public class FestivalResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             int tid) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("Uid {} begins tid {}", uid, tid);
         tournamentAccessor.update(new Fid(tid), response, (tournament, batch) -> {
             tournament.checkAdmin(uid);
@@ -304,7 +305,7 @@ public class FestivalResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             int tid) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("User {} tried to cancel tournament {}", uid, tid);
         tournamentAccessor.update(new Fid(tid), response, (tournament, batch) -> {
             tournament.checkAdmin(uid);
@@ -320,7 +321,7 @@ public class FestivalResource {
     @Path(MY_RECENT_TOURNAMENT)
     public MyRecentTournaments findMyRecentPlayedTournaments(
             @HeaderParam(SESSION) String session) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         return festivalService.findMyRecentTournaments(uid);
     }
 
@@ -328,7 +329,7 @@ public class FestivalResource {
     @Path(MY_RECENT_TOURNAMENT_JUDGEMENT)
     public MyRecentJudgedTournaments findMyRecentJudgedTournaments(
             @HeaderParam(SESSION) String session) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         return festivalService.findMyRecentJudgedTournaments(uid);
     }
 

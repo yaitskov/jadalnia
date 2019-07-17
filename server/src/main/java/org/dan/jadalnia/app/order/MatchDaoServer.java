@@ -12,7 +12,7 @@ import static org.dan.jadalnia.jooq.Tables.USERS;
 import static org.dan.jadalnia.jooq.tables.Matches.MATCHES;
 import static org.dan.jadalnia.sys.db.DbUpdateSql.JUST_A_ROW;
 import static org.dan.jadalnia.sys.db.DbUpdateSql.NON_ZERO_ROWS;
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.bid.Bid;

@@ -18,8 +18,8 @@ import static org.dan.jadalnia.app.order.MatchState.Place;
 import static org.dan.jadalnia.app.order.dispute.MatchSets.ofSets;
 import static org.dan.jadalnia.app.festival.FestivalState.Close;
 import static org.dan.jadalnia.app.festival.FestivalState.Open;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;

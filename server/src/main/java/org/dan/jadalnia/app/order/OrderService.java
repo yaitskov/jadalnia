@@ -36,9 +36,9 @@ import static org.dan.jadalnia.app.festival.FestivalCache.TOURNAMENT_RELATION_CA
 import static org.dan.jadalnia.app.user.UserState.Admin;
 import static org.dan.jadalnia.app.user.UserState.Participant;
 import static org.dan.jadalnia.app.user.UserState.Spectator;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
-import static org.dan.jadalnia.sys.error.JadalniaEx.forbidden;
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.forbidden;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;

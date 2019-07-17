@@ -6,7 +6,7 @@ import static org.dan.jadalnia.jooq.Tables.SESSION_KEY;
 import static org.dan.jadalnia.jooq.Tables.SYS_ADMIN;
 import static org.dan.jadalnia.jooq.Tables.USERS;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
-import static org.dan.jadalnia.sys.error.JadalniaEx.notAuthorized;
+import static org.dan.jadalnia.sys.error.JadEx.notAuthorized;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.bid.Uid;

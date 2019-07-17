@@ -14,12 +14,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
 @Slf4j
-public class PiPoExMapper implements ExceptionMapper<JadalniaEx> {
+public class PiPoExMapper implements ExceptionMapper<JadEx> {
     @Context
     private HttpServletRequest request;
 
     @Override
-    public Response toResponse(JadalniaEx e) {
+    public Response toResponse(JadEx e) {
         if (request == null) {
             log.error("Background exception [{}], status: [{}], eid {}",
                     e.getClientMessage(), e.getStatus(),

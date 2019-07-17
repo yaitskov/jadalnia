@@ -79,7 +79,7 @@ public class OrderResource {
             @HeaderParam(SESSION) String session,
             @Suspended AsyncResponse response,
             @PathParam(TID) Fid fid) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         tournamentAccessor.read(fid, response,
                 tournament -> orderService.findAllBidsOfUid(tournament, uid)
                         .stream()
@@ -118,7 +118,7 @@ public class OrderResource {
             @HeaderParam(SESSION) String session,
             @Suspended AsyncResponse response,
             @PathParam(TID) Fid fid) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         tournamentAccessor.read(fid, response,
                 tournament -> orderService.findAllBidsOfUid(tournament, uid)
                         .stream()
@@ -149,7 +149,7 @@ public class OrderResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             SetScoreReq score) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("User {} sets scores {} for match {}",
                 uid, score.getScores(), score.getMid());
         tournamentAccessor.update(score.getTid(), response,
@@ -164,7 +164,7 @@ public class OrderResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             ResetSetScore reset) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("User {} reset scores in mid {} of tid {}",
                 uid, reset.getMid(), reset.getTid());
         tournamentAccessor.update(reset.getTid(), response,
@@ -183,7 +183,7 @@ public class OrderResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             RescoreMatch rescoreMatch) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("User {} rescores match {}", uid, rescoreMatch);
         tournamentAccessor.update(rescoreMatch.getTid(), response,
                 (tournament, batch) -> {

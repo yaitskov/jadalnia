@@ -17,8 +17,7 @@ import java.util.UUID;
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = TemplateError.class, name = "tp"),
-        @JsonSubTypes.Type(value = ValidationErrors.class, name = "vl")
+        @JsonSubTypes.Type(value = TemplateError.class, name = "tp")
 })
 public class Error {
     private String id;

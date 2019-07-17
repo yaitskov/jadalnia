@@ -4,16 +4,25 @@ import static java.util.Optional.ofNullable;
 import static org.dan.jadalnia.jooq.Tables.FESTIVAL;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 
+import com.github.jasync.sql.db.Connection;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.dan.jadalnia.sys.validation.FidBodyRequired;
 import org.jooq.DSLContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FestivalDao {
     private static final String ENLISTED = "enlisted";
     private static final String PARTICIPANTS = "participants";
@@ -22,8 +31,8 @@ public class FestivalDao {
     private static final int DAYS_TO_SHOW_PAST_TOURNAMENT = 30;
     private static final String CATEGORIES = "categories";
 
-    @Inject
-    private DSLContext jooq;
+    DSLContext jooq;
+    Connection connection;
 
     @Transactional(TRANSACTION_MANAGER)
     public Fid create(NewFestival newTournament) {
@@ -55,15 +64,23 @@ public class FestivalDao {
                 .select(FESTIVAL.MENU)
                 .from(FESTIVAL)
                 .where(FESTIVAL.FID.eq(fid))
+                .getSQL()
                 .fetchOne())
                 .map(r -> r.get(FESTIVAL.MENU))
                 .orElseGet(Collections::emptyList);
     }
 
     public void setMenu(Fid fid, List<MenuItem> items) {
-        jooq.update(FESTSIVAL)
+        jooq.update(FESTIVAL)
                 .set(FESTIVAL.MENU, items)
                 .where(FESTIVAL.FID.eq(fid))
                 .execute();
+    }
+
+    public CompletableFuture<> getById(Fid fid) {
+        jooq.fetch()
+        return connection.sendPreparedStatement(
+
+        );
     }
 }

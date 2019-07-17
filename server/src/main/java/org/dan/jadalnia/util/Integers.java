@@ -2,7 +2,7 @@ package org.dan.jadalnia.util;
 
 import static java.lang.Integer.parseInt;
 import static java.lang.Long.parseLong;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 
 import java.util.function.Supplier;
 

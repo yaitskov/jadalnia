@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 import static org.dan.jadalnia.app.festival.Festival.TID;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
-import static org.dan.jadalnia.sys.error.JadalniaEx.notFound;
+import static org.dan.jadalnia.sys.error.JadEx.notFound;
 
 import com.google.common.cache.CacheLoader;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,7 @@ public class FestivalCacheLoader extends CacheLoader<Fid, CompletableFuture<Fest
     @Transactional(readOnly = true, transactionManager = TRANSACTION_MANAGER)
     public CompletableFuture<Festival> load(Fid fid) throws Exception {
         log.info("Loading tournament {}", fid);
-        final TournamentRow row = festivalDao.getRow(fid)
+        final TournamentRow row = festivalDao.getById(fid)
                 .orElseThrow(() -> notFound(TOURNAMENT_NOT_FOUND, TID, fid));
         final MaxValue<Oid> maxMid = new MaxValue<>(Oid.of(1));
         final MaxValue<Bid> maxBid = new MaxValue<>(Bid.of(1));

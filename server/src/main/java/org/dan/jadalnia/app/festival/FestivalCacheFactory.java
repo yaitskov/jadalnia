@@ -1,12 +1,11 @@
 package org.dan.jadalnia.app.festival;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
+import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -15,12 +14,13 @@ public class FestivalCacheFactory {
     private FestivalCacheLoader loader;
 
     @Value("${expire.festival.seconds}")
-    private int expireTournamentSeconds;
+    private int expireFestivalSeconds;
 
     @Bean(name = FestivalCache.FESTIVAL_CACHE)
-    public LoadingCache<Fid, CompletableFuture<Festival>> create() {
-        return CacheBuilder.newBuilder()
-                .expireAfterAccess(expireTournamentSeconds, TimeUnit.SECONDS)
-                .build(loader);
+    public AsyncCache<Fid, Festival> create() {
+        return new AsyncCache<>(
+                CacheBuilder.newBuilder()
+                        .expireAfterAccess(expireFestivalSeconds, SECONDS)
+                        .build(loader));
     }
 }

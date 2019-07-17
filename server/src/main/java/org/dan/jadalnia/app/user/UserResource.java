@@ -5,7 +5,7 @@ import static org.dan.jadalnia.app.auth.AuthCtx.USER_SESSIONS;
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
 import static org.dan.jadalnia.app.user.UserType.Admin;
 import static org.dan.jadalnia.app.user.UserType.User;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 
 import com.google.common.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +60,7 @@ public class UserResource {
     public Uid registerOffineUser(
             @HeaderParam(SESSION) String session,
             @Valid OfflineUserRegRequest regRequest) {
-        final UserInfo userInfo = authService.userInfoBySession(session);
+        final UserInfo userInfo = authService.find(session);
         if (userInfo.getUserType() != Admin) {
             throw badRequest("Must " + userInfo.getUid()
                     + " be admin but " + userInfo.getUserType());
@@ -74,7 +74,7 @@ public class UserResource {
     @Path(USER_INFO_BY_SESSION + "/{session}")
     @Produces(APPLICATION_JSON)
     public UserInfo userInfoBySession(@PathParam("session") String session) {
-        return authService.userInfoBySession(session);
+        return authService.find(session);
     }
 
     @Inject
@@ -83,7 +83,7 @@ public class UserResource {
     @POST
     @Path("/user/request-admin-access")
     public void requestAdminAccess(@HeaderParam(SESSION) String session) {
-        final UserInfo userInfo = authService.userInfoBySession(session);
+        final UserInfo userInfo = authService.find(session);
         if (userInfo.getUserType() != User) {
             log.info("Admin access request from {} rejected due {}",
                     userInfo.getUid(), userInfo.getUserType());
@@ -104,7 +104,7 @@ public class UserResource {
     public void registerUser(
             UserProfileUpdate update,
             @HeaderParam(SESSION) String session) {
-        final UserInfo userInfo = authService.userInfoBySession(session);
+        final UserInfo userInfo = authService.find(session);
         userDao.update(userInfo, update);
         userSessions.asMap()
                 .forEach((s, data) -> {

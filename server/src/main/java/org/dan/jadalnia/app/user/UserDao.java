@@ -5,8 +5,9 @@ import static org.dan.jadalnia.app.user.UserType.Admin;
 import static org.dan.jadalnia.jooq.Tables.ADMIN;
 import static org.dan.jadalnia.jooq.Tables.USERS;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 
+import com.github.jasync.sql.db.Connection;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.bid.Uid;
 import org.dan.jadalnia.app.festival.Fid;
@@ -25,6 +26,9 @@ import javax.inject.Inject;
 public class UserDao {
     @Inject
     private DSLContext jooq;
+
+    @Inject
+    private Connection connection;
 
     @Transactional(transactionManager = TRANSACTION_MANAGER)
     public UserSession register(Fid fid, UserType userType,

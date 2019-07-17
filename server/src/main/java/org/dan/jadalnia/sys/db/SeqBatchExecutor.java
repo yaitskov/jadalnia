@@ -2,7 +2,7 @@ package org.dan.jadalnia.sys.db;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dan.jadalnia.sys.error.JadalniaEx;
+import org.dan.jadalnia.sys.error.JadEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public class SeqBatchExecutor implements BatchExecutor {
             try {
                 result.add(update.getQuery().execute());
             } catch (Exception e) {
-                throw JadalniaEx.internalError("Sql [" + result.size()
+                throw JadEx.internalError("Sql [" + result.size()
                         + "] failed: [" + update.getQuery().getSQL() + "]", e);
             }
         }

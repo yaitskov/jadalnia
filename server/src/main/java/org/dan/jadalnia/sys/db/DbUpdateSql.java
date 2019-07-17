@@ -1,7 +1,7 @@
 package org.dan.jadalnia.sys.db;
 
 import static java.util.Optional.of;
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import lombok.Builder;
 import lombok.Getter;

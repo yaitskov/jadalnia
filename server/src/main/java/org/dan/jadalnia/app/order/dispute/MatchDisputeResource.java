@@ -38,7 +38,7 @@ public class MatchDisputeResource {
             @Suspended AsyncResponse response,
             @HeaderParam(SESSION) String session,
             DisputeClaimRequest claim) {
-        final Uid uid = authService.userInfoBySession(session).getUid();
+        final Uid uid = authService.find(session).getUid();
         log.info("User {} claims a dispute {}", uid, claim);
         tournamentAccessor.update(claim.getTid(), response,
                 (tournament, batch) -> {

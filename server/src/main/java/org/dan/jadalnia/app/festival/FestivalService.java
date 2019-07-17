@@ -10,6 +10,7 @@ import lombok.val;
 import org.dan.jadalnia.app.user.UserDao;
 import org.dan.jadalnia.app.user.UserState;
 import org.dan.jadalnia.app.user.UserType;
+import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -28,8 +29,7 @@ public class FestivalService {
 
     @Inject
     @Named(FESTIVAL_CACHE)
-    private LoadingCache<Fid, CompletableFuture<Festival>> festivalCache;
-
+    private AsyncCache<Fid, Festival> festivalCache;
 
     @Transactional(TRANSACTION_MANAGER)
     public CreatedFestival create(NewFestival newFestival) {
@@ -39,21 +39,19 @@ public class FestivalService {
                 .fid(fid)
                 .session(userDao.register(fid, UserType.Admin, UserState.Approved,
                         newFestival.getUserName(), newFestival.getUserKey()))
-                .build() ;
-
+                .build();
     }
 
     @Transactional(TRANSACTION_MANAGER)
     @SneakyThrows
-    public void setState(Fid fid, FestivalState state) {
+    public CompletableFuture<Void> setState(Fid fid, FestivalState state) {
         festivalCache.get(fid).setState(state);
         // send update to all
         festivalDao.setState(fid, state);
     }
 
-    @Transactional(transactionManager = TRANSACTION_MANAGER, readOnly = true)
-    public List<MenuItem> listMenu(Fid fid) {
-        return festivalDao.getMenu(fid);
+    public CompletableFuture<List<MenuItem>> listMenu(Fid fid) {
+        return festivalCache.get(fid).thenApply(Festival::getMenu);
     }
 
     public void updateMenu(Fid fid, List<MenuItem> items) {

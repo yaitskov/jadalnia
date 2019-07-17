@@ -2,7 +2,7 @@ package org.dan.jadalnia.app.festival;
 
 import static org.dan.jadalnia.app.castinglots.rank.GroupSplitPolicy.BalancedMix;
 import static org.dan.jadalnia.app.group.ConsoleTournament.NO;
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;

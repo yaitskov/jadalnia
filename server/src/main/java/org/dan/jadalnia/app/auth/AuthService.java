@@ -4,15 +4,14 @@ import static java.security.MessageDigest.getInstance;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
-import static org.dan.jadalnia.app.auth.AuthCtx.SYS_ADMIN_SESSIONS;
 import static org.dan.jadalnia.app.auth.AuthCtx.USER_SESSIONS;
 import static org.dan.jadalnia.app.auth.AuthResource.AUTH_BY_ONE_TIME_TOKEN;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
-import static org.dan.jadalnia.sys.error.JadalniaEx.notAuthorized;
-import static org.dan.jadalnia.sys.error.JadalniaEx.notFound;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.notAuthorized;
+import static org.dan.jadalnia.sys.error.JadEx.notFound;
 
-import com.google.common.cache.Cache;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +19,13 @@ import org.dan.jadalnia.app.bid.Uid;
 import org.dan.jadalnia.app.user.UserDao;
 import org.dan.jadalnia.app.user.UserInfo;
 import org.dan.jadalnia.app.user.UserSession;
+import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -47,7 +48,7 @@ public class AuthService {
 
     @Inject
     @Named(USER_SESSIONS)
-    private Cache<String, UserInfo> userSessions;
+    private AsyncCache<UserSession, UserInfo> userSessions;
 
 
     private String genSession() {
@@ -86,7 +87,7 @@ public class AuthService {
         return Optional.of(cachedUserInfo);
     }
 
-    public UserInfo userInfoBySession(final UserSession session) {
+    public CompletableFuture<UserInfo> find(final UserSession session) {
         return ofNullable(userSessions.getIfPresent(
                 ofNullable(session).orElseThrow(() -> notAuthorized("No session header"))))
                 .orElseGet(() -> {

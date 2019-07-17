@@ -19,6 +19,6 @@ public class CheckUserSessionResource {
 
     @POST
     public void checkUserSession(@HeaderParam(SESSION) String session) {
-        authService.userInfoBySession(session);
+        authService.find(session);
     }
 }

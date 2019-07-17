@@ -2,7 +2,7 @@ package org.dan.jadalnia.app.order.dispute;
 
 import static org.dan.jadalnia.app.order.dispute.DisputeStatus.CLAIMED;
 import static org.dan.jadalnia.app.festival.FestivalState.Open;
-import static org.dan.jadalnia.sys.error.JadalniaEx.badRequest;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 
 import org.dan.jadalnia.app.bid.Bid;
 import org.dan.jadalnia.app.bid.Uid;

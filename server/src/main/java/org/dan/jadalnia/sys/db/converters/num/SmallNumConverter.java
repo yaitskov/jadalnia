@@ -1,6 +1,6 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import static org.dan.jadalnia.sys.error.JadalniaEx.internalError;
+import static org.dan.jadalnia.sys.error.JadEx.internalError;
 
 import org.jooq.Converter;
 
