@@ -4,7 +4,7 @@ import org.dan.jadalnia.app.festival.Fid;
 import org.dan.jadalnia.app.festival.Fid;
 import org.jooq.Converter;
 
-public class TidConverter implements Converter<Integer, Fid> {
+public class FidConverter implements Converter<Integer, Fid> {
     @Override
     public Fid from(Integer uid) {
         if (uid == null || uid == 0) {

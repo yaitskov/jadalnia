@@ -1,12 +1,12 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import org.dan.jadalnia.app.bid.Bid;
+import org.dan.jadalnia.app.order.Oid;
 import org.jooq.types.UShort;
 
-public class BidConverter extends UShortConverter<Bid> {
+public class OidConverter extends UShortConverter<Oid> {
     @Override
-    protected Bid fromNonNull(UShort u) {
-        return new Bid(u.intValue());
+    protected Oid fromNonNull(UShort u) {
+        return new Oid(u.intValue());
     }
 
     @Override
@@ -20,7 +20,7 @@ public class BidConverter extends UShortConverter<Bid> {
     }
 
     @Override
-    public Class<Bid> toType() {
-        return Bid.class;
+    public Class<Oid> toType() {
+        return Oid.class;
     }
 }

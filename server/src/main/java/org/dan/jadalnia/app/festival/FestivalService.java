@@ -1,35 +1,35 @@
 package org.dan.jadalnia.app.festival;
 
-import static org.dan.jadalnia.app.festival.FestivalCache.FESTIVAL_CACHE;
-import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
-
-import com.google.common.cache.LoadingCache;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dan.jadalnia.app.user.UserDao;
 import org.dan.jadalnia.app.user.UserState;
 import org.dan.jadalnia.app.user.UserType;
+import org.dan.jadalnia.app.ws.PropertyUpdated;
+import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import static org.dan.jadalnia.app.festival.FestivalCache.FESTIVAL_CACHE;
+import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 
 @Slf4j
+@FieldDefaults(makeFinal = true)
+@RequiredArgsConstructor
 public class FestivalService {
-    @Inject
-    private FestivalDao festivalDao;
-
-    @Inject
-    private UserDao userDao;
-
-    @Inject
+    FestivalDao festivalDao;
+    UserDao userDao;
     @Named(FESTIVAL_CACHE)
-    private AsyncCache<Fid, Festival> festivalCache;
+    AsyncCache<Fid, Festival> festivalCache;
+    WsBroadcast wsBroadcast;
 
     @Transactional(TRANSACTION_MANAGER)
     public CreatedFestival create(NewFestival newFestival) {
@@ -42,19 +42,27 @@ public class FestivalService {
                 .build();
     }
 
-    @Transactional(TRANSACTION_MANAGER)
     @SneakyThrows
-    public CompletableFuture<Void> setState(Fid fid, FestivalState state) {
-        festivalCache.get(fid).setState(state);
-        // send update to all
-        festivalDao.setState(fid, state);
+    public CompletableFuture<Void> setState(Festival festival, FestivalState newState) {
+        festival.getInfo().updateAndGet(info -> info.withState(newState));
+        return festivalDao.setState(festival.getInfo().get().getFid(), newState)
+                .thenRunAsync(() -> wsBroadcast.broadcast(festival,
+                        PropertyUpdated.builder()
+                                .name("festival.state")
+                                .newValue(newState)
+                                .build()));
     }
 
     public CompletableFuture<List<MenuItem>> listMenu(Fid fid) {
-        return festivalCache.get(fid).thenApply(Festival::getMenu);
+        return festivalCache.get(fid)
+                .thenApply(Festival::getInfo)
+                .thenApply(AtomicReference::get)
+                .thenApply(FestivalInfo::getMenu);
     }
 
-    public void updateMenu(Fid fid, List<MenuItem> items) {
-        festivalDao.setMenu(fid, items);
+    public CompletableFuture<Integer> updateMenu(
+            Festival festival, List<MenuItem> items) {
+        festival.getInfo().updateAndGet(info -> info.withMenu(items));
+        return festivalDao.setMenu(festival.getInfo().get().getFid(), items);
     }
 }

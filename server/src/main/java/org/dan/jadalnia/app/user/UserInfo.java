@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import org.dan.jadalnia.app.bid.Uid;
 import org.dan.jadalnia.app.festival.Fid;
+import org.dan.jadalnia.sys.error.Error;
+import org.dan.jadalnia.sys.error.JadEx;
 
 @Getter
 @Builder
@@ -16,4 +18,10 @@ public class UserInfo implements UserLinkIf {
     private UserType userType;
     private UserState userState;
 
+    public UserInfo ensureAdmin() {
+        if (userType != UserType.Admin) {
+            throw new JadEx(401, new Error("user is not admin"), null);
+        }
+        return this;
+    }
 }

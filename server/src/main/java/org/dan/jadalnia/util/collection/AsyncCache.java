@@ -26,4 +26,8 @@ public class AsyncCache<K, V> {
                     new Error("Failure on resolving key [" + key + "]"), e);
         }
     }
+
+    public void invalidate(K key) {
+        cache.invalidate(key);
+    }
 }

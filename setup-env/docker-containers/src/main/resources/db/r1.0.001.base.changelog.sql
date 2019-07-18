@@ -26,9 +26,10 @@ create table orders (
     label varchar(10) not null,
     festival_id int(11) not null,
     kelner_id int(11) null,
+    customer_id int(11) null,
     requirements text not null, -- json
     created timestamp(3) default current_timestamp(3),
-    state varchar(10) not null, -- sent, paid, handed, cancelled, returned
+    state varchar(10) not null, -- sent, paid, ready, handed, cancelled, returned
     foreign key (festival_id) references festival(fid),
     foreign key (kelner_id) references users(uid)
 );

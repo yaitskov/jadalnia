@@ -1,20 +1,17 @@
-package org.dan.jadalnia.app.order;
-
+package org.dan.jadalnia.app.ws;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.dan.jadalnia.app.festival.Fid;
 
+@Builder
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResetSetScore {
-    private Fid fid;
-    private Oid oid;
-    private int setNumber;
+public class PropertyUpdated<T> implements MessageForClient {
+    String name;
+    T newValue;
 }

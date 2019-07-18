@@ -1,4 +1,4 @@
-package org.dan.jadalnia.app.festival;
+package org.dan.jadalnia.app.ws;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

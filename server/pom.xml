@@ -485,9 +485,9 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OptionalMidConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>Bid</name>
-                                    <type>org.dan.jadalnia.app.bid.Bid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.BidConverter</binding>
+                                    <name>Oid</name>
+                                    <type>org.dan.jadalnia.app.order.Oid</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>Uid</name>
@@ -535,9 +535,9 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.MatchScoresConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>Tid</name>
+                                    <name>Fid</name>
                                     <type>org.dan.jadalnia.app.festival.Fid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.TidConverter</binding>
+                                    <binding>org.dan.jadalnia.sys.db.converters.num.FidConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>OptionalDouble</name>
@@ -560,14 +560,19 @@
                                     <binding>org.dan.jadalnia.app.order.MatchTagConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>MatchType</name>
-                                    <type>org.dan.jadalnia.app.order.MatchType</type>
-                                    <binding>org.dan.jadalnia.app.order.MatchTypeConverter</binding>
+                                    <name>MenuItems</name>
+                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.MenuItem&gt;</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.MenuItemsConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>MatchState</name>
-                                    <type>org.dan.jadalnia.app.order.MatchState</type>
-                                    <binding>org.dan.jadalnia.app.order.MatchStateConverter</binding>
+                                    <name>OrderItems</name>
+                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.PaidOrder.Item&gt;</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.OrderItemsConverter</binding>
+                                </customType>
+                                <customType>
+                                    <name>OrderState</name>
+                                    <type>org.dan.jadalnia.app.order.OrderState</type>
+                                    <binding>org.dan.jadalnia.app.order.OrderStateConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>GroupState</name>
@@ -600,19 +605,9 @@
                                     <binding>org.dan.jadalnia.app.category.CategoryStateConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>TournamentState</name>
+                                    <name>FestivalState</name>
                                     <type>org.dan.jadalnia.app.festival.FestivalState</type>
                                     <binding>org.dan.jadalnia.app.festival.FestivalStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>TournamentType</name>
-                                    <type>org.dan.jadalnia.app.festival.TournamentType</type>
-                                    <binding>org.dan.jadalnia.app.festival.TournamentTypeConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>TournamentRelationType</name>
-                                    <type>org.dan.jadalnia.app.festival.console.TournamentRelationType</type>
-                                    <binding>org.dan.jadalnia.app.festival.console.TournamentRelationTypeConverter</binding>
                                 </customType>
                             </customTypes>
                             <forcedTypes>
@@ -882,18 +877,13 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>MatchType</name>
-                                    <expression>.*matches\.(type)</expression>
+                                    <name>OrderState</name>
+                                    <expression>.*orders\.(state)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>MatchState</name>
-                                    <expression>.*matches\.(state)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalUByte</name>
-                                    <expression>.*matches\.(gid)</expression>
+                                    <name>OrderItems</name>
+                                    <expression>.*orders\.(requirements)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
@@ -992,43 +982,33 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Mid</name>
-                                    <expression>.*set_score\.(mid)</expression>
+                                    <name>Instant</name>
+                                    <expression>.*festival\.(opens_at)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*set_score\.(tid)</expression>
+                                    <name>MenuItems</name>
+                                    <expression>.*festival\.(menu)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*matches\.(tid)</expression>
+                                    <name>Fid</name>
+                                    <expression>.*festival\.(fid)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Bid</name>
-                                    <expression>.*set_score\.(bid)</expression>
+                                    <name>Oid</name>
+                                    <expression>.*orders\.(oid)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>BidState</name>
-                                    <expression>.*bid\.(state)</expression>
+                                    <name>Fid</name>
+                                    <expression>.*orders\.(festival_id)</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>TournamentType</name>
-                                    <expression>.*tournament\.(type)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>TournamentRelationType</name>
-                                    <expression>.*tournament_relation\.(type)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>TournamentState</name>
-                                    <expression>.*tournament\.(state)</expression>
+                                    <name>FestivalState</name>
+                                    <expression>.*festival\.(state)</expression>
                                     <types>.*</types>
                                 </forcedType>
                             </forcedTypes>

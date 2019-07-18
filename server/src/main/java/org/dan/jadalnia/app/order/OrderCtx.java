@@ -6,7 +6,7 @@ import org.dan.jadalnia.app.playoff.PlayOffRuleValidator;
 import org.dan.jadalnia.app.playoff.PlayOffService;
 import org.springframework.context.annotation.Import;
 
-@Import({MatchDaoServer.class, OrderResource.class, OrderService.class,
+@Import({OrderDao.class, OrderResource.class, OrderService.class,
         MatchRemover.class,
         MatchDisputeCtx.class, MatchEditorService.class,
         PlayOffService.class, PlayOffRuleValidator.class,

@@ -18,6 +18,7 @@ public class JadEx extends RuntimeException {
     private final int status;
     private final Error clientMessage;
 
+
     public JadEx(int status, Error clientMessage, Throwable cause) {
         super(clientMessage.toString(), cause);
         this.status = status;
