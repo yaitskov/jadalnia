@@ -1,7 +1,7 @@
 package org.dan.jadalnia.util.counter;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.dan.jadalnia.app.order.Oid;
+import org.dan.jadalnia.app.festival.order.pojo.Oid;
 import org.dan.jadalnia.sys.type.number.MutableNumber;
 
 import java.util.Optional;

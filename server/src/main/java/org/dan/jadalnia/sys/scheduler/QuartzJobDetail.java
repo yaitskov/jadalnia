@@ -1,7 +1,7 @@
 package org.dan.jadalnia.sys.scheduler;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.jooq.tools.StringUtils.EMPTY;
 
 import org.quartz.Job;
 import org.quartz.JobDataMap;

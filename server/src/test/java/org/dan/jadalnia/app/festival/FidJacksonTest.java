@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
 import org.junit.Test;
 

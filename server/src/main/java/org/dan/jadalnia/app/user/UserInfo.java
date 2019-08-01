@@ -3,8 +3,7 @@ package org.dan.jadalnia.app.user;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.dan.jadalnia.app.bid.Uid;
-import org.dan.jadalnia.app.festival.Fid;
+import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.sys.error.Error;
 import org.dan.jadalnia.sys.error.JadEx;
 

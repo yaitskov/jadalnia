@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.dan.jadalnia.app.bid.Uid;
+import org.dan.jadalnia.app.user.Uid;
 
 @Getter
 @Setter

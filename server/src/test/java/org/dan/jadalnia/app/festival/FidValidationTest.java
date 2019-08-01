@@ -2,12 +2,13 @@ package org.dan.jadalnia.app.festival;
 
 import static java.util.Collections.emptySet;
 import static javax.validation.Validation.buildDefaultValidatorFactory;
-import static org.dan.jadalnia.app.festival.Fid.FESTIVAL_ID_SHOULD_BE_A_POSITIVE_NUMBER;
+import static org.dan.jadalnia.app.festival.pojo.Fid.FESTIVAL_ID_SHOULD_BE_A_POSITIVE_NUMBER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 
+import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.junit.Test;
 
 import javax.validation.Validator;

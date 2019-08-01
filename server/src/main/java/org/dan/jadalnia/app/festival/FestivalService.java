@@ -4,22 +4,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import org.dan.jadalnia.app.festival.menu.MenuItem;
+import org.dan.jadalnia.app.festival.pojo.CreatedFestival;
+import org.dan.jadalnia.app.festival.pojo.Festival;
+import org.dan.jadalnia.app.festival.pojo.FestivalInfo;
+import org.dan.jadalnia.app.festival.pojo.FestivalState;
+import org.dan.jadalnia.app.festival.pojo.Fid;
+import org.dan.jadalnia.app.festival.pojo.NewFestival;
 import org.dan.jadalnia.app.user.UserDao;
-import org.dan.jadalnia.app.user.UserState;
-import org.dan.jadalnia.app.user.UserType;
 import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.util.collection.AsyncCache;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.dan.jadalnia.app.festival.FestivalCache.FESTIVAL_CACHE;
-import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
+import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CACHE;
+import static org.dan.jadalnia.app.user.UserState.Approved;
+import static org.dan.jadalnia.app.user.UserType.Admin;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -31,15 +35,15 @@ public class FestivalService {
     AsyncCache<Fid, Festival> festivalCache;
     WsBroadcast wsBroadcast;
 
-    @Transactional(TRANSACTION_MANAGER)
-    public CreatedFestival create(NewFestival newFestival) {
-        val fid = festivalDao.create(newFestival);
-        return CreatedFestival
-                .builder()
-                .fid(fid)
-                .session(userDao.register(fid, UserType.Admin, UserState.Approved,
-                        newFestival.getUserName(), newFestival.getUserKey()))
-                .build();
+    public CompletableFuture<CreatedFestival> create(NewFestival newFestival) {
+        return festivalDao
+                .create(newFestival)
+                .thenCompose(fid -> userDao.register(fid, Admin, Approved,
+                        newFestival.getUserName(), newFestival.getUserKey())
+                        .thenApply(userSession -> CreatedFestival.builder()
+                                .fid(fid)
+                                .session(userSession)
+                                .build()));
     }
 
     @SneakyThrows

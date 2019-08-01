@@ -1,10 +1,5 @@
 package org.dan.jadalnia.sys.scheduler;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Throwables.propagate;
-import static java.lang.Long.parseLong;
-import static java.util.stream.Collectors.toList;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
@@ -15,12 +10,16 @@ import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
-import java.text.ParseException;
-import java.util.Set;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.text.ParseException;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Throwables.propagate;
+import static java.lang.Long.parseLong;
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 public abstract class SchedulerFactoryBeanProvider implements Provider<SchedulerFactoryBean> {
@@ -98,19 +97,6 @@ public abstract class SchedulerFactoryBeanProvider implements Provider<Scheduler
     }
 
     private static class LocalDummyJob extends QuartzJobBean {
-        @Override
-        protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        }
-    }
-
-    @Named
-    @Getter
-    private static class GlobalDummyJobDetail extends GlobalJobDetail {
-        private String cron = "0 0 0 1 1 ?";
-        private Class<? extends Job> jobClass = GlobalDummyJob.class;
-    }
-
-    private static class GlobalDummyJob extends QuartzJobBean {
         @Override
         protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         }

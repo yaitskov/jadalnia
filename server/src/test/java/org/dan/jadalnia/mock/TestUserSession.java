@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import org.dan.jadalnia.app.bid.Uid;
+import org.dan.jadalnia.app.user.Uid;
 
 @Getter
 @Setter

@@ -5,6 +5,11 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.dan.jadalnia.app.festival.menu.MenuItem;
+import org.dan.jadalnia.app.festival.pojo.FestivalInfo;
+import org.dan.jadalnia.app.festival.pojo.FestivalState;
+import org.dan.jadalnia.app.festival.pojo.Fid;
+import org.dan.jadalnia.app.festival.pojo.NewFestival;
 import org.jooq.DSLContext;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,9 +33,8 @@ public class FestivalDao {
     DSLContext jooq;
     ExecutorService executor;
 
-    @Transactional(TRANSACTION_MANAGER)
-    public Fid create(NewFestival newTournament) {
-        return jooq.insertInto(FESTIVAL,
+    public CompletableFuture<Fid> create(NewFestival newTournament) {
+        return supplyAsync(() -> jooq.insertInto(FESTIVAL,
                 FESTIVAL.STATE,
                 FESTIVAL.OPENS_AT,
                 FESTIVAL.MENU,
@@ -41,14 +45,14 @@ public class FestivalDao {
                         newTournament.getName())
                 .returning(FESTIVAL.FID)
                 .fetchOne()
-                .getFid();
+                .getFid(), executor);
     }
 
     public CompletableFuture<Void> setState(Fid fid, FestivalState state) {
         return jooq.update(FESTIVAL)
                 .set(FESTIVAL.STATE, state)
                 .where(FESTIVAL.FID.eq(fid))
-                .executeAsync()
+                .executeAsync(executor)
                 .thenAccept(n -> {
                     if (n == 0) {
                         throw internalError(

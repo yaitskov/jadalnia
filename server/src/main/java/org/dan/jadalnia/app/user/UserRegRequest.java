@@ -28,6 +28,6 @@ public class UserRegRequest {
     public static class UserRegRequestBuilder {
         Optional<String> email = Optional.empty();
         Optional<String> phone = Optional.empty();
-        UserType userType = UserType.User;
+        UserType userType = UserType.Kelner;
     }
 }

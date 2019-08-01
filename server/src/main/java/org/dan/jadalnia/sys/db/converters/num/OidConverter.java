@@ -1,22 +1,10 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import org.dan.jadalnia.app.order.Oid;
-import org.jooq.types.UShort;
+import org.dan.jadalnia.app.festival.order.pojo.Oid;
 
-public class OidConverter extends UShortConverter<Oid> {
-    @Override
-    protected Oid fromNonNull(UShort u) {
-        return new Oid(u.intValue());
-    }
-
-    @Override
-    public String overflowMessage() {
-        return "Match id overflow";
-    }
-
-    @Override
-    public Class<UShort> fromType() {
-        return UShort.class;
+public class OidConverter extends TypedIdConverter<Oid> {
+    public OidConverter() {
+        super(Oid::new);
     }
 
     @Override

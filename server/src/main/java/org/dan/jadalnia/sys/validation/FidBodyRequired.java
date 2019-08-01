@@ -1,6 +1,6 @@
 package org.dan.jadalnia.sys.validation;
 
-import org.dan.jadalnia.app.festival.Fid;
+import org.dan.jadalnia.app.festival.pojo.Fid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

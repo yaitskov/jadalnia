@@ -23,7 +23,8 @@ public class OrderWsListener {
 
     @OnOpen
     public void connect(Session session) {
-        session.getAsyncRemote().sendText()
+
+        // session.getAsyncRemote().sendText();
     }
 
     @OnMessage

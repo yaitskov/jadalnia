@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dan.jadalnia.app.bid.Uid;
+import org.dan.jadalnia.app.user.Uid;
 
 @Getter
 @Builder

@@ -3,12 +3,9 @@ package org.dan.jadalnia.sys.type.number;
 import static java.lang.Integer.compare;
 import static java.lang.String.valueOf;
 
-import org.dan.jadalnia.sys.hash.HashAggregator;
-import org.dan.jadalnia.sys.hash.Hashable;
-
 public abstract class AbstractNumber
         extends Number
-        implements Comparable<AbstractNumber>, Hashable {
+        implements Comparable<AbstractNumber> {
 
     @Override
     public long longValue() {
@@ -28,11 +25,6 @@ public abstract class AbstractNumber
     @Override
     public int compareTo(AbstractNumber o) {
         return compare(intValue(), o.intValue());
-    }
-
-    @Override
-    public void hashTo(HashAggregator sink) {
-        sink.hash(intValue());
     }
 
     public String toString() {

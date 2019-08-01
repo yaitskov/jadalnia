@@ -1,17 +1,10 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import org.dan.jadalnia.app.category.Cid;
-import org.jooq.types.UByte;
+import org.dan.jadalnia.app.user.Cid;
 
-public class CidConverter extends UByteConverter<Cid> {
-    @Override
-    protected Cid fromNonNull(UByte u) {
-        return new Cid(u.intValue());
-    }
-
-    @Override
-    public String overflowMessage() {
-        return "Category id overflow";
+public class CidConverter extends TypedIdConverter<Cid> {
+    public CidConverter() {
+        super(Cid::new);
     }
 
     @Override

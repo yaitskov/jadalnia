@@ -455,49 +455,14 @@
                             </schemata>
                             <customTypes>
                                 <customType>
-                                    <name>SuggestionIndexType</name>
-                                    <type>org.dan.jadalnia.app.suggestion.SuggestionIndexType</type>
-                                    <binding>org.dan.jadalnia.app.suggestion.SuggestionIndexTypeConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>FestivalMenu</name>
-                                    <type>org.dan.jadalnia.app.festival.FestivalMenu</type>
-                                    <binding>org.dan.jadalnia.app.festival.TournamentRulesConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OptionalString</name>
-                                    <type>java.util.Optional&lt;java.lang.String&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.OptionalStringConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OptionalUByte</name>
-                                    <type>java.util.Optional&lt;java.lang.Integer&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.UByteOptionalConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OptionalInteger</name>
-                                    <type>java.util.Optional&lt;java.lang.Integer&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.OptionalIntegerConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OptionalMid</name>
-                                    <type>java.util.Optional&lt;org.dan.jadalnia.app.order.Mid&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.OptionalMidConverter</binding>
-                                </customType>
-                                <customType>
                                     <name>Oid</name>
-                                    <type>org.dan.jadalnia.app.order.Oid</type>
+                                    <type>org.dan.jadalnia.app.festival.order.pojo.Oid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>Uid</name>
-                                    <type>org.dan.jadalnia.app.bid.Uid</type>
+                                    <type>org.dan.jadalnia.app.user.Uid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.UidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Mid</name>
-                                    <type>org.dan.jadalnia.app.order.Oid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.MidConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>Cid</name>
@@ -505,44 +470,9 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.num.CidConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>Gid</name>
-                                    <type>org.dan.jadalnia.app.group.Gid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.GidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Pid</name>
-                                    <type>org.dan.jadalnia.app.place.Pid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.PidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>SportType</name>
-                                    <type>org.dan.jadalnia.app.sport.SportType</type>
-                                    <binding>org.dan.jadalnia.app.sport.SportTypeConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>DisputeStatus</name>
-                                    <type>org.dan.jadalnia.app.order.dispute.DisputeStatus</type>
-                                    <binding>org.dan.jadalnia.app.order.dispute.DisputeStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Did</name>
-                                    <type>org.dan.jadalnia.app.order.dispute.DisputeId</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.DidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Scores</name>
-                                    <type>java.util.Map&lt;org.dan.jadalnia.app.bid.Bid,java.util.List&lt;java.lang.Integer&gt;&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.MatchScoresConverter</binding>
-                                </customType>
-                                <customType>
                                     <name>Fid</name>
-                                    <type>org.dan.jadalnia.app.festival.Fid</type>
+                                    <type>org.dan.jadalnia.app.festival.pojo.Fid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.FidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OptionalDouble</name>
-                                    <type>java.util.Optional&lt;java.lang.Double&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.OptionalDoubleConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>Instant</name>
@@ -550,465 +480,127 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.InstantToTimestampConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>OptionalInstant</name>
-                                    <type>java.util.Optional&lt;java.time.Instant&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.OptionalInstantConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>MatchTag</name>
-                                    <type>org.dan.jadalnia.app.order.MatchTag</type>
-                                    <binding>org.dan.jadalnia.app.order.MatchTagConverter</binding>
-                                </customType>
-                                <customType>
                                     <name>MenuItems</name>
-                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.MenuItem&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.MenuItemsConverter</binding>
+                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.menu.MenuItem&gt;</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.json.MenuItemsConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>OrderItems</name>
-                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.PaidOrder.Item&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.OrderItemsConverter</binding>
+                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.order.pojo.OrderItem&gt;</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.json.OrderItemsConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>OrderState</name>
-                                    <type>org.dan.jadalnia.app.order.OrderState</type>
-                                    <binding>org.dan.jadalnia.app.order.OrderStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>GroupState</name>
-                                    <type>org.dan.jadalnia.app.castinglots.GroupState</type>
-                                    <binding>org.dan.jadalnia.app.castinglots.GroupStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>TableState</name>
-                                    <type>org.dan.jadalnia.app.table.TableState</type>
-                                    <binding>org.dan.jadalnia.app.table.TableStateConverter</binding>
+                                    <type>org.dan.jadalnia.app.festival.order.pojo.OrderState</type>
+                                    <binding>org.dan.jadalnia.app.festival.order.OrderStateConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>UserType</name>
                                     <type>org.dan.jadalnia.app.user.UserType</type>
-                                    <binding>org.dan.jadalnia.app.user.UserTypeConverter</binding>
+                                    <binding>org.dan.jadalnia.sys.db.converters.enums.UserTypeConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>UserState</name>
                                     <type>org.dan.jadalnia.app.user.UserState</type>
-                                    <binding>org.dan.jadalnia.app.user.UserStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>BidState</name>
-                                    <type>org.dan.jadalnia.app.bid.BidState</type>
-                                    <binding>org.dan.jadalnia.app.bid.BidStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>CategoryState</name>
-                                    <type>org.dan.jadalnia.app.category.CategoryState</type>
-                                    <binding>org.dan.jadalnia.app.category.CategoryStateConverter</binding>
+                                    <binding>org.dan.jadalnia.sys.db.converters.enums.UserStateConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>FestivalState</name>
-                                    <type>org.dan.jadalnia.app.festival.FestivalState</type>
-                                    <binding>org.dan.jadalnia.app.festival.FestivalStateConverter</binding>
+                                    <type>org.dan.jadalnia.app.festival.pojo.FestivalState</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.enums.FestivalStateConverter</binding>
                                 </customType>
                             </customTypes>
                             <forcedTypes>
                                 <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*suggest_name\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>SuggestionIndexType</name>
-                                    <expression>.*suggest_name\.type</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*suggest_name\.(uid|requester_uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>DisputeStatus</name>
-                                    <expression>.*match_dispute\.status</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Scores</name>
-                                    <expression>.*match_dispute\.proposed_score</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*warm_up\.complete_at</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*warm_up\.warm_up_started</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*warm_up\.client_started</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInstant</name>
-                                    <expression>.*match_dispute\.resolved_at</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*warm_up\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*match_dispute\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*warm_up\.uid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*match_dispute\.judge</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Bid</name>
-                                    <expression>.*match_dispute\.plaintiff</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Mid</name>
-                                    <expression>.*match_dispute\.mid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*match_dispute\.tid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Did</name>
-                                    <expression>.*match_dispute\.did</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalString</name>
-                                    <expression>.*match_dispute\.(judge|plaintiff)_comment</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalString</name>
-                                    <expression>.*users\.(email|phone)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInstant</name>
-                                    <expression>.*users\.want_admin</expression>
+                                    <name>Fid</name>
+                                    <expression>.*users\.festival_id</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
                                     <name>UserType</name>
-                                    <expression>.*users\.(type)</expression>
+                                    <expression>.*users\.type</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
                                     <name>UserState</name>
-                                    <expression>.*users\.(state)</expression>
+                                    <expression>.*users\.state</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>OptionalString</name>
-                                    <expression>.*place\.(email|phone)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInteger</name>
-                                    <expression>.*place\.(hosting_tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Pid</name>
-                                    <expression>.*place\.(pid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>SportType</name>
-                                    <expression>.*tournament\.(sport)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Pid</name>
-                                    <expression>.*tournament\.(pid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInstant</name>
-                                    <expression>.*matches\.(started|ended)</expression>
+                                    <name>Uid</name>
+                                    <expression>.*users\.uid</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
                                     <name>Instant</name>
-                                    <expression>.*bid\.(created)</expression>
+                                    <expression>.*users\.created</expression>
                                     <types>.*</types>
                                 </forcedType>
-                                <forcedType>
-                                    <name>OptionalInstant</name>
-                                    <expression>.*bid\.(updated)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInteger</name>
-                                    <expression>.*bid\.(provided_rank|seed)</expression>
-                                    <types>.*</types>
-                                </forcedType>
+
                                 <forcedType>
                                     <name>Instant</name>
-                                    <expression>.*tournament\.(opens_at)</expression>
+                                    <expression>.*festival\.opens_at</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>OptionalString</name>
-                                    <expression>.*category\.(gender)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>CategoryState</name>
-                                    <expression>.*category\.(state)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*category\.(tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Cid</name>
-                                    <expression>.*category\.(cid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*tournament\.(opens_at)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalDouble</name>
-                                    <expression>.*tournament\.(ticket_price)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>TournamentRule</name>
-                                    <expression>.*tournament\.(rules)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*tournament\.(tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*tournament_relation\.(parent_tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*tournament_relation\.(child_tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalInstant</name>
-                                    <expression>.*tournament\.(complete_at)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*tournament\.(previous_tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>GroupState</name>
-                                    <expression>.*groups\.(state)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*groups\.(tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Gid</name>
-                                    <expression>.*groups\.(gid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Cid</name>
-                                    <expression>.*groups\.(cid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalUByte</name>
-                                    <expression>.*bid\.(gid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Cid</name>
-                                    <expression>.*bid\.(cid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalMid</name>
-                                    <expression>.*matches\.(win_mid|lose_mid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Cid</name>
-                                    <expression>.*matches\.(cid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>MatchTag</name>
-                                    <expression>.*matches\.(tag)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OrderState</name>
-                                    <expression>.*orders\.(state)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OrderItems</name>
-                                    <expression>.*orders\.(requirements)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OptionalMid</name>
-                                    <expression>.*tables\.(mid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Pid</name>
-                                    <expression>.*tables\.(pid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>TableState</name>
-                                    <expression>.*tables\.(state)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*bid\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Bid</name>
-                                    <expression>.*bid\.(bid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*bid\.(tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*users\.(created)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*users\.(uid|ref_uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*country\.(author_id)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*city\.(author_id)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*admin\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*sessions\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*session_key\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*place_admin\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Pid</name>
-                                    <expression>.*place_admin\.(pid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Tid</name>
-                                    <expression>.*tournament_admin\.(tid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*tournament_admin\.(uid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Bid</name>
-                                    <expression>.*matches\.(bid_less|bid_more|bid_win)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Mid</name>
-                                    <expression>.*matches\.(mid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*festival\.(opens_at)</expression>
+                                    <name>Fid</name>
+                                    <expression>.*festival\.fid</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
                                     <name>MenuItems</name>
-                                    <expression>.*festival\.(menu)</expression>
+                                    <expression>.*festival\.menu</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*festival\.(fid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Oid</name>
-                                    <expression>.*orders\.(oid)</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*orders\.(festival_id)</expression>
+                                    <name>Instant</name>
+                                    <expression>.*festival\.created</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
                                     <name>FestivalState</name>
-                                    <expression>.*festival\.(state)</expression>
+                                    <expression>.*festival\.state</expression>
+                                    <types>.*</types>
+                                </forcedType>
+
+                                <forcedType>
+                                    <name>OrderState</name>
+                                    <expression>.*orders\.state</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>OrderItems</name>
+                                    <expression>.*orders\.requirements</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Oid</name>
+                                    <expression>.*orders\.oid</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*orders\.created</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>OrderLabel</name>
+                                    <expression>.*orders\.label</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Cid</name>
+                                    <expression>.*orders\.customer_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Uid</name>
+                                    <expression>.*orders\.kelner_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Fid</name>
+                                    <expression>.*orders\.festival_id</expression>
                                     <types>.*</types>
                                 </forcedType>
                             </forcedTypes>
