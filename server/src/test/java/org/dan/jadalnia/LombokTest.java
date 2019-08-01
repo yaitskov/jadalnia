@@ -14,9 +14,9 @@ public class LombokTest {
         private final int f;
     }
     @Test
-    public void copyValueAnnotation() {
+    public void copyValueAnnotationToConstructor() {
         Assert.assertThat(
-                X.class.getConstructors()[0].getParameterAnnotations()[0][0],
-                is(Value.class));
+                ((Value) X.class.getConstructors()[0].getParameterAnnotations()[0][0]).value(),
+                is("ddd"));
     }
 }
