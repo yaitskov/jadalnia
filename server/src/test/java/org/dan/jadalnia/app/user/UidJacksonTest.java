@@ -1,19 +1,18 @@
 package org.dan.jadalnia.app.user;
 
-import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.dan.jadalnia.app.user.Uid;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
 import org.junit.Test;
 
 import java.util.Map;
+
+import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 @Slf4j
 public class UidJacksonTest {
@@ -25,7 +24,7 @@ public class UidJacksonTest {
         final String actual = om.writeValueAsString(new Uid(123));
         assertThat(actual, is("123"));
         assertThat(om.readValue(actual, Uid.class),
-                hasProperty("id", is(123)));
+                hasProperty("validateValue", is(123)));
     }
 
     @Test
