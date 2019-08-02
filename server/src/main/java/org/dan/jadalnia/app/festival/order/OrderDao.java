@@ -3,13 +3,14 @@ package org.dan.jadalnia.app.festival.order;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.dan.jadalnia.app.festival.pojo.Fid;
-import org.dan.jadalnia.app.festival.order.pojo.PaidOrder;
-import org.dan.jadalnia.app.festival.order.pojo.OrderLabel;
 import org.dan.jadalnia.app.festival.order.pojo.Oid;
+import org.dan.jadalnia.app.festival.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.festival.order.pojo.PaidOrder;
+import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.jooq.DSLContext;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.LinkedHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -18,12 +19,14 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toMap;
 import static org.dan.jadalnia.app.festival.order.pojo.OrderState.Paid;
 import static org.dan.jadalnia.jooq.Tables.ORDERS;
+import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class OrderDao {
     DSLContext jooq;
+    @Named(DEFAULT_EXECUTOR)
     ExecutorService executor;
 
     public CompletableFuture<LinkedHashMap<Oid, PaidOrder>> loadPaid(Fid fid) {

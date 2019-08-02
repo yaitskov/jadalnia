@@ -12,7 +12,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class WsBroadcast {
-    ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public void broadcast(Festival festival, MessageForClient message) {
         //festival.getUserListeners().values().forEach(listener -> listener.send(message));

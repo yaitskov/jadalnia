@@ -23,19 +23,9 @@ public class AuthService {
     private UserDao userDao;
 
     @Inject
-    private SessionGenerator sessionGenerator;
-
-    @Inject
     @Named(USER_SESSIONS)
     private AsyncCache<UserSession, UserInfo> userSessions;
 
-    private String genSession() {
-        return sessionGenerator.generate();
-    }
-
-
-
     @Value("${base.site.url}")
     private String baseSiteUrl;
-
  }

@@ -14,6 +14,7 @@ import org.jooq.DSLContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.jooq.Tables.FESTIVAL;
+import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 import static org.dan.jadalnia.sys.error.JadEx.internalError;
 import static org.dan.jadalnia.sys.error.JadEx.notFound;
@@ -31,6 +33,7 @@ import static org.dan.jadalnia.sys.error.JadEx.notFound;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FestivalDao {
     DSLContext jooq;
+    @Named(DEFAULT_EXECUTOR)
     ExecutorService executor;
 
     public CompletableFuture<Fid> create(NewFestival newTournament) {

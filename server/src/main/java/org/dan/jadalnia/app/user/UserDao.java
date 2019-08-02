@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.jooq.DSLContext;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.NotFoundException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -14,12 +15,14 @@ import java.util.concurrent.ExecutorService;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.jooq.Tables.USERS;
+import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class UserDao {
     DSLContext jooq;
+    @Named(DEFAULT_EXECUTOR)
     ExecutorService executorService;;
 
     public CompletableFuture<UserSession> register(
