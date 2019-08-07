@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.festival;
 import lombok.val;
 import org.dan.jadalnia.app.festival.pojo.CreatedFestival;
 import org.dan.jadalnia.app.festival.pojo.NewFestival;
+import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.sys.ctx.TestCtx;
 import org.dan.jadalnia.test.AbstractSpringJerseyTest;
 import org.dan.jadalnia.test.JerseySpringTest;
@@ -22,10 +23,8 @@ import static org.junit.Assert.assertThat;
 @Category(JerseySpringTest.class)
 @ContextConfiguration(classes = TestCtx.class)
 public class NewFestivalTest extends AbstractSpringJerseyTest {
-    @Test
-    public void createNewFestival() {
-        val key = UUID.randomUUID().toString();
-        val result = myRest().post(FESTIVAL_CREATE,
+    public static CreatedFestival createFestival(String key, MyRest myRest) {
+        return myRest.post(FESTIVAL_CREATE,
                 NewFestival
                         .builder()
                         .opensAt(Instant.now())
@@ -33,6 +32,12 @@ public class NewFestivalTest extends AbstractSpringJerseyTest {
                         .userName(label("user"))
                         .userKey(key)
                         .build()).readEntity(CreatedFestival.class);
+    }
+
+    @Test
+    public void createNewFestival() {
+        val key = UUID.randomUUID().toString();
+        val result = createFestival(key, myRest());
 
         assertThat(result.getFid().intValue(), greaterThan(0));
         assertThat(result.getSession().getUid().intValue(), greaterThan(0));

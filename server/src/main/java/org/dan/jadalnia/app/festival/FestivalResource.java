@@ -41,6 +41,7 @@ import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CA
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalResource {
     private static final String FESTIVAL = "/festival/";
+    public static final String FESTIVAL_MENU = FESTIVAL + "menu";
     public static final String FESTIVAL_STATE = FESTIVAL + "state";
     public static final String FESTIVAL_CREATE = FESTIVAL + "create";
     public static final String INVALIDATE_CACHE = FESTIVAL + "invalidate/cache";
@@ -77,19 +78,25 @@ public class FestivalResource {
     }
 
     @GET
-    @Path(FESTIVAL + "/menu/" + "{fid}")
-    public CompletableFuture<List<MenuItem>> listMenu(@PathParam("fid") Fid fid) {
-        return festivalService.listMenu(fid);
+    @Path(FESTIVAL_MENU + "/" + "{fid}")
+    public void listMenu(
+            @Suspended AsyncResponse response,
+            @PathParam("fid") Fid fid) {
+        asynSync.sync(festivalService.listMenu(fid), response);
     }
 
     @POST
-    @Path(FESTIVAL + "/menu")
-    public CompletableFuture<Integer> updateMenu(
+    @Path(FESTIVAL_MENU)
+    public void updateMenu(
+            @Suspended AsyncResponse response,
             @HeaderParam(SESSION) UserSession session,
             List<MenuItem> items) {
-        return userSessions.get(session).thenApply(user -> user.ensureAdmin().getFid())
-                .thenCompose(fid -> festivalCache.get(fid))
-                .thenCompose(festival -> festivalService.updateMenu(festival, items));
+        asynSync.sync(
+                userSessions.get(session)
+                        .thenApply(user -> user.ensureAdmin().getFid())
+                        .thenCompose(festivalCache::get)
+                        .thenCompose(festival -> festivalService.updateMenu(festival, items)),
+                response);
     }
 
     @POST

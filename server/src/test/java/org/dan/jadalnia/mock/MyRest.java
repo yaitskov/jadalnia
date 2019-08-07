@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
+import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
 import org.dan.jadalnia.sys.error.Error;
 import org.dan.jadalnia.sys.error.JadEx;
@@ -75,6 +76,10 @@ public class MyRest {
     public <T> Invocation.Builder postBuilder(String path, String session) {
         return request().path(path).request(APPLICATION_JSON)
                 .header(SESSION, session);
+    }
+
+    public <T> Response post(String path, UserSession session, T entity) {
+        return post(path, session.toString(), entity);
     }
 
     public <T> Response post(String path, String session, T entity) {

@@ -60,7 +60,7 @@ public class UserDao {
                         .name(r.getValue(USERS.NAME))
                         .userState(r.getValue(USERS.STATE))
                         .userType(r.getValue(USERS.TYPE))
-                        // .festivalId(r.getValue(USERS.FESTIVAL_ID))
+                        .fid(r.getValue(USERS.FESTIVAL_ID))
                         .build())
                 .orElseThrow(() -> new NotFoundException("user is not known")));
     }

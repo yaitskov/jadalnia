@@ -18,10 +18,14 @@ public class UserSession {
     private String key;
 
     public static UserSession valueOf(String s) {
-        final String[] parts = s.split(":", 1);
+        final String[] parts = s.split(":", 2);
         return UserSession.builder()
                 .uid(Uid.valueOf(parts[0]))
                 .key(parts[1])
                 .build();
+    }
+
+    public String toString() {
+        return uid + ":" + key;
     }
 }
