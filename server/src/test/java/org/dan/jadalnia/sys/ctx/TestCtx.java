@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Import;
 
 @Import({PropertiesContext.class, TimeContext.class, DbContext.class,
         ExecutorCtx.class,
+        AsyncCtx.class,
         BusinessCtx.class, WsCtx.class,
         JacksonContext.class, AuthCtx.class,
         JerseyCtx.class })

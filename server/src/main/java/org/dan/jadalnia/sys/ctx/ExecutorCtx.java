@@ -10,6 +10,6 @@ public class ExecutorCtx {
 
     @Bean(name = DEFAULT_EXECUTOR)
     public ExecutorService defaultExecutor() {
-        return Executors.newFixedThreadPool(1);
+        return Executors.newCachedThreadPool();
     }
 }

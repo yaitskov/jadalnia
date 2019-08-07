@@ -6,7 +6,7 @@ import org.dan.jadalnia.app.festival.menu.MenuItem;
 
 import java.util.List;
 
-public class MenuItemsConverter extends JsonConverter<List<MenuItem>> {
+public class MenuItemsConverter extends JsonListConverter<MenuItem> {
     public MenuItemsConverter() {
         super(new TypeReference<List<MenuItem>>() {}, new ObjectMapper());
     }

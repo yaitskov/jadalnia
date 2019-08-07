@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.dan.jadalnia.app.festival.menu.MenuItem;
 import org.dan.jadalnia.app.festival.pojo.CreatedFestival;
 import org.dan.jadalnia.app.festival.pojo.Festival;
@@ -15,15 +16,20 @@ import org.dan.jadalnia.app.user.UserDao;
 import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.util.collection.AsyncCache;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CACHE;
 import static org.dan.jadalnia.app.user.UserState.Approved;
 import static org.dan.jadalnia.app.user.UserType.Admin;
+import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
+import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -34,6 +40,9 @@ public class FestivalService {
     @Named(FESTIVAL_CACHE)
     AsyncCache<Fid, Festival> festivalCache;
     WsBroadcast wsBroadcast;
+    @Named(DEFAULT_EXECUTOR)
+    ExecutorService executorService;;
+
 
     public CompletableFuture<CreatedFestival> create(NewFestival newFestival) {
         return festivalDao

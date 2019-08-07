@@ -6,6 +6,7 @@ import org.dan.jadalnia.app.festival.pojo.NewFestival;
 import org.dan.jadalnia.sys.ctx.TestCtx;
 import org.dan.jadalnia.test.AbstractSpringJerseyTest;
 import org.dan.jadalnia.test.JerseySpringTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,13 +29,18 @@ public class NewFestivalTest extends AbstractSpringJerseyTest {
                 NewFestival
                         .builder()
                         .opensAt(Instant.now())
-                        .name("festival " + UUID.randomUUID())
-                        .userKey("user " + UUID.randomUUID())
+                        .name(label("festival"))
+                        .userName(label("user"))
                         .userKey(key)
                         .build()).readEntity(CreatedFestival.class);
 
         assertThat(result.getFid().intValue(), greaterThan(0));
         assertThat(result.getSession().getUid().intValue(), greaterThan(0));
         assertThat(result.getSession().getKey(), is(key));
+    }
+
+    @NotNull
+    public static String label(String s) {
+        return (s + "-" + UUID.randomUUID()).substring(0, 30);
     }
 }

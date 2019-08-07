@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.user.UserCtx;
 import org.dan.jadalnia.app.ws.WsCtx;
 import org.dan.jadalnia.sys.ctx.jackson.JacksonContext;
 import org.dan.jadalnia.sys.db.DbContext;
+import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         BusinessCtx.class,
         TimeContext.class,
         ExecutorCtx.class,
+        AsyncCtx.class,
         JacksonContext.class,
         DbContext.class})
 @EnableTransactionManagement(proxyTargetClass = true)

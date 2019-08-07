@@ -44,7 +44,7 @@ public class DbContext {
         config.setConnectionTestQuery("select 1");
         config.setMaximumPoolSize(1);
         config.setMinimumIdle(1);
-        config.setAutoCommit(false);
+        config.setAutoCommit(true);
         config.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
         config.setPoolName("db-pool");
         return new HikariDataSource(config);

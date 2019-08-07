@@ -4,7 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.dan.jadalnia.util.Reflector;
 import org.jooq.Converter;
+import org.springframework.util.ReflectionUtils;
+
+import static org.dan.jadalnia.util.Reflector.genericSuperClass;
 
 @RequiredArgsConstructor
 public class JsonConverter<T> implements Converter<String, T> {
@@ -36,6 +40,6 @@ public class JsonConverter<T> implements Converter<String, T> {
 
     @Override
     public Class<T> toType() {
-        return (Class<T>) clazz.getType();
+        return genericSuperClass(clazz.getClass());
     }
 }

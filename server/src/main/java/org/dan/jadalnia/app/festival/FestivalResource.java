@@ -1,5 +1,8 @@
 package org.dan.jadalnia.app.festival;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.festival.menu.MenuItem;
 import org.dan.jadalnia.app.festival.pojo.CreatedFestival;
@@ -9,6 +12,7 @@ import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.festival.pojo.NewFestival;
 import org.dan.jadalnia.app.user.UserInfo;
 import org.dan.jadalnia.app.user.UserSession;
+import org.dan.jadalnia.sys.async.AsynSync;
 import org.dan.jadalnia.util.collection.AsyncCache;
 
 import javax.inject.Inject;
@@ -20,6 +24,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,28 +37,31 @@ import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CA
 @Slf4j
 @Path("/")
 @Produces(APPLICATION_JSON)
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalResource {
     private static final String FESTIVAL = "/festival/";
     public static final String FESTIVAL_STATE = FESTIVAL + "state";
     public static final String FESTIVAL_CREATE = FESTIVAL + "create";
     public static final String INVALIDATE_CACHE = FESTIVAL + "invalidate/cache";
 
-    @Inject
-    private FestivalService festivalService;
+    FestivalService festivalService;
     
-    @Inject
     @Named(USER_SESSIONS)
-    private AsyncCache<UserSession, UserInfo> userSessions;
+    AsyncCache<UserSession, UserInfo> userSessions;
 
-    @Inject
     @Named(FESTIVAL_CACHE)
-    private AsyncCache<Fid, Festival> festivalCache;
+    AsyncCache<Fid, Festival> festivalCache;
+
+    AsynSync asynSync;
 
     @POST
     @Path(FESTIVAL_CREATE)
     @Consumes(APPLICATION_JSON)
-    public CompletableFuture<CreatedFestival> create(NewFestival newFestival) {
-        return festivalService.create(newFestival);
+    public void create(
+            @Suspended AsyncResponse response,
+            NewFestival newFestival) {
+        asynSync.sync(festivalService.create(newFestival), response);
     }
 
     @POST

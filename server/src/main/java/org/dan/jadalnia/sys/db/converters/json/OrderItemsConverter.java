@@ -6,7 +6,7 @@ import org.dan.jadalnia.app.festival.order.pojo.OrderItem;
 
 import java.util.List;
 
-public class OrderItemsConverter extends JsonConverter<List<OrderItem>> {
+public class OrderItemsConverter extends JsonListConverter<OrderItem> {
     public OrderItemsConverter() {
         super(new TypeReference<List<OrderItem>>() {}, new ObjectMapper());
     }
