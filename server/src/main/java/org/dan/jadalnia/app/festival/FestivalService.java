@@ -66,6 +66,13 @@ public class FestivalService {
                                 .build()));
     }
 
+    public CompletableFuture<FestivalState> getState(Fid fid) {
+        return festivalCache.get(fid)
+                .thenApply(Festival::getInfo)
+                .thenApply(AtomicReference::get)
+                .thenApply(FestivalInfo::getState);
+    }
+
     public CompletableFuture<List<MenuItem>> listMenu(Fid fid) {
         return festivalCache.get(fid)
                 .thenApply(Festival::getInfo)

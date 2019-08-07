@@ -78,7 +78,15 @@ public class FestivalResource {
     }
 
     @GET
-    @Path(FESTIVAL_MENU + "/" + "{fid}")
+    @Path(FESTIVAL_STATE + "/{fid}")
+    public void getState(
+            @Suspended AsyncResponse response,
+            @PathParam("fid") Fid fid) {
+        asynSync.sync(festivalService.getState(fid), response);
+    }
+
+    @GET
+    @Path(FESTIVAL_MENU + "/{fid}")
     public void listMenu(
             @Suspended AsyncResponse response,
             @PathParam("fid") Fid fid) {

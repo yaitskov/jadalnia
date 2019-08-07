@@ -20,6 +20,7 @@ import java.util.UUID;
 import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.FestivalResource.FESTIVAL_MENU;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
+import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.Is.is;
@@ -52,7 +53,7 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
 
     @Test
     public void setMenu() {
-        val key = UUID.randomUUID().toString();
+        val key = genAdminKey();
         val result = createFestival(key, myRest());
         val updatedRows = setMenu(myRest(), result.getSession());
 

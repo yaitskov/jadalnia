@@ -36,12 +36,17 @@ public class NewFestivalTest extends AbstractSpringJerseyTest {
 
     @Test
     public void createNewFestival() {
-        val key = UUID.randomUUID().toString();
+        val key = genAdminKey();
         val result = createFestival(key, myRest());
 
         assertThat(result.getFid().intValue(), greaterThan(0));
         assertThat(result.getSession().getUid().intValue(), greaterThan(0));
         assertThat(result.getSession().getKey(), is(key));
+    }
+
+    @NotNull
+    public static String genAdminKey() {
+        return UUID.randomUUID().toString();
     }
 
     @NotNull
