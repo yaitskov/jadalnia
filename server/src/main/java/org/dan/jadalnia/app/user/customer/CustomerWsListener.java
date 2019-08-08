@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class CustomerWsListener implements WsListener {
     @Override
-    public CompletableFuture<Void> send(Object message) {
+    public CompletableFuture<Void> send(byte[] message) {
         return null;
     }
 }

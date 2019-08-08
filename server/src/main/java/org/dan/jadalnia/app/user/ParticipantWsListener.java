@@ -9,6 +9,7 @@ import org.dan.jadalnia.app.ws.WsListener;
 import javax.inject.Inject;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 @FieldDefaults(makeFinal = true)
-public class UserWsListener implements WsListener {
+public class ParticipantWsListener implements WsListener {
     AtomicReference<Optional<Session>> session = new AtomicReference<>(Optional.empty());
 
     @OnOpen
@@ -25,12 +26,12 @@ public class UserWsListener implements WsListener {
         // session.getAsyncRemote().sendText()
     }
 
-    public CompletableFuture<Void> send(Object message) {
+    public CompletableFuture<Void> send(byte[] message) {
         val result = new CompletableFuture<Void>();
         session.get()
                 .map(Session::getAsyncRemote)
                 .ifPresent(endpoint -> endpoint.sendObject(
-                        message, sendResult -> {
+                        ByteBuffer.wrap(message), sendResult -> {
                             if (sendResult.isOK()) {
                                 result.complete(null);
                             } else {

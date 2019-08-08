@@ -18,6 +18,7 @@ import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.util.collection.AsyncCache;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -33,7 +34,7 @@ import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalService {
     FestivalDao festivalDao;
     UserDao userDao;
@@ -59,7 +60,7 @@ public class FestivalService {
     public CompletableFuture<Void> setState(Festival festival, FestivalState newState) {
         festival.getInfo().updateAndGet(info -> info.withState(newState));
         return festivalDao.setState(festival.getInfo().get().getFid(), newState)
-                .thenRunAsync(() -> wsBroadcast.broadcast(festival,
+                .thenRunAsync(() -> wsBroadcast.broadcast(festival.getInfo().get().getFid(),
                         PropertyUpdated.builder()
                                 .name("festival.state")
                                 .newValue(newState)
