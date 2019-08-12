@@ -4,6 +4,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.google.common.cache.CacheBuilder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.festival.pojo.Festival;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.util.collection.AsyncCache;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 
 import javax.inject.Inject;
 
+@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalCacheFactory {
     public static final String FESTIVAL_CACHE = "festival-cache";
@@ -26,6 +28,8 @@ public class FestivalCacheFactory {
         return new AsyncCache<>(
                 CacheBuilder.newBuilder()
                         .expireAfterAccess(expireFestivalSeconds, SECONDS)
+                        .removalListener(notification ->
+                                log.info("Evicted festival {}", notification.getKey()))
                         .build(loader));
     }
 }

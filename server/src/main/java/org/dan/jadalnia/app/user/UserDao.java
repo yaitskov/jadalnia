@@ -23,27 +23,27 @@ import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 public class UserDao {
     DSLContext jooq;
     @Named(DEFAULT_EXECUTOR)
-    ExecutorService executorService;;
+    ExecutorService executorService;
 
     public CompletableFuture<UserSession> register(
             Fid fid, UserType userType, UserState userState,
             String userName, String sessionKey) {
         return supplyAsync(() ->
-                        UserSession.builder()
-                                .key(sessionKey)
-                                .uid(jooq
-                                        .insertInto(USERS,
-                                                USERS.FESTIVAL_ID,
-                                                USERS.TYPE,
-                                                USERS.STATE,
-                                                USERS.NAME,
-                                                USERS.SESSION_KEY)
-                                        .values(fid, userType, userState,
-                                                userName, sessionKey)
-                                        .returning(USERS.UID)
-                                        .fetchOne()
-                                        .getValue(USERS.UID))
-                                .build(),
+                UserSession.builder()
+                        .key(sessionKey)
+                        .uid(jooq
+                                .insertInto(USERS,
+                                        USERS.FESTIVAL_ID,
+                                        USERS.TYPE,
+                                        USERS.STATE,
+                                        USERS.NAME,
+                                        USERS.SESSION_KEY)
+                                .values(fid, userType, userState,
+                                        userName, sessionKey)
+                                .returning(USERS.UID)
+                                .fetchOne()
+                                .getValue(USERS.UID))
+                        .build(),
                 executorService);
     }
 

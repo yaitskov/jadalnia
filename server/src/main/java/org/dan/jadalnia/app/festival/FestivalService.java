@@ -1,5 +1,6 @@
 package org.dan.jadalnia.app.festival;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -16,7 +17,6 @@ import org.dan.jadalnia.app.user.UserDao;
 import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.util.collection.AsyncCache;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,12 +25,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CACHE;
 import static org.dan.jadalnia.app.user.UserState.Approved;
 import static org.dan.jadalnia.app.user.UserType.Admin;
 import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
-import static org.dan.jadalnia.sys.db.DbContext.TRANSACTION_MANAGER;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -44,7 +42,6 @@ public class FestivalService {
     @Named(DEFAULT_EXECUTOR)
     ExecutorService executorService;;
 
-
     public CompletableFuture<CreatedFestival> create(NewFestival newFestival) {
         return festivalDao
                 .create(newFestival)
@@ -57,21 +54,30 @@ public class FestivalService {
     }
 
     @SneakyThrows
-    public CompletableFuture<Void> setState(Festival festival, FestivalState newState) {
-        festival.getInfo().updateAndGet(info -> info.withState(newState));
-        return festivalDao.setState(festival.getInfo().get().getFid(), newState)
+    public CompletableFuture<Boolean> setState(Festival festival, FestivalState newState) {
+        log.info("Update festival state to {}", newState);
+        val oldV = festival.getInfo().getAndUpdate(info -> {
+            log.info("Update state {} => {} in {}",
+                    info.getState(), newState, info.getFid());
+            return info.withState(newState);
+        });
+        festivalDao.setState(festival.getInfo().get().getFid(), newState)
                 .thenRunAsync(() -> wsBroadcast.broadcast(festival.getInfo().get().getFid(),
                         PropertyUpdated.builder()
                                 .name("festival.state")
                                 .newValue(newState)
                                 .build()));
+        return CompletableFuture.completedFuture(oldV.getState() != newState);
     }
 
     public CompletableFuture<FestivalState> getState(Fid fid) {
         return festivalCache.get(fid)
                 .thenApply(Festival::getInfo)
                 .thenApply(AtomicReference::get)
-                .thenApply(FestivalInfo::getState);
+                .thenApply(info -> {
+                    log.info("Get state {} for {}", info.getState(), info.getFid());
+                    return info.getState();
+                });
     }
 
     public CompletableFuture<List<MenuItem>> listMenu(Fid fid) {

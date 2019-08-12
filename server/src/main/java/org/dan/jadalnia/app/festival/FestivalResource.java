@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.festival.menu.MenuItem;
-import org.dan.jadalnia.app.festival.pojo.CreatedFestival;
 import org.dan.jadalnia.app.festival.pojo.Festival;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.festival.pojo.Fid;
@@ -30,8 +29,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.dan.jadalnia.app.auth.ctx.UserCacheFactory.USER_SESSIONS;
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
+import static org.dan.jadalnia.app.auth.ctx.UserCacheFactory.USER_SESSIONS;
 import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CACHE;
 
 @Slf4j
@@ -68,13 +67,16 @@ public class FestivalResource {
     @POST
     @Path(FESTIVAL_STATE)
     @Consumes(APPLICATION_JSON)
-    public CompletableFuture<Void> setState(
+    public void setState(
+            @Suspended AsyncResponse response,
             @HeaderParam(SESSION) UserSession session,
             FestivalState state) {
-        return userSessions.get(session)
-                .thenApply(user -> user.ensureAdmin().getFid())
-                .thenCompose(festivalCache::get)
-                .thenCompose(festival -> festivalService.setState(festival, state));
+        asynSync.sync(
+                userSessions.get(session)
+                        .thenApply(user -> user.ensureAdmin().getFid())
+                        .thenCompose(festivalCache::get)
+                        .thenCompose(festival -> festivalService.setState(festival, state)),
+                response);
     }
 
     @GET

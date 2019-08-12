@@ -24,8 +24,8 @@ import static org.junit.Assert.assertThat;
 @Category(JerseySpringTest.class)
 @ContextConfiguration(classes = TestCtx.class)
 public class SetFestivalStateTest extends AbstractSpringJerseyTest {
-    public static void setState(MyRest myRest, UserSession session, FestivalState state) {
-        myRest.post(FESTIVAL_STATE, session, state);
+    public static boolean setState(MyRest myRest, UserSession session, FestivalState state) {
+        return myRest.post(FESTIVAL_STATE, session, state).readEntity(Boolean.class);
     }
 
     public static FestivalState getState(MyRest myRest, Fid fid) {
@@ -39,10 +39,10 @@ public class SetFestivalStateTest extends AbstractSpringJerseyTest {
 
         assertThat(getState(myRest(), festival.getFid()), is(Announce));
 
-        setState(myRest(), festival.getSession(), Open);
+        assertThat(setState(myRest(), festival.getSession(), Open), is(true));
         assertThat(getState(myRest(), festival.getFid()), is(Open));
 
-        setState(myRest(), festival.getSession(), Close);
+        assertThat(setState(myRest(), festival.getSession(), Close), is(true));
         assertThat(getState(myRest(), festival.getFid()), is(Close));
     }
 }
