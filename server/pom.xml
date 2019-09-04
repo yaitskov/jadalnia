@@ -465,11 +465,6 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.num.UidConverter</binding>
                                 </customType>
                                 <customType>
-                                    <name>Cid</name>
-                                    <type>org.dan.jadalnia.app.category.Cid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.CidConverter</binding>
-                                </customType>
-                                <customType>
                                     <name>Fid</name>
                                     <type>org.dan.jadalnia.app.festival.pojo.Fid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.FidConverter</binding>
@@ -589,7 +584,7 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
-                                    <name>Cid</name>
+                                    <name>Uid</name>
                                     <expression>.*orders\.customer_id</expression>
                                     <types>.*</types>
                                 </forcedType>

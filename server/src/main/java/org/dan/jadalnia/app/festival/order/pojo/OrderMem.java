@@ -4,12 +4,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.dan.jadalnia.app.user.Cid;
+import org.dan.jadalnia.app.user.Uid;
 
 @Getter
 @Builder
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor
 public class OrderMem {
-    Cid customerId;
+    Uid customerId;
 }
