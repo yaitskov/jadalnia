@@ -39,7 +39,7 @@ import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CA
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalResource {
-    private static final String FESTIVAL = "/festival/";
+    private static final String FESTIVAL = "festival/";
     public static final String FESTIVAL_MENU = FESTIVAL + "menu";
     public static final String FESTIVAL_STATE = FESTIVAL + "state";
     public static final String FESTIVAL_CREATE = FESTIVAL + "create";

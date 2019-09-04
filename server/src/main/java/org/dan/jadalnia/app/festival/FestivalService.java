@@ -1,6 +1,5 @@
 package org.dan.jadalnia.app.festival;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.FESTIVAL_CACHE;
 import static org.dan.jadalnia.app.user.UserState.Approved;
 import static org.dan.jadalnia.app.user.UserType.Admin;
@@ -67,7 +67,7 @@ public class FestivalService {
                                 .name("festival.state")
                                 .newValue(newState)
                                 .build()));
-        return CompletableFuture.completedFuture(oldV.getState() != newState);
+        return completedFuture(oldV.getState() != newState);
     }
 
     public CompletableFuture<FestivalState> getState(Fid fid) {
