@@ -35,7 +35,10 @@ public class WsBroadcast {
         val listeners = fid2Listeners.get(fid);
         if (listeners == null) {
             fid2Listeners.putIfAbsent(
-                    fid, new FestivalListeners(new ConcurrentHashMap<>(), new ConcurrentHashMap<>()));
+                    fid,
+                    new FestivalListeners(
+                            new ConcurrentHashMap<>(),
+                            new ConcurrentHashMap<>()));
             return fid2Listeners.get(fid);
         }
         return listeners;
@@ -45,7 +48,8 @@ public class WsBroadcast {
         return null;
     }
 
-    public static void broadcastTo(Collection<? extends WsListener> listeners, byte[] message) {
+    public static void broadcastTo(
+            Collection<? extends WsListener> listeners, byte[] message) {
         // close ws on failure
         listeners.forEach(listener -> listener.send(message));
     }

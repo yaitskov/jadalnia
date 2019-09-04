@@ -3,6 +3,7 @@ package org.dan.jadalnia.sys;
 import static java.util.Collections.singletonList;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dan.jadalnia.app.ws.WsHandlerConfigurator;
 import org.dan.jadalnia.sys.ctx.AppContext;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.core.annotation.Order;
@@ -30,6 +31,7 @@ public class AppInitializer implements WebApplicationInitializer {
     private WebApplicationContext createWebAppCtx(Iterable<Class<?>> configClasses) {
         final AnnotationConfigWebApplicationContext context
                 = new AnnotationConfigWebApplicationContext();
+        WsHandlerConfigurator.setInjector(context);
         configClasses.forEach(context::register);
         return context;
     }
