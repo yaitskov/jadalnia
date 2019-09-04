@@ -5,29 +5,28 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Optional;
+import org.dan.jadalnia.app.festival.pojo.Fid;
 
 import javax.validation.constraints.Size;
+import java.util.Optional;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRegRequest {
-    @Size(min = 3, max = 80)
-    private String name;
-    //@Size(min = 5, max = 40)
-    //@Length(min = 5, max = 40)
-    private Optional<String> email;
-    private Optional<String> phone;
-    private String sessionPart;
-    @Setter
+    Fid festivalId;
+    @Size(min = 3, max = 40)
+    String name;
+    String session;
     private UserType userType;
+
+    Optional<String> email;
+    Optional<String> phone;
 
     public static class UserRegRequestBuilder {
         Optional<String> email = Optional.empty();
         Optional<String> phone = Optional.empty();
-        UserType userType = UserType.Kelner;
     }
 }
