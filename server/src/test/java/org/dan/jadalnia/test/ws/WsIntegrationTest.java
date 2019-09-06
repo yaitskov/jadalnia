@@ -1,6 +1,7 @@
 package org.dan.jadalnia.test.ws;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -10,7 +11,9 @@ import org.junit.Before;
 import java.net.URI;
 
 import static org.dan.jadalnia.test.ws.EmbeddedJetty.EMBEDDED_JETTY;
+import static org.springframework.util.SocketUtils.findAvailableTcpPort;
 
+@Slf4j
 public abstract class WsIntegrationTest {
     private WebSocketClient wsClient;
 
@@ -27,6 +30,9 @@ public abstract class WsIntegrationTest {
 
     @SneakyThrows
     private void startWsClient() {
+        if (wsClient != null) {
+            return;
+        }
         wsClient = new WebSocketClient();
         wsClient.start();
     }
@@ -38,8 +44,14 @@ public abstract class WsIntegrationTest {
         }
     }
 
-    protected int getWsPort() {
-        return 8084;
+    private static int ALLOCATED_PORT;
+
+    private static int getWsPort() {
+        if (ALLOCATED_PORT == 0) {
+            ALLOCATED_PORT = findAvailableTcpPort();
+            log.info("Use WS port {}", ALLOCATED_PORT);
+        }
+        return ALLOCATED_PORT;
     }
 
     @SneakyThrows
