@@ -16,7 +16,7 @@
 
     <properties>
         <lombok.version>1.18.8</lombok.version>
-        <jetty.version>9.3.8.v20160314</jetty.version>
+        <jetty.version>9.4.20.v20190813</jetty.version>
         <jackson.version>2.9.1</jackson.version>
         <spring.version>4.3.2.RELEASE</spring.version>
         <junit.version>4.12</junit.version>
