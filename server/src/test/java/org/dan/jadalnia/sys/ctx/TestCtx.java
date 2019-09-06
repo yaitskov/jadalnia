@@ -6,7 +6,9 @@ import org.dan.jadalnia.sys.ctx.jackson.JacksonContext;
 import org.dan.jadalnia.sys.db.DbContext;
 import org.springframework.context.annotation.Import;
 
-@Import({PropertiesContext.class, TimeContext.class, DbContext.class,
+@Import({PropertiesContext.class,
+        TimeContext.class,
+        DbContext.class,
         ExecutorCtx.class,
         AsyncCtx.class,
         BusinessCtx.class, WsCtx.class,

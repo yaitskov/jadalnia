@@ -1,5 +1,6 @@
 package org.dan.jadalnia.app.user.customer;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dan.jadalnia.app.user.UserInfo;
@@ -60,28 +61,34 @@ public class CustomerWsListener implements WsListener {
     }
 
     @OnOpen
+    @SneakyThrows
     public void onConnected(Session httpSession) {
         oSession = Optional.of(WsSession.wrap(httpSession));
-        oUserSession = Optional.of(getSession().header(SESSION, UserSession::valueOf));
+        handleException(() -> {
+            oUserSession = Optional.of(
+                    getSession().header(SESSION, UserSession::valueOf));
 
-        handleException(() -> userSessions.get(getUserSession()).thenAccept(userInfo -> {
-            if (userInfo.getUserType() != UserType.Customer) {
-                throw badRequest("Just Customers are expected");
-            }
-            log.info("Connected customer {} of festival {}",
-                    getUserSession().getUid(), userInfo.getFid());
+            userSessions.get(getUserSession()).thenAccept(userInfo -> {
+                if (userInfo.getUserType() != UserType.Customer) {
+                    throw badRequest("Just Customers are expected");
+                }
+                log.info("Connected customer {} of festival {}",
+                        getUserSession().getUid(), userInfo.getFid());
 
-            val listeners = wsBroadcast.getListeners(userInfo.getFid());
-            val earlier = listeners.getCustomerListeners()
-                    .putIfAbsent(userInfo.getUid(), this);
-            if (earlier != null) {
-                throw badRequest("Multiple web sockets are not allowed");
-            }
-            log.info("Online customers {} for {}",
-                    listeners.getCustomerListeners().size(), userInfo.getFid());
+                val listeners = wsBroadcast.getListeners(userInfo.getFid());
+                val earlier = listeners.getCustomerListeners()
+                        .putIfAbsent(userInfo.getUid(), this);
+                if (earlier != null) {
+                    throw badRequest("Multiple web sockets are not allowed");
+                }
+                log.info("Online customers {} for {}",
+                        listeners.getCustomerListeners().size(),
+                        userInfo.getFid());
 
-            oUserInfo = Optional.of(userInfo);
-        }));
+                oUserInfo = Optional.of(userInfo);
+            });
+            return null;
+        });
     }
 
     @OnMessage
