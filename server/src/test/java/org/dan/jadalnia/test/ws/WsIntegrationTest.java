@@ -58,6 +58,8 @@ public abstract class WsIntegrationTest {
     protected <T extends WsHandler> T bindWsHandler(
             String urlPath, T wsHandler) {
         val upgradeReq = new ClientUpgradeRequest();
+
+        wsHandler.getHeaders().forEach(upgradeReq::setHeader);
         upgradeReq.setHeader("Accept", "application/json");
 
         wsClient.connect(

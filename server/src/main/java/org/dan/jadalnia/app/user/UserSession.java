@@ -6,6 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.dan.jadalnia.sys.error.TemplateError;
+
+import static java.util.Collections.singletonMap;
+import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 
 @Getter
 @Setter
@@ -19,10 +23,16 @@ public class UserSession {
 
     public static UserSession valueOf(String s) {
         final String[] parts = s.split(":", 2);
-        return UserSession.builder()
-                .uid(Uid.valueOf(parts[0]))
-                .key(parts[1])
-                .build();
+        try {
+            return UserSession.builder()
+                    .uid(Uid.valueOf(parts[0]))
+                    .key(parts[1])
+                    .build();
+        } catch (NumberFormatException e) {
+            throw badRequest(
+                    new TemplateError("user session has wrong format: [$session]",
+                            singletonMap("session", s)), e);
+        }
     }
 
     public String toString() {

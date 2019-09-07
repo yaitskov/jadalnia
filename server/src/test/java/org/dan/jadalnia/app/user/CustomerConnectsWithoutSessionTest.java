@@ -4,7 +4,10 @@ package org.dan.jadalnia.app.user;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
+import org.hamcrest.Matcher;
 import org.junit.Test;
+
+import javax.websocket.CloseReason;
 
 import static javax.websocket.CloseReason.CloseCodes.VIOLATED_POLICY;
 import static org.hamcrest.Matchers.allOf;
@@ -20,9 +23,13 @@ public class CustomerConnectsWithoutSessionTest
     @SneakyThrows
     public void serverClosesConnection() {
         assertThat(bindWsHandler("/ws/customer", new WsClientHandle()).waitTillClosed(),
-                allOf(
-                        hasProperty("closeCode", is(VIOLATED_POLICY)),
-                        hasProperty("reasonPhrase",
-                                containsString("Header [session] is missing"))));
+                expectErrnoWsCloseReason("Header [session] is missing"));
+    }
+
+    static Matcher<CloseReason> expectErrnoWsCloseReason(String expectedErrorMsg) {
+        return allOf(
+                hasProperty("closeCode", is(VIOLATED_POLICY)),
+                hasProperty("reasonPhrase",
+                        containsString(expectedErrorMsg)));
     }
 }

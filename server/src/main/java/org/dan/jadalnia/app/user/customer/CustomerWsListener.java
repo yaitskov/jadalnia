@@ -10,6 +10,7 @@ import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.app.ws.WsHandlerConfigurator;
 import org.dan.jadalnia.app.ws.WsListener;
 import org.dan.jadalnia.app.ws.WsSession;
+import org.dan.jadalnia.sys.error.JadEx;
 import org.dan.jadalnia.util.collection.AsyncCache;
 
 import javax.inject.Inject;
@@ -20,22 +21,25 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.websocket.CloseReason.CloseCodes.VIOLATED_POLICY;
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
 import static org.dan.jadalnia.app.auth.ctx.UserCacheFactory.USER_SESSIONS;
+import static org.dan.jadalnia.sys.error.Exceptions.rootCause;
 import static org.dan.jadalnia.sys.error.JadEx.badRequest;
 import static org.dan.jadalnia.sys.error.JadEx.internalError;
+import static org.dan.jadalnia.util.Strings.cutLongerThan;
 
 @Slf4j
 @ServerEndpoint(
         value = "/ws/customer",
         configurator = WsHandlerConfigurator.class)
 public class CustomerWsListener implements WsListener {
+    public static final int WS_CLOSE_REASON_LIMIT = 120;
     @Inject
     WsBroadcast wsBroadcast;
     @Inject
@@ -68,7 +72,7 @@ public class CustomerWsListener implements WsListener {
             oUserSession = Optional.of(
                     getSession().header(SESSION, UserSession::valueOf));
 
-            userSessions.get(getUserSession()).thenAccept(userInfo -> {
+            return userSessions.get(getUserSession()).thenAccept(userInfo -> {
                 if (userInfo.getUserType() != UserType.Customer) {
                     throw badRequest("Just Customers are expected");
                 }
@@ -87,7 +91,6 @@ public class CustomerWsListener implements WsListener {
 
                 oUserInfo = Optional.of(userInfo);
             });
-            return null;
         });
     }
 
@@ -116,16 +119,29 @@ public class CustomerWsListener implements WsListener {
             log.info("Close WS of {}", oUserInfo);
             getSession().getSession().close(
                     new CloseReason(
-                            CloseReason.CloseCodes.VIOLATED_POLICY,
-                            e.getMessage()));
+                            VIOLATED_POLICY,
+                            formatCloseReason(e)));
             oSession = Optional.empty();
-        } catch (IOException eee) {
+        } catch (Exception eee) {
             log.error("Failed to close WS {} with message {}",
                     oUserInfo, e.getMessage(), eee);
         }
     }
 
-    protected <T> CompletableFuture<T> handleException(Supplier<CompletableFuture<T>> futureFactory) {
+    private static String formatCloseReason(Throwable e) {
+        return cutLongerThan(extractExceptionMessage(rootCause(e)),
+                WS_CLOSE_REASON_LIMIT);
+    }
+
+    private static String extractExceptionMessage(Throwable e) {
+        if (e instanceof JadEx) {
+            return  ((JadEx) e).getClientMessage().getMessage();
+        }
+        return e.getMessage();
+    }
+
+    protected <T> CompletableFuture<T> handleException(
+            Supplier<CompletableFuture<T>> futureFactory) {
         try {
             return futureFactory.get().exceptionally(e -> {
                 onError(e);

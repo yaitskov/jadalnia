@@ -8,7 +8,6 @@ import org.jooq.DSLContext;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.ws.rs.NotFoundException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -16,6 +15,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.jooq.Tables.USERS;
 import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
+import static org.dan.jadalnia.sys.error.JadEx.notFound;
 
 @Slf4j
 @FieldDefaults(makeFinal = true)
@@ -62,6 +62,6 @@ public class UserDao {
                         .userType(r.getValue(USERS.TYPE))
                         .fid(r.getValue(USERS.FESTIVAL_ID))
                         .build())
-                .orElseThrow(() -> new NotFoundException("user is not known")));
+                .orElseThrow(() -> notFound("session is not valid", "session", userSession.toString())));
     }
 }

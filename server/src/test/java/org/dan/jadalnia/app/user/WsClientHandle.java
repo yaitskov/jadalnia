@@ -1,6 +1,12 @@
 package org.dan.jadalnia.app.user;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.test.ws.WsHandler;
 import org.eclipse.jetty.websocket.api.Session;
@@ -11,6 +17,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import javax.websocket.CloseReason;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -19,14 +27,23 @@ import static javax.websocket.CloseReason.CloseCodes.getCloseCode;
 
 @Slf4j
 @WebSocket
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class WsClientHandle implements WsHandler {
-    private Optional<Session> oSession;
-    public final CompletableFuture<CloseReason> closeReasonF
-            = new CompletableFuture<>();
+    @Getter
+    Map<String, String> headers;
+    CompletableFuture<CloseReason> closeReasonF = new CompletableFuture<>();
+
+    @NonFinal
+    Optional<Session> oSession;
+
+    public WsClientHandle() {
+        this(Collections.emptyMap());
+    }
 
     @SneakyThrows
     public CloseReason waitTillClosed() {
-        return closeReasonF.get(11L, TimeUnit.SECONDS);
+        return closeReasonF.get(110000L, TimeUnit.SECONDS);
     }
 
     @OnWebSocketConnect
