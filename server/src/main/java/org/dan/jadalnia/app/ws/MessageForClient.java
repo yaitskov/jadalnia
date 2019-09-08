@@ -2,7 +2,6 @@ package org.dan.jadalnia.app.ws;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.dan.jadalnia.app.ws.PropertyUpdated;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,

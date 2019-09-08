@@ -1,13 +1,20 @@
 package org.dan.jadalnia.test.ws;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.dan.jadalnia.mock.MyRest;
+import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.junit.After;
 import org.junit.Before;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.ext.ContextResolver;
 import java.net.URI;
 
 import static org.dan.jadalnia.test.ws.EmbeddedJetty.EMBEDDED_JETTY;
@@ -16,16 +23,30 @@ import static org.springframework.util.SocketUtils.findAvailableTcpPort;
 @Slf4j
 public abstract class WsIntegrationTest {
     private WebSocketClient wsClient;
+    private Client httpClient;
+
+    private void initHttpClient() {
+        httpClient = ClientBuilder.newBuilder()
+                .register(new ContextResolver<ObjectMapper>() {
+                    public ObjectMapper getContext(Class<?> type) {
+                        return ObjectMapperProvider.get();
+                    }
+                })
+                .register(JacksonFeature.class)
+                .build();
+    }
 
     @Before
     public void setUp() {
         EMBEDDED_JETTY.ensureServerRunningOn(getWsPort());
         startWsClient();
+        initHttpClient();
     }
 
     @After
     public void tearDown() {
         stopWsClient();
+        httpClient.close();
     }
 
     @SneakyThrows
@@ -54,6 +75,11 @@ public abstract class WsIntegrationTest {
         return ALLOCATED_PORT;
     }
 
+    @SneakyThrows
+    protected MyRest myRest() {
+        return new MyRest(httpClient, new URI(baseHttpUrl()));
+    }
+
     protected String baseHttpUrl() {
         return "http://localhost:" + getWsPort();
     }
@@ -71,5 +97,9 @@ public abstract class WsIntegrationTest {
                 new URI("ws://localhost:" + getWsPort() + urlPath),
                 upgradeReq);
         return wsHandler;
+    }
+
+    protected <T extends WsHandler> T bindCustomerWsHandler(T wsHandler) {
+        return bindWsHandler("/ws/customer", wsHandler);
     }
 }

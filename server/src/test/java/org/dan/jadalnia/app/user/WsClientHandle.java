@@ -1,14 +1,18 @@
 package org.dan.jadalnia.app.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.dan.jadalnia.app.ws.MessageForClient;
+import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
+import org.dan.jadalnia.test.match.PredicateStateMatcher;
+import org.dan.jadalnia.test.match.StateMatcher;
 import org.dan.jadalnia.test.ws.WsHandler;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -16,6 +20,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.jetbrains.annotations.NotNull;
 
 import javax.websocket.CloseReason;
 import java.io.InputStream;
@@ -24,8 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static javax.websocket.CloseReason.CloseCodes.getCloseCode;
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
@@ -34,25 +39,43 @@ import static org.dan.jadalnia.app.auth.AuthService.SESSION;
 @WebSocket
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class WsClientHandle implements WsHandler {
+public class WsClientHandle<T> implements WsHandler {
+    TypeReference<T> baseMsgClass;
+    ObjectMapper objectMapper;
     @Getter
     Map<String, String> headers;
     CompletableFuture<CloseReason> closeReasonF = new CompletableFuture<>();
+    StateMatcher<T> inMessageMatcher;
 
     @NonFinal
     Optional<Session> oSession;
 
-    public WsClientHandle(UserSession session) {
-        this(singletonMap(SESSION, session.toString()));
+    public static <T extends MessageForClient> WsClientHandle<T> wsClientHandle(
+            UserSession session,
+            StateMatcher<T> inMessageMatcher) {
+        return new WsClientHandle<>(
+                new TypeReference<T>() {},
+                ObjectMapperProvider.get(),
+                singletonMap(SESSION, session.toString()),
+                inMessageMatcher);
     }
 
-    public WsClientHandle() {
-        this(Collections.emptyMap());
+    public static WsClientHandle<MessageForClient> anonymousHandler() {
+        return new WsClientHandle<>(
+                new TypeReference<MessageForClient>() {},
+                ObjectMapperProvider.get(),
+                Collections.emptyMap(),
+                voidPredicate());
+    }
+
+    @NotNull
+    public static StateMatcher<MessageForClient> voidPredicate() {
+        return new PredicateStateMatcher<>(o -> false, new CompletableFuture<>());
     }
 
     @SneakyThrows
     public CloseReason waitTillClosed() {
-        return closeReasonF.get(110000L, TimeUnit.SECONDS);
+        return closeReasonF.get(11L, TimeUnit.SECONDS);
     }
 
     @OnWebSocketConnect
@@ -63,11 +86,12 @@ public class WsClientHandle implements WsHandler {
     @SneakyThrows
     @OnWebSocketMessage
     public void onBinMessage(InputStream msg) {
-        onMessage(IOUtils.toString(msg, UTF_8));
+        onMessage(objectMapper.readValue(msg, baseMsgClass));
     }
 
-    public void onMessage(String msg) {
+    public void onMessage(T msg) {
         log.info("Client ws has got message [{}]", msg);
+        inMessageMatcher.was(msg);
     }
 
     @OnWebSocketError
@@ -83,5 +107,14 @@ public class WsClientHandle implements WsHandler {
 
     public void close() {
         oSession.ifPresent(Session::close);
+    }
+
+    @SneakyThrows
+    public T waitTillMatcherSatisfied() {
+        try {
+            return inMessageMatcher.satisfied().get(11L, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            throw inMessageMatcher.report();
+        }
     }
 }

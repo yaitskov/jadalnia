@@ -7,19 +7,20 @@ import lombok.val;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.mock.MyRest;
+import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
-import static org.dan.jadalnia.app.festival.pojo.FestivalState.Announce;
-import static org.dan.jadalnia.app.user.WsClientHandle.wsClientHandle;
-import static org.dan.jadalnia.test.match.PredicateStateMatcher.passIf;
+import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
+import static org.dan.jadalnia.app.festival.pojo.FestivalState.Open;
 
 @Slf4j
-public class CustomerGetsFestivalStatusOnConnectTest
+public class CustomerGetsFestivalStatusOnUpdateTest
         extends WsIntegrationTest {
     public static UserSession registerCustomer(Fid fid, String key, MyRest myRest) {
         return registerUser(fid, key, myRest, UserType.Customer);
@@ -50,11 +51,15 @@ public class CustomerGetsFestivalStatusOnConnectTest
         val customerSession = registerCustomer(
                 festival.getFid(), genUserKey(), myRest());
 
-        val wsHandler = wsClientHandle(customerSession,
-                passIf((PropertyUpdated event)
-                        -> event.getNewValue().equals(Announce.name())));
+        val wsHandler = WsClientHandle.wsClientHandle(
+                customerSession,
+                new PredicateStateMatcher<PropertyUpdated<String>>(
+                        event -> event.getNewValue().equals(Open.name()),
+                        new CompletableFuture<>()));
 
         bindCustomerWsHandler(wsHandler);
+
+        setState(myRest(), festival.getSession(), Open);
 
         wsHandler.waitTillMatcherSatisfied();
     }

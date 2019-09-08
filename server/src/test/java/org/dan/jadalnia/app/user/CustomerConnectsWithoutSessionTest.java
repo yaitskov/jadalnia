@@ -10,6 +10,7 @@ import org.junit.Test;
 import javax.websocket.CloseReason;
 
 import static javax.websocket.CloseReason.CloseCodes.VIOLATED_POLICY;
+import static org.dan.jadalnia.app.user.WsClientHandle.anonymousHandler;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -22,7 +23,9 @@ public class CustomerConnectsWithoutSessionTest
     @Test
     @SneakyThrows
     public void serverClosesConnection() {
-        assertThat(bindWsHandler("/ws/customer", new WsClientHandle()).waitTillClosed(),
+        assertThat(
+                bindWsHandler("/ws/customer", anonymousHandler())
+                        .waitTillClosed(),
                 expectErrnoWsCloseReason("Header [session] is missing"));
     }
 

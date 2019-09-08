@@ -39,10 +39,6 @@ public class MyRest {
         return client.target(baseUri);
     }
 
-    public <T> void voidPost(String path, Optional<UserSession> session, T entity) {
-        post(path, session, entity, String.class);
-    }
-
     public <T, R> R anonymousPost(String path, T entity, Class<R> respClass) {
         return post(path, Optional.empty(), entity, respClass);
     }
@@ -94,11 +90,6 @@ public class MyRest {
 
     public <T> Response post(String path, Map<String, String> headers, T entity) {
         return postBuilder(path, headers)
-                .post(Entity.entity(entity, APPLICATION_JSON));
-    }
-
-    public <T> Response post(String path, T entity) {
-        return request().path(path).request(APPLICATION_JSON)
                 .post(Entity.entity(entity, APPLICATION_JSON));
     }
 
