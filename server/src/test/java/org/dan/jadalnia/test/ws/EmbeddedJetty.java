@@ -5,10 +5,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dan.jadalnia.app.user.customer.CustomerWsListener;
+import org.dan.jadalnia.sys.JerseyConfig;
 import org.dan.jadalnia.sys.ctx.AppContext;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.glassfish.jersey.servlet.ServletContainer;
 import org.springframework.web.context.ContextLoaderListener;
 
 import java.util.Set;
@@ -38,6 +41,14 @@ public class EmbeddedJetty {
         val webAppCtx = createWebAppCtx(singletonList(AppContext.class));
         contextHandler.addEventListener(new ContextLoaderListener(webAppCtx));
         contextHandler.setContextPath("/");
+
+//        val resourceConfig = new ResourceConfig(FestivalResource.class, UserResource.class);
+//        resourceConfig.register(JacksonFeature.class);
+
+        val servletContainer = new ServletContainer(new JerseyConfig());
+        val servletHolder = new ServletHolder(servletContainer);
+
+        contextHandler.addServlet(servletHolder, "/*");
         contextHandler.setInitParameter("contextConfigLocation", "");
         jettyServer.setHandler(contextHandler);
 

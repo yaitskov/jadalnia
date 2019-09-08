@@ -23,7 +23,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Collections.singletonMap;
 import static javax.websocket.CloseReason.CloseCodes.getCloseCode;
+import static org.dan.jadalnia.app.auth.AuthService.SESSION;
 
 @Slf4j
 @WebSocket
@@ -36,6 +38,10 @@ public class WsClientHandle implements WsHandler {
 
     @NonFinal
     Optional<Session> oSession;
+
+    public WsClientHandle(UserSession session) {
+        this(singletonMap(SESSION, session.toString()));
+    }
 
     public WsClientHandle() {
         this(Collections.emptyMap());
@@ -65,5 +71,9 @@ public class WsClientHandle implements WsHandler {
     public void onClose(int code, String reason) {
         log.info("Client ws is closed {} {}", code, reason);
         closeReasonF.complete(new CloseReason(getCloseCode(code), reason));
+    }
+
+    public void close() {
+        oSession.ifPresent(Session::close);
     }
 }

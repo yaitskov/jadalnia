@@ -34,6 +34,8 @@ import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 @FieldDefaults(makeFinal = true)
 @RequiredArgsConstructor(onConstructor = @__(@Inject))
 public class FestivalService {
+    public static final String FESTIVAL_STATE = "festival.state";
+
     FestivalDao festivalDao;
     UserDao userDao;
     @Named(FESTIVAL_CACHE)
@@ -64,7 +66,7 @@ public class FestivalService {
         festivalDao.setState(festival.getInfo().get().getFid(), newState)
                 .thenRunAsync(() -> wsBroadcast.broadcast(festival.getInfo().get().getFid(),
                         PropertyUpdated.builder()
-                                .name("festival.state")
+                                .name(FESTIVAL_STATE)
                                 .newValue(newState)
                                 .build()));
         return completedFuture(oldV.getState() != newState);

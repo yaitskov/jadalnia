@@ -3,6 +3,7 @@ package org.dan.jadalnia.mock;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import org.apache.commons.io.IOUtils;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
@@ -17,10 +18,13 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
@@ -35,25 +39,21 @@ public class MyRest {
         return client.target(baseUri);
     }
 
-    public <T> void voidPost(String path, SessionAware userSession, T entity) {
-        voidPost(path, userSession.getSession(), entity);
+    public <T> void voidPost(String path, Optional<UserSession> session, T entity) {
+        post(path, session, entity, String.class);
     }
 
-    public <T> void voidPost(String path, String session, T entity) {
-        post(path, () -> session, entity, String.class);
+    public <T, R> R anonymousPost(String path, T entity, Class<R> respClass) {
+        return post(path, Optional.empty(), entity, respClass);
     }
 
-    public <T> void voidAnonymousPost(String path, T entity) {
-        assertThat(post(path, "anonymous", entity).getStatus(), lessThan(205));
-    }
-
-    public <T> Response post(String path, SessionAware sessionAware, T entity) {
-        return post(path, sessionAware.getSession(), entity);
+    public <T, R> R post(String path, UserSession session, T entity, Class<R> respClass) {
+        return post(path, Optional.of(session), entity, respClass);
     }
 
     @SneakyThrows
-    public <T, R> R post(String path, SessionAware sessionAware, T entity, Class<R> respClass) {
-        final Response response = post(path, sessionAware.getSession(), entity);
+    public <T, R> R post(String path, Optional<UserSession> session, T entity, Class<R> respClass) {
+        final Response response = post(path, session, entity);
         switch (response.getStatus()) {
             case 200:
             case 201:
@@ -68,22 +68,32 @@ public class MyRest {
                                 + path + "] with ["
                                 + om.writeValueAsString(entity)
                                 + "] responded [" + response.getStatus() + "] ["
-                                + IOUtils.toString((InputStream) response.getEntity(), UTF_8)),
+                                + response.getStatusInfo().getReasonPhrase() + "] ["
+                                + IOUtils.toString((InputStream) response.getEntity() , UTF_8)
+                                + "]"
+                        ),
                         null);
         }
     }
 
-    public <T> Invocation.Builder postBuilder(String path, String session) {
-        return request().path(path).request(APPLICATION_JSON)
-                .header(SESSION, session);
+    public <T> Invocation.Builder postBuilder(
+            String path, Map<String, String> headers) {
+        val request = request().path(path).request(APPLICATION_JSON);
+        headers.forEach(request::header);
+        return request;
     }
 
-    public <T> Response post(String path, UserSession session, T entity) {
-        return post(path, session.toString(), entity);
+    public <T> Response post(
+            String path, Optional<UserSession> session, T entity) {
+        return post(path,
+                session.map(UserSession::toString)
+                        .map(sessionKey -> singletonMap(SESSION, sessionKey))
+                        .orElseGet(Collections::emptyMap),
+                entity);
     }
 
-    public <T> Response post(String path, String session, T entity) {
-        return postBuilder(path, session)
+    public <T> Response post(String path, Map<String, String> headers, T entity) {
+        return postBuilder(path, headers)
                 .post(Entity.entity(entity, APPLICATION_JSON));
     }
 

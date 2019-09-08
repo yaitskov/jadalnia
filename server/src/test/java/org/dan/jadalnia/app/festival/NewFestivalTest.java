@@ -24,14 +24,15 @@ import static org.junit.Assert.assertThat;
 @ContextConfiguration(classes = TestCtx.class)
 public class NewFestivalTest extends AbstractSpringJerseyTest {
     public static CreatedFestival createFestival(String key, MyRest myRest) {
-        return myRest.post(FESTIVAL_CREATE,
+        return myRest.anonymousPost(FESTIVAL_CREATE,
                 NewFestival
                         .builder()
                         .opensAt(Instant.now())
                         .name(label("festival"))
                         .userName(label("user"))
                         .userKey(key)
-                        .build()).readEntity(CreatedFestival.class);
+                        .build(),
+                CreatedFestival.class);
     }
 
     @Test

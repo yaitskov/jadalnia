@@ -54,6 +54,10 @@ public abstract class WsIntegrationTest {
         return ALLOCATED_PORT;
     }
 
+    protected String baseHttpUrl() {
+        return "http://localhost:" + getWsPort();
+    }
+
     @SneakyThrows
     protected <T extends WsHandler> T bindWsHandler(
             String urlPath, T wsHandler) {

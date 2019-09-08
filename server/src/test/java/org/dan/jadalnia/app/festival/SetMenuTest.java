@@ -32,7 +32,8 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
     static final DishName FRYTKI = new DishName("Frytki");
 
     public static int setMenu(MyRest myRest, UserSession session) {
-        return myRest.post(FESTIVAL_MENU, session,
+        return myRest.post(FESTIVAL_MENU,
+                session,
                 singletonList(
                         MenuItem
                                 .builder()
@@ -43,8 +44,8 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
                                         .name(new DishName("sos ostry"))
                                         .build()))
                                 .description("fried potatoes")
-                                .build()))
-                        .readEntity(Integer.class);
+                                .build()),
+                Integer.class);
     }
 
     public static List<MenuItem> getMenu(MyRest myRest, Fid fid) {

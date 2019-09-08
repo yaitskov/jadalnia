@@ -25,7 +25,7 @@ import static org.junit.Assert.assertThat;
 @ContextConfiguration(classes = TestCtx.class)
 public class SetFestivalStateTest extends AbstractSpringJerseyTest {
     public static boolean setState(MyRest myRest, UserSession session, FestivalState state) {
-        return myRest.post(FESTIVAL_STATE, session, state).readEntity(Boolean.class);
+        return myRest.post(FESTIVAL_STATE, session, state, Boolean.class);
     }
 
     public static FestivalState getState(MyRest myRest, Fid fid) {
