@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.dan.jadalnia.test.ws.WsHandler;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
@@ -17,12 +18,14 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import javax.websocket.CloseReason;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static javax.websocket.CloseReason.CloseCodes.getCloseCode;
 import static org.dan.jadalnia.app.auth.AuthService.SESSION;
@@ -57,7 +60,12 @@ public class WsClientHandle implements WsHandler {
         oSession = Optional.of(session);
     }
 
+    @SneakyThrows
     @OnWebSocketMessage
+    public void onBinMessage(InputStream msg) {
+        onMessage(IOUtils.toString(msg, UTF_8));
+    }
+
     public void onMessage(String msg) {
         log.info("Client ws has got message [{}]", msg);
     }

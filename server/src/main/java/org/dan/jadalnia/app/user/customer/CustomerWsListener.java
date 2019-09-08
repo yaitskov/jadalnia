@@ -1,16 +1,20 @@
 package org.dan.jadalnia.app.user.customer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.dan.jadalnia.app.festival.FestivalService;
 import org.dan.jadalnia.app.user.UserInfo;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.app.user.UserType;
+import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.app.ws.WsBroadcast;
 import org.dan.jadalnia.app.ws.WsHandlerConfigurator;
 import org.dan.jadalnia.app.ws.WsListener;
 import org.dan.jadalnia.app.ws.WsSession;
 import org.dan.jadalnia.sys.error.JadEx;
+import org.dan.jadalnia.util.Futures;
 import org.dan.jadalnia.util.collection.AsyncCache;
 
 import javax.inject.Inject;
@@ -45,6 +49,10 @@ public class CustomerWsListener implements WsListener {
     @Inject
     @Named(USER_SESSIONS)
     AsyncCache<UserSession, UserInfo> userSessions;
+    @Inject
+    ObjectMapper objectMapper;
+    @Inject
+    FestivalService festivalService;
 
     Optional<WsSession> oSession = Optional.empty();
     Optional<UserSession> oUserSession = Optional.empty();
@@ -72,7 +80,7 @@ public class CustomerWsListener implements WsListener {
             oUserSession = Optional.of(
                     getSession().header(SESSION, UserSession::valueOf));
 
-            return userSessions.get(getUserSession()).thenAccept(userInfo -> {
+            return userSessions.get(getUserSession()).thenCompose(userInfo -> {
                 if (userInfo.getUserType() != UserType.Customer) {
                     throw badRequest("Just Customers are expected");
                 }
@@ -90,8 +98,28 @@ public class CustomerWsListener implements WsListener {
                         userInfo.getFid());
 
                 oUserInfo = Optional.of(userInfo);
+
+                return sendFestivalStatus();
             });
         });
+    }
+
+    private CompletableFuture<Void> sendFestivalStatus() {
+        return oUserInfo.map(UserInfo::getFid)
+                .map(fid -> festivalService.getState(fid).thenCompose(state ->
+                        send(PropertyUpdated
+                                .builder()
+                                .name(FestivalService.FESTIVAL_STATE)
+                                .newValue(state)
+                                .build())))
+                .orElseGet(Futures::voidF);
+    }
+
+    @SneakyThrows
+    public <T> CompletableFuture<Void> send(T msgToClient) {
+        log.info("Send [{}] to ws client {}",
+                msgToClient, oUserInfo.map(UserInfo::getUid));
+        return send(objectMapper.writeValueAsBytes(msgToClient));
     }
 
     @OnMessage
