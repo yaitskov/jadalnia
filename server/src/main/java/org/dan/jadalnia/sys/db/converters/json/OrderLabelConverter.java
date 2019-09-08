@@ -3,9 +3,9 @@ package org.dan.jadalnia.sys.db.converters.json;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
 import org.jooq.Converter;
 
-public class OrderLabelConverter implements Converter<String, OrderLabel> {
+public class OrderLabelConverter implements Converter<Integer, OrderLabel> {
     @Override
-    public OrderLabel from(String s) {
+    public OrderLabel from(Integer s) {
         if (s == null) {
             return null;
         }
@@ -13,16 +13,16 @@ public class OrderLabelConverter implements Converter<String, OrderLabel> {
     }
 
     @Override
-    public String to(OrderLabel l) {
+    public Integer to(OrderLabel l) {
         if (l == null) {
             return null;
         }
-        return l.getName();
+        return l.getId();
     }
 
     @Override
-    public Class<String> fromType() {
-        return String.class;
+    public Class<Integer> fromType() {
+        return Integer.class;
     }
 
     @Override

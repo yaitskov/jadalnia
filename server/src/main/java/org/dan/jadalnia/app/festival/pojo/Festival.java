@@ -13,6 +13,7 @@ import org.dan.jadalnia.app.user.Uid;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Getter
@@ -26,4 +27,9 @@ public class Festival {
     Map<Oid, Uid> kelnersProcessingOrders;
 
     AtomicLongMap<DishName> requiredItems;
+    AtomicInteger nextLabel;
+
+    public Fid fid() {
+        return info.get().getFid();
+    }
 }

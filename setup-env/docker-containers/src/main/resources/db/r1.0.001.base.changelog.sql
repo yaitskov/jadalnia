@@ -23,7 +23,7 @@ create table users(
 
 create table orders (
     oid int(11) not null auto_increment primary key,
-    label varchar(10) not null,
+    label int(11) not null,
     festival_id int(11) not null,
     kelner_id int(11) null,
     customer_id int(11) not null,
@@ -33,6 +33,16 @@ create table orders (
     foreign key (customer_id) references users(uid),
     foreign key (festival_id) references festival(fid),
     foreign key (kelner_id) references users(uid)
+);
+
+create table labels (
+    festival_id int(11) not null,
+    label int(11) not null,
+    oid int(11) null,
+    created timestamp(3) default current_timestamp(3),
+    foreign key (oid) references orders(oid),
+    foreign key (festival_id) references festival(fid),
+    primary key (festival_id, label)
 );
 
 --rollback

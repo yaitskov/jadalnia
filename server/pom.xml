@@ -466,6 +466,11 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
                                 </customType>
                                 <customType>
+                                    <name>OrderLabel</name>
+                                    <type>org.dan.jadalnia.app.order.pojo.OrderLabel</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.json.OrderLabelConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>Uid</name>
                                     <type>org.dan.jadalnia.app.user.Uid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.UidConverter</binding>
@@ -602,6 +607,26 @@
                                 <forcedType>
                                     <name>Fid</name>
                                     <expression>.*orders\.festival_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>OrderLabel</name>
+                                    <expression>.*labels\.label</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Fid</name>
+                                    <expression>.*labels\.festival_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*labels\.created</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Oid</name>
+                                    <expression>.*labels\.oid</expression>
                                     <types>.*</types>
                                 </forcedType>
                             </forcedTypes>
