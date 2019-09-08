@@ -1,6 +1,6 @@
 package org.dan.jadalnia.sys.db.converters.json;
 
-import org.dan.jadalnia.app.festival.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.order.pojo.OrderLabel;
 import org.jooq.Converter;
 
 public class OrderLabelConverter implements Converter<String, OrderLabel> {

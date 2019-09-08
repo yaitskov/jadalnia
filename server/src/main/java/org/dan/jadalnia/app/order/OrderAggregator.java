@@ -1,9 +1,9 @@
-package org.dan.jadalnia.app.festival.order;
+package org.dan.jadalnia.app.order;
 
 import com.google.common.util.concurrent.AtomicLongMap;
 import lombok.val;
 import org.dan.jadalnia.app.festival.menu.DishName;
-import org.dan.jadalnia.app.festival.order.pojo.PaidOrder;
+import org.dan.jadalnia.app.order.pojo.PaidOrder;
 
 import java.util.Collection;
 

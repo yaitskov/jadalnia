@@ -1,4 +1,4 @@
-package org.dan.jadalnia.app.festival.order;
+package org.dan.jadalnia.app.order;
 
 import org.springframework.context.annotation.Import;
 

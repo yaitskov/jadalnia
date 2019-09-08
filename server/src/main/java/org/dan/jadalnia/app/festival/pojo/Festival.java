@@ -7,8 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.dan.jadalnia.app.festival.menu.DishName;
-import org.dan.jadalnia.app.festival.order.pojo.Oid;
-import org.dan.jadalnia.app.festival.order.pojo.PaidOrder;
+import org.dan.jadalnia.app.order.pojo.Oid;
+import org.dan.jadalnia.app.order.pojo.PaidOrder;
 import org.dan.jadalnia.app.user.Uid;
 
 import java.util.LinkedHashMap;

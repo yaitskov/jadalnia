@@ -1,4 +1,4 @@
-package org.dan.jadalnia.app.festival.order.pojo;
+package org.dan.jadalnia.app.order.pojo;
 
 import lombok.Getter;
 import lombok.Setter;

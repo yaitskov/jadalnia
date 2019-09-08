@@ -1,4 +1,4 @@
-package org.dan.jadalnia.app.festival.order;
+package org.dan.jadalnia.app.order;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.auth.AuthService;

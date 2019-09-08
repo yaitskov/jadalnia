@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.festival.FestivalDao;
 import org.dan.jadalnia.app.festival.pojo.Festival;
 import org.dan.jadalnia.app.festival.pojo.Fid;
-import org.dan.jadalnia.app.festival.order.OrderAggregator;
-import org.dan.jadalnia.app.festival.order.OrderDao;
+import org.dan.jadalnia.app.order.OrderAggregator;
+import org.dan.jadalnia.app.order.OrderDao;
 import org.dan.jadalnia.app.ws.WsBroadcast;
 
 import javax.inject.Inject;

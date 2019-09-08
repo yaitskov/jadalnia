@@ -462,7 +462,7 @@
                             <customTypes>
                                 <customType>
                                     <name>Oid</name>
-                                    <type>org.dan.jadalnia.app.festival.order.pojo.Oid</type>
+                                    <type>org.dan.jadalnia.app.order.pojo.Oid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
                                 </customType>
                                 <customType>
@@ -487,13 +487,13 @@
                                 </customType>
                                 <customType>
                                     <name>OrderItems</name>
-                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.order.pojo.OrderItem&gt;</type>
+                                    <type>java.util.List&lt;org.dan.jadalnia.app.order.pojo.OrderItem&gt;</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.json.OrderItemsConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>OrderState</name>
-                                    <type>org.dan.jadalnia.app.festival.order.pojo.OrderState</type>
-                                    <binding>org.dan.jadalnia.app.festival.order.OrderStateConverter</binding>
+                                    <type>org.dan.jadalnia.app.order.pojo.OrderState</type>
+                                    <binding>org.dan.jadalnia.app.order.OrderStateConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>UserType</name>

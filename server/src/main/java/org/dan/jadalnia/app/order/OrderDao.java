@@ -1,11 +1,11 @@
-package org.dan.jadalnia.app.festival.order;
+package org.dan.jadalnia.app.order;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.dan.jadalnia.app.festival.order.pojo.Oid;
-import org.dan.jadalnia.app.festival.order.pojo.OrderLabel;
-import org.dan.jadalnia.app.festival.order.pojo.PaidOrder;
+import org.dan.jadalnia.app.order.pojo.Oid;
+import org.dan.jadalnia.app.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.order.pojo.PaidOrder;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.jooq.DSLContext;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toMap;
-import static org.dan.jadalnia.app.festival.order.pojo.OrderState.Paid;
+import static org.dan.jadalnia.app.order.pojo.OrderState.Paid;
 import static org.dan.jadalnia.jooq.Tables.ORDERS;
 import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 

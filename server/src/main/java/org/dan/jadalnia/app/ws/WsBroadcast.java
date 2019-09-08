@@ -6,9 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
-import org.dan.jadalnia.app.festival.pojo.Festival;
 import org.dan.jadalnia.app.festival.pojo.Fid;
-import org.dan.jadalnia.app.festival.order.pojo.Oid;
+import org.dan.jadalnia.app.order.pojo.Oid;
 import org.dan.jadalnia.app.user.Uid;
 
 import javax.inject.Inject;

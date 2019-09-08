@@ -1,6 +1,6 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import org.dan.jadalnia.app.festival.order.pojo.Oid;
+import org.dan.jadalnia.app.order.pojo.Oid;
 
 public class OidConverter extends TypedIdConverter<Oid> {
     public OidConverter() {

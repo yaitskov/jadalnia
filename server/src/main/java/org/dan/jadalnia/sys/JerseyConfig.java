@@ -4,7 +4,7 @@ package org.dan.jadalnia.sys;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.dan.jadalnia.app.auth.AuthResource;
 import org.dan.jadalnia.app.festival.FestivalResource;
-import org.dan.jadalnia.app.festival.order.OrderResource;
+import org.dan.jadalnia.app.order.OrderResource;
 import org.dan.jadalnia.app.user.UserResource;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperContextResolver;
 import org.dan.jadalnia.sys.error.DefaultExceptionMapper;
