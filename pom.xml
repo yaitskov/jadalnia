@@ -28,6 +28,7 @@
     <modules>
         <module>build-parent</module>
         <module>setup-env</module>
+        <module>kot</module>
         <module>server</module>
     </modules>
 </project>

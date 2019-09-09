@@ -11,7 +11,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor(onConstructor = @__(@JsonCreator))
-public class MutableNumber extends AbstractNumber {
+public class MutableNumber extends AbstractNum {
     private int value;
 
     @Override
