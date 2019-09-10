@@ -7,7 +7,7 @@ import org.dan.jadalnia.sys.type.number.ImmutableNumber;
 
 import javax.validation.constraints.Min;
 
-class Fid @JsonCreator constructor(v: Int): ImmutableNumber(v) {
+class Fid(v: Int): ImmutableNumber(v) {
     companion object {
         const val FESTIVAL_ID_SHOULD_BE_A_POSITIVE_NUMBER
                 = "festival id should be a positive number"
@@ -16,6 +16,7 @@ class Fid @JsonCreator constructor(v: Int): ImmutableNumber(v) {
         @JsonCreator // jax-rsp
         fun valueOf(s: String): Fid = Fid(Integer.valueOf(s))
         @JvmStatic
+        @JsonCreator
         fun of(id: Int): Fid = Fid(id)
     }
 

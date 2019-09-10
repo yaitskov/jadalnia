@@ -1,5 +1,5 @@
 package org.dan.jadalnia.app.user;
 
-public enum UserType {
+enum class UserType {
     Admin, Kelner, Kasier, Customer, Cook
 }

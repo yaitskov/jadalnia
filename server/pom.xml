@@ -14,17 +14,13 @@
     <name>server</name>
     <url>http://maven.apache.org</url>
     <properties>
-        <skip.jooq>false</skip.jooq>
         <httpcomponents.version>4.5.2</httpcomponents.version>
-        <jooq.version>3.8.4</jooq.version>
         <aspectj.version>1.8.8</aspectj.version>
         <jersey.version>2.22.2</jersey.version>
-        <mysql-connector-java.version>8.0.11</mysql-connector-java.version>
         <restassured.version>3.0.1</restassured.version>
         <http.port>8080</http.port>
         <debug.port>5008</debug.port>
         <jacoco.version>0.7.6.201602180812</jacoco.version>
-        <mysql.port>3306</mysql.port>
         <sandbox.env.prop.file>docker-env.properties</sandbox.env.prop.file>
         <simulationProfile>false</simulationProfile>
     </properties>
@@ -39,6 +35,16 @@
         <dependency>
             <groupId>org.dan.jadalnia</groupId>
             <artifactId>kot</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dan.jadalnia</groupId>
+            <artifactId>service</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dan.jadalnia</groupId>
+            <artifactId>jooq</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -288,6 +294,11 @@
             <version>${jackson.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+            <version>2.10.0.pr2</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jdk8</artifactId>
             <version>${jackson.version}</version>
@@ -414,236 +425,6 @@
                 <version>2.6</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen-maven</artifactId>
-                <version>${jooq.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${mysql-connector-java.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jooq</groupId>
-                        <artifactId>jooq-codegen</artifactId>
-                        <version>${jooq.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jooq</groupId>
-                        <artifactId>jooq-meta</artifactId>
-                        <version>${jooq.version}</version>
-                    </dependency>
-                </dependencies>
-
-                <!-- The plugin should hook into the generate goal -->
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <skip>${skip.jooq}</skip>
-                    <jdbc>
-                        <driver>com.mysql.cj.jdbc.Driver</driver>
-                        <url>jdbc:mysql://127.0.0.1:${mysql.port}/jadalnia?characterEncoding=utf8&amp;useSSL=false&amp;serverTimezone=GMT</url>
-                        <user>root</user>
-                        <password>root</password>
-                    </jdbc>
-                    <generator>
-                        <database>
-                            <name>org.jooq.util.mysql.MySQLDatabase</name>
-                            <includes>.*</includes>
-                            <schemata>
-                                <schema>
-                                    <inputSchema>jadalnia</inputSchema>
-                                </schema>
-                            </schemata>
-                            <customTypes>
-                                <customType>
-                                    <name>Oid</name>
-                                    <type>org.dan.jadalnia.app.order.pojo.Oid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OrderLabel</name>
-                                    <type>org.dan.jadalnia.app.order.pojo.OrderLabel</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.json.OrderLabelConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Uid</name>
-                                    <type>org.dan.jadalnia.app.user.Uid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.UidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Fid</name>
-                                    <type>org.dan.jadalnia.app.festival.pojo.Fid</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.num.FidConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>Instant</name>
-                                    <type>java.time.Instant</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.InstantToTimestampConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>MenuItems</name>
-                                    <type>java.util.List&lt;org.dan.jadalnia.app.festival.menu.MenuItem&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.json.MenuItemsConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OrderItems</name>
-                                    <type>java.util.List&lt;org.dan.jadalnia.app.order.pojo.OrderItem&gt;</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.json.OrderItemsConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>OrderState</name>
-                                    <type>org.dan.jadalnia.app.order.pojo.OrderState</type>
-                                    <binding>org.dan.jadalnia.app.order.OrderStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>UserType</name>
-                                    <type>org.dan.jadalnia.app.user.UserType</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.enums.UserTypeConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>UserState</name>
-                                    <type>org.dan.jadalnia.app.user.UserState</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.enums.UserStateConverter</binding>
-                                </customType>
-                                <customType>
-                                    <name>FestivalState</name>
-                                    <type>org.dan.jadalnia.app.festival.pojo.FestivalState</type>
-                                    <binding>org.dan.jadalnia.sys.db.converters.enums.FestivalStateConverter</binding>
-                                </customType>
-                            </customTypes>
-                            <forcedTypes>
-                                <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*users\.festival_id</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>UserType</name>
-                                    <expression>.*users\.type</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>UserState</name>
-                                    <expression>.*users\.state</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*users\.uid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*users\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*festival\.opens_at</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*festival\.fid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>MenuItems</name>
-                                    <expression>.*festival\.menu</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*festival\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>FestivalState</name>
-                                    <expression>.*festival\.state</expression>
-                                    <types>.*</types>
-                                </forcedType>
-
-                                <forcedType>
-                                    <name>OrderState</name>
-                                    <expression>.*orders\.state</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OrderItems</name>
-                                    <expression>.*orders\.requirements</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Oid</name>
-                                    <expression>.*orders\.oid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*orders\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OrderLabel</name>
-                                    <expression>.*orders\.label</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*orders\.customer_id</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Uid</name>
-                                    <expression>.*orders\.kelner_id</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*orders\.festival_id</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>OrderLabel</name>
-                                    <expression>.*labels\.label</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Fid</name>
-                                    <expression>.*labels\.festival_id</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Instant</name>
-                                    <expression>.*labels\.created</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                                <forcedType>
-                                    <name>Oid</name>
-                                    <expression>.*labels\.oid</expression>
-                                    <types>.*</types>
-                                </forcedType>
-                            </forcedTypes>
-                        </database>
-                        <generate>
-                            <relations>true</relations>
-                        </generate>
-                        <target>
-                            <packageName>org.dan.jadalnia.jooq</packageName>
-                            <directory>target/generated-sources/</directory>
-                        </target>
-                    </generator>
                 </configuration>
             </plugin>
         </plugins>

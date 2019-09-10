@@ -36,14 +36,14 @@ public class FestivalCacheLoader extends CacheLoader<Fid, CompletableFuture<Fest
             return labelDao.maxOrderNumber(fid)
                     .thenCompose(maxId -> {
                         return orderDao.loadPaid(fid).thenCompose(paidOrders -> {
-                            return completedFuture(Festival
-                                    .builder()
-                                    .info(new AtomicReference<>(festInfo))
-                                    .paidOrders(paidOrders)
-                                    .nextLabel(new AtomicInteger(maxId.getId() + 1))
-                                    .requiredItems(orderAggregator.aggregate(paidOrders.values()))
-                                    .kelnersProcessingOrders(wsBroadcast.busyKelners(fid))
-                                    .build());
+                            return completedFuture(
+                                    new Festival(
+                                            new AtomicReference<>(festInfo),
+                                            paidOrders,
+                                            wsBroadcast.busyKelners(fid),
+                                            orderAggregator.aggregate(
+                                                    paidOrders.values()),
+                                            new AtomicInteger(maxId.getId() + 1)));
                         });
                     });
         });

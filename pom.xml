@@ -29,6 +29,8 @@
         <module>build-parent</module>
         <module>setup-env</module>
         <module>kot</module>
+        <module>jooq</module>
+        <module>service</module>
         <module>server</module>
     </modules>
 </project>

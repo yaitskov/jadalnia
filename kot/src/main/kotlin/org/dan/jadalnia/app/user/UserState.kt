@@ -1,5 +1,5 @@
 package org.dan.jadalnia.app.user;
 
-public enum UserState {
+enum class UserState {
     Pending, Approved, Banned
 }

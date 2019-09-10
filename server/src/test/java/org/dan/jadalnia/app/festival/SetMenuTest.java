@@ -15,7 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 import javax.ws.rs.core.GenericType;
 import java.util.List;
-import java.util.UUID;
 
 import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.FestivalResource.FESTIVAL_MENU;
@@ -35,16 +34,18 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
         return myRest.post(FESTIVAL_MENU,
                 session,
                 singletonList(
-                        MenuItem
-                                .builder()
-                                .price(3.14)
-                                .name(FRYTKI)
-                                .additions(singletonList(MenuItem
-                                        .builder()
-                                        .name(new DishName("sos ostry"))
-                                        .build()))
-                                .description("fried potatoes")
-                                .build()),
+                        new MenuItem(
+                                FRYTKI,
+                                "fried potatoes",
+                                3.14,
+                                false,
+                                singletonList(new MenuItem(
+                                        new DishName("sos ostry"),
+                                        null,
+                                        0.0,
+                                        false,
+                                        null)
+                                ))),
                 Integer.class);
     }
 

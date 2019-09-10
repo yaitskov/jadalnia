@@ -80,14 +80,12 @@ public class FestivalDao {
                         .from(FESTIVAL)
                         .where(FESTIVAL.FID.eq(fid))
                         .fetchOne())
-                        .map(r -> FestivalInfo
-                                .builder()
-                                .fid(fid)
-                                .name(r.get(FESTIVAL.NAME))
-                                .opensAt(r.get(FESTIVAL.OPENS_AT))
-                                .state(r.get(FESTIVAL.STATE))
-                                .menu(r.get(FESTIVAL.MENU))
-                                .build())
+                        .map(r -> new FestivalInfo(
+                                        fid,
+                                        r.get(FESTIVAL.NAME),
+                                        r.get(FESTIVAL.STATE),
+                                        r.get(FESTIVAL.MENU),
+                                        r.get(FESTIVAL.OPENS_AT)))
                         .orElseThrow(() -> notFound("Festival not found" , "fid", fid)),
                 executor);
     }

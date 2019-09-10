@@ -12,6 +12,7 @@ import org.dan.jadalnia.app.user.Uid;
 
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,7 +45,7 @@ public class WsBroadcast {
     }
 
     public Map<Oid, Uid> busyKelners(Fid fid) {
-        return null;
+        return new HashMap<>();
     }
 
     public static void broadcastTo(

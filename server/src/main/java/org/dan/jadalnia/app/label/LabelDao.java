@@ -33,6 +33,6 @@ public class LabelDao extends AsyncDao {
                         .where(LABELS.FESTIVAL_ID.eq(fid))
                         .fetchOne())
                         .map(r -> r.get(LABELS.LABEL))
-                        .orElseGet(() -> new OrderLabel(0)));
+                        .orElseGet(() -> OrderLabel.of(0)));
     }
 }

@@ -4,9 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.dan.jadalnia.util.Reflector;
 import org.jooq.Converter;
-import org.springframework.util.ReflectionUtils;
+
 
 import static org.dan.jadalnia.util.Reflector.genericSuperClass;
 

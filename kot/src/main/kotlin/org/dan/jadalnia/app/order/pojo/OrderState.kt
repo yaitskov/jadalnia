@@ -1,5 +1,5 @@
 package org.dan.jadalnia.app.order.pojo;
 
-public enum OrderState {
+enum class OrderState {
     Sent, Paid, Ready, Handed, Cancelled, Returned
 }
