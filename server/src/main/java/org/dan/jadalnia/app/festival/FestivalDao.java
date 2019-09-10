@@ -10,19 +10,16 @@ import org.dan.jadalnia.app.festival.pojo.FestivalInfo;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.festival.pojo.NewFestival;
+import org.dan.jadalnia.sys.ctx.FutureExecutor;
 import org.jooq.DSLContext;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.dan.jadalnia.jooq.Tables.FESTIVAL;
-import static org.dan.jadalnia.sys.ctx.ExecutorCtx.DEFAULT_EXECUTOR;
 import static org.dan.jadalnia.sys.error.JadEx.internalError;
 import static org.dan.jadalnia.sys.error.JadEx.notFound;
 
@@ -31,11 +28,10 @@ import static org.dan.jadalnia.sys.error.JadEx.notFound;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FestivalDao {
     DSLContext jooq;
-    @Named(DEFAULT_EXECUTOR)
-    ExecutorService executor;
+    FutureExecutor executor;
 
     public CompletableFuture<Fid> create(NewFestival newTournament) {
-        return supplyAsync(() -> jooq.insertInto(FESTIVAL,
+        return executor.run(() -> jooq.insertInto(FESTIVAL,
                 FESTIVAL.STATE,
                 FESTIVAL.OPENS_AT,
                 FESTIVAL.MENU,
@@ -46,14 +42,14 @@ public class FestivalDao {
                         newTournament.getName())
                 .returning(FESTIVAL.FID)
                 .fetchOne()
-                .getFid(), executor);
+                .getFid());
     }
 
     public CompletableFuture<Void> setState(Fid fid, FestivalState state) {
         return jooq.update(FESTIVAL)
                 .set(FESTIVAL.STATE, state)
                 .where(FESTIVAL.FID.eq(fid))
-                .executeAsync(executor)
+                .executeAsync(executor.getExecutorService())
                 .thenAccept(n -> {
                     if (n == 0) {
                         throw internalError(
@@ -65,17 +61,16 @@ public class FestivalDao {
     }
 
     public CompletableFuture<Integer> setMenu(Fid fid, List<MenuItem> items) {
-        return supplyAsync(
+        return executor.run(
                 () -> jooq.update(FESTIVAL)
                         .set(FESTIVAL.MENU, items)
                         .where(FESTIVAL.FID.eq(fid))
-                        .execute(),
-                executor)
+                        .execute())
                 .toCompletableFuture();
     }
 
     public CompletableFuture<FestivalInfo> getById(Fid fid) {
-        return supplyAsync(() ->
+        return executor.run(() ->
                 ofNullable(jooq.select()
                         .from(FESTIVAL)
                         .where(FESTIVAL.FID.eq(fid))
@@ -86,7 +81,6 @@ public class FestivalDao {
                                         r.get(FESTIVAL.STATE),
                                         r.get(FESTIVAL.MENU),
                                         r.get(FESTIVAL.OPENS_AT)))
-                        .orElseThrow(() -> notFound("Festival not found" , "fid", fid)),
-                executor);
+                        .orElseThrow(() -> notFound("Festival not found" , "fid", fid)));
     }
 }
