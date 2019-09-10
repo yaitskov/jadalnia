@@ -9,7 +9,7 @@ public class OrderLabelConverter implements Converter<Integer, OrderLabel> {
         if (s == null) {
             return null;
         }
-        return new OrderLabel(s);
+        return OrderLabel.of(s);
     }
 
     @Override
