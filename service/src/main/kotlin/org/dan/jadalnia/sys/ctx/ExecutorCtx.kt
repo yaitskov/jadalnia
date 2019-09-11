@@ -1,7 +1,6 @@
 package org.dan.jadalnia.sys.ctx;
 
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import
 import java.util.concurrent.ExecutorService
 
 import java.util.concurrent.Executors.newCachedThreadPool

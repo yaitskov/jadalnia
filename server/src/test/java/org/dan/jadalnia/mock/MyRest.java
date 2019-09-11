@@ -67,8 +67,7 @@ public class MyRest {
                                 + response.getStatusInfo().getReasonPhrase() + "] ["
                                 + IOUtils.toString((InputStream) response.getEntity() , UTF_8)
                                 + "]"
-                        ),
-                        null);
+                        ));
         }
     }
 

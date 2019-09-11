@@ -20,14 +20,14 @@ public class UserInfo implements UserLinkIf {
 
     public UserInfo ensureAdmin() {
         if (userType != UserType.Admin) {
-            throw new JadEx(401, new Error("user is not admin"), null);
+            throw new JadEx(401, new Error("user is not admin"));
         }
         return this;
     }
 
     public UserInfo ensureCustomer() {
         if (userType != UserType.Customer) {
-            throw new JadEx(401, new Error("user is not customer"), null);
+            throw new JadEx(401, new Error("user is not customer"));
         }
         return this;
     }

@@ -25,13 +25,7 @@ import static org.junit.Assert.assertThat;
 public class NewFestivalTest extends AbstractSpringJerseyTest {
     public static CreatedFestival createFestival(String key, MyRest myRest) {
         return myRest.anonymousPost(FESTIVAL_CREATE,
-                NewFestival
-                        .builder()
-                        .opensAt(Instant.now())
-                        .name(label("festival"))
-                        .userName(label("user"))
-                        .userKey(key)
-                        .build(),
+                new NewFestival(Instant.now(), label("festival"), label("user"), key),
                 CreatedFestival.class);
     }
 

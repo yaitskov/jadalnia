@@ -163,7 +163,7 @@ public class CustomerWsListener implements WsListener {
 
     private static String extractExceptionMessage(Throwable e) {
         if (e instanceof JadEx) {
-            return  ((JadEx) e).getClientMessage().getMessage();
+            return  ((JadEx) e).getError().getMessage();
         }
         return e.getMessage();
     }
