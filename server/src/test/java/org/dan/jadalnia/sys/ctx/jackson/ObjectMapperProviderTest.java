@@ -39,7 +39,7 @@ public class ObjectMapperProviderTest {
 
     @Before
     public void setUp() {
-        om = ObjectMapperProvider.get();
+        om = ObjectMapperProvider.Companion.get();
     }
 
     @Test

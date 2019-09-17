@@ -29,7 +29,7 @@ public abstract class WsIntegrationTest {
         httpClient = ClientBuilder.newBuilder()
                 .register(new ContextResolver<ObjectMapper>() {
                     public ObjectMapper getContext(Class<?> type) {
-                        return ObjectMapperProvider.get();
+                        return ObjectMapperProvider.Companion.get();
                     }
                 })
                 .register(JacksonFeature.class)

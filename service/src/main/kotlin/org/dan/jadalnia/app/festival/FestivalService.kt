@@ -1,0 +1,93 @@
+package org.dan.jadalnia.app.festival
+
+import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
+
+import org.dan.jadalnia.app.festival.menu.MenuItem
+import org.dan.jadalnia.app.festival.pojo.CreatedFestival
+import org.dan.jadalnia.app.festival.pojo.Festival
+import org.dan.jadalnia.app.festival.pojo.FestivalInfo
+import org.dan.jadalnia.app.festival.pojo.FestivalState
+import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.NewFestival
+import org.dan.jadalnia.app.user.UserDao
+import org.dan.jadalnia.app.ws.PropertyUpdated
+import org.dan.jadalnia.app.ws.WsBroadcast
+import org.dan.jadalnia.sys.ctx.ExecutorCtx
+import org.dan.jadalnia.util.collection.AsyncCache
+import org.slf4j.LoggerFactory
+
+import javax.inject.Inject
+import javax.inject.Named
+
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicReference
+
+import java.util.concurrent.CompletableFuture.completedFuture
+
+import org.dan.jadalnia.app.user.UserState.Approved
+import org.dan.jadalnia.app.user.UserType.Admin
+
+
+class FestivalService @Inject constructor(
+        val festivalDao: FestivalDao,
+        val userDao: UserDao,
+        @Named(FESTIVAL_CACHE)
+        val festivalCache: AsyncCache<Fid, Festival>,
+        val wsBroadcast: WsBroadcast,
+        @Named(ExecutorCtx.DEFAULT_EXECUTOR)
+        val executorService: ExecutorService) {
+
+    companion object {
+        val FESTIVAL_STATE = "festival.state"
+        val log = LoggerFactory.getLogger(FestivalService::class.java)
+    }
+
+    fun create(newFestival: NewFestival): CompletableFuture<CreatedFestival> {
+        return festivalDao
+                .create(newFestival)
+                .thenCompose({
+                    fid -> userDao.register(fid, Admin, Approved,
+                        newFestival.userName, newFestival.userKey)
+                        .thenApply({
+                            userSession -> CreatedFestival(fid = fid, session = userSession)
+                        })
+                })
+    }
+
+    fun setState(festival: Festival, newState: FestivalState): CompletableFuture<Boolean> {
+        log.info("Update festival state to {}", newState)
+        val oldV = festival.info.getAndUpdate({ info ->
+            log.info("Update state {} => {} in {}", info.state, newState, info.fid)
+            info.withState(newState)
+        })
+        festivalDao.setState(festival.info.get().fid, newState)
+                .thenRunAsync({ wsBroadcast.broadcast(festival.info.get().fid,
+                        PropertyUpdated(name = FESTIVAL_STATE, newValue = newState))
+                })
+        return completedFuture(oldV.state != newState)
+    }
+
+    fun getState(fid: Fid): CompletableFuture<FestivalState> {
+        return festivalCache.get(fid)
+                .thenApply(Festival::info)
+                .thenApply(AtomicReference<FestivalInfo>::get)
+                .thenApply({ info ->
+                    log.info("Get state {} for {}", info.state, info.fid)
+                    info.state
+                })
+    }
+
+    fun listMenu(fid: Fid): CompletableFuture<List<MenuItem>> {
+        return festivalCache.get(fid)
+                .thenApply(Festival::info)
+                .thenApply({ info -> info.get() })
+                .thenApply(FestivalInfo::menu)
+    }
+
+    fun updateMenu(festival: Festival, items: List<MenuItem>)
+            : CompletableFuture<Int> {
+        festival.info.updateAndGet({ info -> info.withMenu(items)})
+        return festivalDao.setMenu(festival.info.get().fid, items)
+    }
+}

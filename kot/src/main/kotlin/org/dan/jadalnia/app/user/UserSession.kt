@@ -6,6 +6,7 @@ import java.util.Collections.singletonMap
 
 data class UserSession(val uid: Uid, val key: String) {
     companion object {
+        @JvmStatic
         fun valueOf(s: String): UserSession {
             val parts = s.split(Regex(":"), 2);
             try {
@@ -20,5 +21,5 @@ data class UserSession(val uid: Uid, val key: String) {
         }
     }
 
-    override fun toString(): String = uid + ":" + key
+    override fun toString(): String = "$uid:$key"
 }

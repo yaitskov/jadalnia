@@ -1,7 +1,9 @@
 package org.dan.jadalnia.app.user;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
@@ -20,12 +22,9 @@ public class CustomerConnectsWithInvalidSessionTest
                 bindWsHandler(
                         "/ws/customer",
                         wsClientHandle(
-                                UserSession
-                                        .builder()
-                                        .key("abc")
-                                        .uid(Uid.of(10000000))
-                                        .build(),
-                                voidPredicate()))
+                                new UserSession(Uid.of(10000000), "abc"),
+                                voidPredicate(),
+                                new TypeReference<PropertyUpdated>() {}))
                         .waitTillClosed(),
                 expectErrnoWsCloseReason("session is not valid"));
     }

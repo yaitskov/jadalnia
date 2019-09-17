@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dan.jadalnia.app.user.customer.CustomerWsListener;
 import org.dan.jadalnia.sys.JerseyConfig;
-import org.dan.jadalnia.sys.ctx.AppContext;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -16,7 +16,7 @@ import org.springframework.web.context.ContextLoaderListener;
 
 import java.util.Set;
 
-import static java.util.Collections.singletonList;
+
 import static org.dan.jadalnia.sys.AppInitializer.createWebAppCtx;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
@@ -38,7 +38,7 @@ public class EmbeddedJetty {
         log.info("Start jetty on port {}", port);
         val jettyServer = new Server(port);
         val contextHandler = new ServletContextHandler(NO_SESSIONS);
-        val webAppCtx = createWebAppCtx(singletonList(AppContext.class));
+        val webAppCtx = createWebAppCtx();
         contextHandler.addEventListener(new ContextLoaderListener(webAppCtx));
         contextHandler.setContextPath("/");
 

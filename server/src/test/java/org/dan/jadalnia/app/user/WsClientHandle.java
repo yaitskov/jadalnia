@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.dan.jadalnia.app.ws.MessageForClient;
+import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.match.StateMatcher;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 
 import static java.util.Collections.singletonMap;
 import static javax.websocket.CloseReason.CloseCodes.getCloseCode;
-import static org.dan.jadalnia.app.auth.AuthService.SESSION;
+
 
 @Slf4j
 @WebSocket
@@ -52,24 +53,24 @@ public class WsClientHandle<T> implements WsHandler {
 
     public static <T extends MessageForClient> WsClientHandle<T> wsClientHandle(
             UserSession session,
-            StateMatcher<T> inMessageMatcher) {
+            StateMatcher<T> inMessageMatcher, TypeReference<T> inMessageType) {
         return new WsClientHandle<>(
-                new TypeReference<T>() {},
-                ObjectMapperProvider.get(),
-                singletonMap(SESSION, session.toString()),
+                inMessageType,
+                ObjectMapperProvider.Companion.get(),
+                singletonMap(AuthService.SESSION, session.toString()),
                 inMessageMatcher);
     }
 
     public static WsClientHandle<MessageForClient> anonymousHandler() {
         return new WsClientHandle<>(
                 new TypeReference<MessageForClient>() {},
-                ObjectMapperProvider.get(),
+                ObjectMapperProvider.Companion.get(),
                 Collections.emptyMap(),
                 voidPredicate());
     }
 
     @NotNull
-    public static StateMatcher<MessageForClient> voidPredicate() {
+    public static <T extends MessageForClient> StateMatcher<T> voidPredicate() {
         return new PredicateStateMatcher<>(o -> false, new CompletableFuture<>());
     }
 

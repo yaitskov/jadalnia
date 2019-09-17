@@ -14,7 +14,7 @@ public class FidJacksonTest {
     @Test
     @SneakyThrows
     public void scalar() {
-        ObjectMapper om = ObjectMapperProvider.get();
+        ObjectMapper om = ObjectMapperProvider.Companion.get();
         final String actual = om.writeValueAsString(new Fid(123));
         assertThat(actual, is("123"));
         assertThat(om.readValue(actual, Fid.class),

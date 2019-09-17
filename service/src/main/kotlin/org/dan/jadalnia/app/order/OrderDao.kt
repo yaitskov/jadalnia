@@ -56,7 +56,7 @@ class OrderDao @Inject constructor(
 
     fun storeNewOrder(
             fid: Fid, uid: Uid, label: OrderLabel,
-            items: MutableList<OrderItem>):
+            items: List<OrderItem>):
             CompletableFuture<OrderLabel>  {
 
         class InsertOrder : Supplier<Oid> {

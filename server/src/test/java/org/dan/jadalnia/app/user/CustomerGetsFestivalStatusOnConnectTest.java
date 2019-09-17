@@ -1,6 +1,7 @@
 package org.dan.jadalnia.app.user;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -28,13 +29,7 @@ public class CustomerGetsFestivalStatusOnConnectTest
     public static UserSession registerUser(
             Fid fid, String key, MyRest myRest, UserType userType) {
         return myRest.anonymousPost(UserResource.REGISTER,
-                UserRegRequest
-                        .builder()
-                        .name("user" + key)
-                        .festivalId(fid)
-                        .session(key)
-                        .userType(userType)
-                        .build(),
+                new UserRegRequest(fid, "user" + key, key, userType),
                 UserSession.class);
     }
 
@@ -52,7 +47,8 @@ public class CustomerGetsFestivalStatusOnConnectTest
 
         val wsHandler = wsClientHandle(customerSession,
                 passIf((PropertyUpdated event)
-                        -> event.getNewValue().equals(Announce.name())));
+                        -> event.getNewValue().equals(Announce.name())),
+                new TypeReference<PropertyUpdated>() {});
 
         bindCustomerWsHandler(wsHandler);
 

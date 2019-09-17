@@ -21,4 +21,8 @@ open class Error(val id: String, val message: String) {
     }
 
     constructor(message: String): this(genId(), message)
+
+    override fun toString(): String {
+        return "error id=[$id] message=[$message]"
+    }
 }

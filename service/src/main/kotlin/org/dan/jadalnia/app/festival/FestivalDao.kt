@@ -1,4 +1,4 @@
-package org.dan.jadalnia.app.festival;
+package org.dan.jadalnia.app.festival
 
 
 import com.google.common.collect.ImmutableMap
@@ -49,7 +49,7 @@ class FestivalDao : AsyncDao() {
                 })
     }
 
-    fun setMenu(fid: Fid, items: MutableList<MenuItem>): CompletableFuture<Int> {
+    fun setMenu(fid: Fid, items: List<MenuItem>): CompletableFuture<Int> {
         return execQuery { jooq ->
             jooq.update(FESTIVAL)
                     .set(FESTIVAL.MENU, items)

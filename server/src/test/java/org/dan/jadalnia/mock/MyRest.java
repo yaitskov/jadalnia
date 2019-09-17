@@ -25,13 +25,13 @@ import java.util.Optional;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.dan.jadalnia.app.auth.AuthService.SESSION;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
+
+import static org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION;
+
 
 @RequiredArgsConstructor
 public class MyRest {
-    private static final ObjectMapper om = ObjectMapperProvider.get();
+    private static final ObjectMapper om = ObjectMapperProvider.Companion.get();
     private final Client client;
     private final URI baseUri;
 

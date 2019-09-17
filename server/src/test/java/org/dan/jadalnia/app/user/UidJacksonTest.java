@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
 
 @Slf4j
 public class UidJacksonTest {
-    static final ObjectMapper om = ObjectMapperProvider.get();
+    static final ObjectMapper om = ObjectMapperProvider.Companion.get();
 
     @Test
     @SneakyThrows

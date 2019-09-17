@@ -24,7 +24,7 @@ public class DoubleContextSerializerTest {
         private double f;
     }
 
-    final ObjectMapper om = ObjectMapperProvider.get();
+    final ObjectMapper om = ObjectMapperProvider.Companion.get();
 
     @Test
     @SneakyThrows
