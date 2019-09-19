@@ -13,7 +13,7 @@ data class UserRegRequest @JsonCreator constructor(
         var name: String,
         var session: String,
         var userType: UserType) //,
-// todo how to have default values  
+// todo how to have default values
 //        var email: Optional<String> = Optional.empty(),
 //        var phone: Optional<String> = Optional.empty())
 {

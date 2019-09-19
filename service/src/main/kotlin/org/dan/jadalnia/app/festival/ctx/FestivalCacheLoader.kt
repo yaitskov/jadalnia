@@ -38,7 +38,7 @@ class FestivalCacheLoader @Inject constructor(
                                             wsBroadcast.busyKelners(fid),
                                             orderAggregator.aggregate(
                                                     paidOrders.values),
-                                            AtomicInteger(maxId.id + 1)))
+                                            AtomicInteger(maxId.getId() + 1)))
                         })
                     })
         })
