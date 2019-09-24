@@ -28,9 +28,9 @@ class FestivalCacheFactory @Inject constructor(
     fun create(): AsyncCache<Fid, Festival> {
         return AsyncCache(CacheBuilder.newBuilder()
                 .expireAfterAccess(expireFestivalSeconds, TimeUnit.SECONDS)
-                .removalListener<Fid, CompletableFuture<Festival>>({
+                .removalListener<Fid, CompletableFuture<Festival>> {
                     notification -> log.info("Evicted festival {}", notification.key)
-                })
+                }
                 .build(loader)
         )
     }

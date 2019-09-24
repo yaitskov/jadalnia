@@ -26,4 +26,11 @@ data class UserInfo(
         }
         return this
     }
+
+    fun ensureKasier(): UserInfo {
+        if (userType != UserType.Kasier) {
+            throw JadEx(401, Error("user is not kasier"))
+        }
+        return this
+    }
 }

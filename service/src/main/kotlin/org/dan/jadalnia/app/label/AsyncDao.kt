@@ -1,10 +1,10 @@
-package org.dan.jadalnia.app.label;
+package org.dan.jadalnia.app.label
 
-import org.dan.jadalnia.sys.ctx.FutureExecutor;
-import org.jooq.DSLContext;
+import org.dan.jadalnia.sys.ctx.FutureExecutor
+import org.jooq.DSLContext
 
-import javax.inject.Inject;
-import java.util.concurrent.CompletableFuture;
+import javax.inject.Inject
+import java.util.concurrent.CompletableFuture
 
 
 open class AsyncDao {
@@ -14,7 +14,6 @@ open class AsyncDao {
     protected var executor: FutureExecutor? = null
 
     protected fun <T> execQuery(query: (DSLContext) -> T): CompletableFuture<T> {
-        return (executor as FutureExecutor)
-                .run({ query(jooq as DSLContext) });
+        return (executor as FutureExecutor).run { query(jooq as DSLContext) }
     }
 }

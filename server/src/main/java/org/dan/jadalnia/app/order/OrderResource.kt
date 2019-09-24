@@ -6,6 +6,7 @@ import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.pojo.OrderItem
+import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
@@ -27,6 +28,7 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 
 @Path("/")
 @Produces(APPLICATION_JSON)
+@Consumes(APPLICATION_JSON)
 class OrderResource @Inject constructor(
         val orderService: OrderService,
         @Named(USER_SESSIONS)
@@ -38,24 +40,40 @@ class OrderResource @Inject constructor(
     companion object {
         const val ORDER = "order/"
         const val PUT_ORDER = ORDER + "put"
+        const val ORDER_PAID = ORDER + "paid"
         val log = LoggerFactory.getLogger(OrderService::class.java)
     }
 
     @POST
+    @Path(ORDER_PAID)
+    fun markOrderPaid(
+            @Suspended response: AsyncResponse,
+            @HeaderParam(SESSION) session: UserSession,
+            paidOrder: MarkOrderPaid) {
+        asynSync.sync(
+                userSessions.get(session)
+                        .thenApply { user -> user.ensureKasier().fid }
+                        .thenCompose(festivalCache::get)
+                        .thenCompose {
+                            festival -> orderService.markOrderPaid(festival, paidOrder)
+                        },
+                response)
+    }
+
+    @POST
     @Path(PUT_ORDER)
-    @Consumes(APPLICATION_JSON)
     fun create(
             @Suspended response: AsyncResponse,
             @HeaderParam(SESSION) session: UserSession,
             newOrderItems: List<OrderItem>) {
         asynSync.sync(
                 userSessions.get(session)
-                        .thenApply({ user -> user.ensureCustomer().fid })
+                        .thenApply { user -> user.ensureCustomer().fid }
                         .thenCompose(festivalCache::get)
-                        .thenCompose({
+                        .thenCompose {
                             festival -> orderService.putNewOrder(
                                 festival, session, newOrderItems)
-                        }),
+                        },
                 response)
     }
 }

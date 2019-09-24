@@ -70,4 +70,7 @@ class DbContext {
                         TransactionAwareDataSourceProxy(dataSource)))
                 .set(valueOf(sqlDialect)))
     }
+
+    @Bean
+    fun daoUpdater() = DaoUpdater()
 }

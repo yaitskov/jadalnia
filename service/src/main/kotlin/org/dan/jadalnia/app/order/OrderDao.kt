@@ -1,82 +1,87 @@
-package org.dan.jadalnia.app.order;
+package org.dan.jadalnia.app.order
 
 
 import org.dan.jadalnia.app.festival.pojo.Fid
-import org.dan.jadalnia.app.order.pojo.Oid
-import org.dan.jadalnia.app.order.pojo.OrderItem
+import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
+import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
-import org.dan.jadalnia.app.order.pojo.PaidOrder
-import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.ORDERS
-import org.dan.jadalnia.sys.ctx.ExecutorCtx.Companion.DEFAULT_EXECUTOR
-import org.jooq.DSLContext
 import org.slf4j.LoggerFactory
-
+import java.util.*
+import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletableFuture.supplyAsync
-import java.util.concurrent.ExecutorService
-import java.util.function.Supplier
+import java.util.concurrent.atomic.AtomicReference
 import java.util.stream.Collectors.toMap
-import javax.inject.Inject
-import javax.inject.Named
+import kotlin.collections.LinkedHashMap
 
 
-class OrderDao @Inject constructor(
-        val jooq: DSLContext,
-        @Named(DEFAULT_EXECUTOR)
-        val executor: ExecutorService) {
-
+class OrderDao: AsyncDao() {
     companion object {
         val log = LoggerFactory.getLogger(OrderDao::class.java)
     }
 
-    fun loadPaid(fid: Fid): CompletableFuture<LinkedHashMap<Oid, PaidOrder>> {
-        class SelectOrders : Supplier<LinkedHashMap<Oid, PaidOrder>> {
-            override fun get() =
-                    jooq.select()
-                            .from(ORDERS)
-                            .where(ORDERS.FESTIVAL_ID.eq(fid),
-                                    ORDERS.STATE.eq(OrderState.Paid))
-                            .orderBy(ORDERS.OID)
-                            .stream()
-                            .map({ r ->
-                                PaidOrder(
-                                        orderNumber = r.get(ORDERS.OID),
-                                        orderLabel = r.get(ORDERS.LABEL),
-                                        items = r.get(ORDERS.REQUIREMENTS))
-                            })
-                            .collect(toMap(PaidOrder::orderNumber, { o -> o },
-                                    { a, b -> throw IllegalStateException() },
-                                    { -> LinkedHashMap<Oid, PaidOrder>() }))
+    fun loadReadyToExecOrders(fid: Fid): CompletableFuture<LinkedHashMap<OrderLabel, Unit>> {
+        return execQuery {
+            jooq -> jooq.select(ORDERS.LABEL)
+                    .from(ORDERS)
+                    .where(ORDERS.FESTIVAL_ID.eq(fid),
+                            ORDERS.STATE.eq(OrderState.Paid))
+                    .orderBy(ORDERS.OID)
+                    .stream()
+                    .map { r -> r.get(ORDERS.LABEL) }
+                    .collect(toMap({ o -> o }, { Unit },
+                            { _, _ -> throw IllegalStateException() },
+                            { -> LinkedHashMap<OrderLabel, Unit>() }))
         }
-
-        return supplyAsync(SelectOrders(), executor)
     }
 
-    fun storeNewOrder(
-            fid: Fid, uid: Uid, label: OrderLabel,
-            items: List<OrderItem>):
+    fun storeNewOrder(fid: Fid, order: OrderMem):
             CompletableFuture<OrderLabel>  {
+        return execQuery { jooq ->
+            jooq.insertInto(ORDERS,
+                    ORDERS.FESTIVAL_ID,
+                    ORDERS.CUSTOMER_ID,
+                    ORDERS.LABEL,
+                    ORDERS.STATE,
+                    ORDERS.REQUIREMENTS)
+                    .values(fid, order.customer, order.label,
+                            order.state.get(), order.items)
+                    .returning(ORDERS.OID)
+                    .fetchOne()
+                    .getOid() }
+                .thenApply { oid ->
+                    log.info("Store new order {} => {}", oid, order.label)
+                    order.label
+                }
+    }
 
-        class InsertOrder : Supplier<Oid> {
-            override fun get(): Oid =
-                    jooq.insertInto(ORDERS,
-                            ORDERS.FESTIVAL_ID,
-                            ORDERS.CUSTOMER_ID,
-                            ORDERS.LABEL,
-                            ORDERS.STATE,
-                            ORDERS.REQUIREMENTS)
-                            .values(fid, uid, label, OrderState.Sent, items)
-                            .returning(ORDERS.OID)
-                            .fetchOne()
-                            .getOid()
+    fun updateState(fid: Fid, label: OrderLabel, paid: OrderState): CompletableFuture<Unit> {
+        return execQuery { jooq ->
+            jooq.update(ORDERS)
+                    .set(ORDERS.STATE, paid)
+                    .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
+                    .execute() }
+                .thenApply { updated ->
+                    log.info("Order {}:{} changed paid status ({})", fid, label, updated)
+                }
+    }
+
+    fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
+        return execQuery { jooq ->
+            ofNullable(jooq.select()
+                    .from(ORDERS)
+                    .where(ORDERS.FESTIVAL_ID.eq(fid),
+                            ORDERS.LABEL.eq(label))
+                    .fetchOne())
+                    .map { record ->
+                        OrderMem(
+                              customer = record.get(ORDERS.CUSTOMER_ID),
+                                state = AtomicReference(record.get(ORDERS.STATE)),
+                                label = label,
+                                items = record.get(ORDERS.REQUIREMENTS)
+                        )
+                    }
         }
-
-        return supplyAsync(InsertOrder(), executor)
-                .thenApply({ oid ->
-                    log.info("Store new order {} => {}", oid, label)
-                    label
-                })
     }
 }

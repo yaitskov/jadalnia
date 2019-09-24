@@ -1,48 +1,61 @@
 package org.dan.jadalnia.app.ws
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.dan.jadalnia.app.festival.pojo.Festival
 
 import org.dan.jadalnia.app.festival.pojo.Fid
-import org.dan.jadalnia.app.order.pojo.Oid
-import org.dan.jadalnia.app.user.Uid
 
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
-//import java.util.Map
+
 
 class WsBroadcast @Inject constructor(
         val objectMapper: ObjectMapper,
         val fid2Listeners: MutableMap<Fid, FestivalListeners>) {
 
     fun broadcast(fid: Fid, message: MessageForClient) {
-        val listeners = getListeners(fid);
-        val serializedMessage: ByteArray = objectMapper.writeValueAsBytes(message);
+        val listeners = getListeners(fid)
+        val serializedMessage: ByteArray = objectMapper.writeValueAsBytes(message)
 
-        broadcastTo(listeners.customerListeners.values, serializedMessage);
-        broadcastTo(listeners.userListeners.values, serializedMessage);
+        broadcastTo(listeners.customerListeners.values, serializedMessage)
+        broadcastTo(listeners.volunteerListeners.values, serializedMessage)
+    }
+
+    fun broadcastTo(listeners: Collection<WsListener>, message: MessageForClient) {
+        val serializedMessage: ByteArray = objectMapper.writeValueAsBytes(message)
+        broadcastTo(listeners, serializedMessage)
     }
 
     fun getListeners(fid: Fid): FestivalListeners {
-        val listeners = fid2Listeners[fid];
+        val listeners = fid2Listeners[fid]
         if (listeners == null) {
             val festivalListeners = FestivalListeners(
-                    ConcurrentHashMap(), ConcurrentHashMap())
+                    customerListeners = ConcurrentHashMap(),
+                    volunteerListeners = ConcurrentHashMap(),
+                    kelnerUids = ConcurrentHashMap(),
+                    kasierUids = ConcurrentHashMap(),
+                    adminUids = ConcurrentHashMap(),
+                    cookUids = ConcurrentHashMap())
             return fid2Listeners.putIfAbsent(fid, festivalListeners)
                     ?: return festivalListeners
         }
         return listeners
     }
 
-    fun busyKelners(fid: Fid) = HashMap<Oid, Uid>()
+    fun broadcastToFreeKelners(festival: Festival, message: MessageForClient) {
+        broadcastTo(
+                getListeners(festival.fid())
+                        .volunteerListeners
+                        .filterKeys { uid -> festival.freeKelners.containsKey(uid) }.values,
+                message)
+    }
 
     companion object {
         fun broadcastTo(
                 listeners: Collection<WsListener>,
                 message: ByteArray) {
             // close ws on failure
-            listeners.forEach({
-                listener -> listener.send(message)
-            })
+            listeners.forEach { listener -> listener.send(message) }
         }
     }
 }

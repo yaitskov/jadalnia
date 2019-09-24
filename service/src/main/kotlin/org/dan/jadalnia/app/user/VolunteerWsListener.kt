@@ -1,72 +1,55 @@
-package org.dan.jadalnia.app.user.customer
+package org.dan.jadalnia.app.user
+
 
 import com.fasterxml.jackson.databind.ObjectMapper
-
 import org.dan.jadalnia.app.auth.ctx.UserCacheFactory
 import org.dan.jadalnia.app.festival.FestivalService
-import org.dan.jadalnia.app.user.UserInfo
-import org.dan.jadalnia.app.user.UserSession
-import org.dan.jadalnia.app.user.UserType
+import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
+import org.dan.jadalnia.app.festival.pojo.Festival
+import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.user.UserType.*
+import org.dan.jadalnia.app.user.customer.CustomerWsListener.Companion.formatCloseReason
+import org.dan.jadalnia.app.ws.FestivalListeners
 import org.dan.jadalnia.app.ws.PropertyUpdated
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.app.ws.WsHandlerConfigurator
 import org.dan.jadalnia.app.ws.WsListener
 import org.dan.jadalnia.app.ws.WsSession
-
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
-import org.dan.jadalnia.sys.error.Exceptions
-import org.dan.jadalnia.sys.error.JadEx
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures
-
-import org.dan.jadalnia.util.Strings
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 
-import javax.inject.Inject
-import javax.inject.Named
-
-import javax.websocket.OnError
-import javax.websocket.OnMessage
 import javax.websocket.OnOpen
 import javax.websocket.Session
-import javax.websocket.server.ServerEndpoint
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
-import java.util.function.Supplier
+import javax.inject.Inject
+import javax.inject.Named
 import javax.websocket.CloseReason
-import kotlin.text.Charsets.UTF_8
-
+import javax.websocket.OnError
+import javax.websocket.OnMessage
+import javax.websocket.server.ServerEndpoint
 
 @ServerEndpoint(
-        value = "/ws/customer",
+        value = "/ws/user",
         configurator = WsHandlerConfigurator::class)
-class CustomerWsListener
+class VolunteerWsListener
 @Inject constructor(
         val wsBroadcast: WsBroadcast,
         @Named(UserCacheFactory.USER_SESSIONS)
         val userSessions: AsyncCache<UserSession, UserInfo>,
+        @Named(FESTIVAL_CACHE)
+        val festivalCache: AsyncCache<Fid, Festival>,
         val objectMapper: ObjectMapper,
-        val festivalService: FestivalService
-)
+        val festivalService: FestivalService)
     : WsListener {
+
     companion object {
-        const val WS_CLOSE_REASON_LIMIT = 120
-        val log = LoggerFactory.getLogger(CustomerWsListener::class.java)
-
-        @JvmStatic
-        fun extractExceptionMessage(e: Throwable): String {
-            if (e is JadEx) {
-                return e.error.message
-            }
-            return e.message as String
-        }
-
-        fun formatCloseReason(e: Throwable) =
-                Strings.cutLongerThan(
-                        extractExceptionMessage(Exceptions.rootCause(e)),
-                        WS_CLOSE_REASON_LIMIT)
+        val validUserTypes = hashSetOf(Kelner, Kasier, Admin, Cook)
+        val log = LoggerFactory.getLogger(VolunteerWsListener::class.java)
     }
 
     var oSession: Optional<WsSession> = Optional.empty()
@@ -92,44 +75,55 @@ class CustomerWsListener
     @OnOpen
     fun onConnected(httpSession: Session) {
         oSession = Optional.of(WsSession.wrap(httpSession))
-        handleException({
+        handleException {
             oUserSession = Optional.of(
                     getSession().header(SESSION, UserSession.Companion::valueOf))
 
-            userSessions.get(getUserSession()).thenCompose({ userInfo ->
-                if (userInfo.userType != UserType.Customer) {
-                    throw badRequest("Just Customers are expected")
+            userSessions.get(getUserSession()).thenCompose { userInfo ->
+                if (!validUserTypes.contains(userInfo.userType)) {
+                    throw badRequest("Only $validUserTypes are expected")
                 }
-                log.info("Connected customer {} of festival {}",
-                        getUserSession().uid, userInfo.fid)
+
+                log.info("Connected {} {} of festival {}",
+                        userInfo.userType, getUserSession().uid, userInfo.fid)
 
                 val listeners = wsBroadcast.getListeners(userInfo.fid)
-                val earlier = listeners.customerListeners
+                registerVolunteerConnection(listeners, userInfo)
+                val earlier = listeners.volunteerListeners
                         .putIfAbsent(userInfo.uid, this)
                 if (earlier != null) {
                     throw badRequest("Multiple web sockets are not allowed")
                 }
-                log.info("Online customers {} for {}",
-                        listeners.customerListeners.size,
+                log.info("Online volunteers {} for {}",
+                        listeners.volunteerListeners.size,
                         userInfo.fid)
 
                 oUserInfo = Optional.of(userInfo)
 
                 sendFestivalStatus()
-            })
-        })
+            }
+        }
+    }
+
+    private fun registerVolunteerConnection(
+            listeners: FestivalListeners, userInfo: UserInfo) {
+        listeners.addUid(userInfo.uid, userInfo.userType)
+
+        if (userInfo.userType == Kelner) {
+            festivalCache.get(userInfo.fid).thenAccept { festival ->
+                festival.freeKelners[userInfo.uid] = userInfo.uid
+            }
+        }
     }
 
     private fun sendFestivalStatus(): CompletableFuture<Void> {
-        return oUserInfo.map(UserInfo::fid)
-                .map({ fid -> festivalService.getState(fid).thenCompose(
-                        { state ->
-                            send(PropertyUpdated(
-                                    name = FestivalService.FESTIVAL_STATE,
-                                    newValue = state))
-                        })
-                })
-                .orElseGet(Futures.Companion::voidF)
+        return oUserInfo.map(UserInfo::fid).map { fid ->
+            festivalService.getState(fid).thenCompose { state ->
+                send(PropertyUpdated(
+                        name = FestivalService.FESTIVAL_STATE,
+                        newValue = state))
+            }
+        }.orElseGet(Futures.Companion::voidF)
     }
 
     fun <T> send(msgToClient: T): CompletableFuture<Void> {
@@ -149,13 +143,29 @@ class CustomerWsListener
     fun onError(e: Throwable) {
         log.error("WS for uid {} failed: {}",
                 oUserInfo.map(UserInfo::uid), e.message, e)
-        oSession.ifPresent({
+        oSession.ifPresent {
             session -> closeWs(session, e)
-        })
+        }
+    }
+
+    private fun unregister() {
+        oUserInfo.ifPresent { userInfo ->
+            log.info("Unbind {} from WS", userInfo)
+            val listeners = wsBroadcast.getListeners(userInfo.fid)
+
+            listeners.removeUid(userInfo.uid, userInfo.userType)
+
+            if (userInfo.userType == Kelner) {
+                festivalCache.get(userInfo.fid).thenAccept { festival ->
+                    festival.freeKelners.remove(userInfo.uid)
+                }
+            }
+        }
     }
 
     private fun closeWs(session: WsSession, e: Throwable) {
         try {
+            unregister()
             log.info("Close WS of {}", oUserInfo)
             session.session.close(
                     CloseReason(
@@ -172,10 +182,10 @@ class CustomerWsListener
             futureFactory: () -> CompletableFuture<T>)
             : CompletableFuture<T> {
         try {
-            return futureFactory().exceptionally({ e ->
+            return futureFactory().exceptionally { e ->
                 onError(e)
                 null
-            })
+            }
         } catch (e: Throwable) {
             onError(e)
             val failure = CompletableFuture<T>()

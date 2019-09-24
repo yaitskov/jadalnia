@@ -102,4 +102,8 @@ public abstract class WsIntegrationTest {
     protected <T extends WsHandler> T bindCustomerWsHandler(T wsHandler) {
         return bindWsHandler("/ws/customer", wsHandler);
     }
+
+    protected <T extends WsHandler> T bindUserWsHandler(T wsHandler) {
+        return bindWsHandler("/ws/user", wsHandler);
+    }
 }

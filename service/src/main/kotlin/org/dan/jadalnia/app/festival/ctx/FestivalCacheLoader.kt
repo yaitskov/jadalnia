@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 import java.util.concurrent.CompletableFuture.completedFuture
+import java.util.concurrent.ConcurrentHashMap
 
 
 class FestivalCacheLoader @Inject constructor(
@@ -27,20 +28,19 @@ class FestivalCacheLoader @Inject constructor(
         CacheLoader<Fid, CompletableFuture<Festival>>()  {
 
     override fun load(fid: Fid): CompletableFuture<Festival> {
-        return festivalDao.getById(fid).thenCompose({ festInfo ->
+        return festivalDao.getById(fid).thenCompose { festInfo ->
             labelDao.maxOrderNumber(fid)
-                    .thenCompose({ maxId ->
-                        orderDao.loadPaid(fid).thenCompose({ paidOrders ->
-                            completedFuture(
-                                    Festival(
-                                            AtomicReference(festInfo),
-                                            paidOrders,
-                                            wsBroadcast.busyKelners(fid),
-                                            orderAggregator.aggregate(
-                                                    paidOrders.values),
-                                            AtomicInteger(maxId.getId() + 1)))
-                        })
-                    })
-        })
+                    .thenCompose { maxId ->
+                        orderDao.loadReadyToExecOrders(fid)
+                                .thenCompose { readyToExecOrders ->
+                                    completedFuture(
+                                            Festival(
+                                                    info = AtomicReference(festInfo),
+                                                    readyToExecOrders = readyToExecOrders,
+                                                    freeKelners = ConcurrentHashMap(),
+                                                    nextLabel = AtomicInteger(maxId.getId() + 1)))
+                                }
+                    }
+        }
     }
 }
