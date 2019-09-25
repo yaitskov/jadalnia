@@ -72,7 +72,9 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
         val wsKelnerHandler = WsClientHandle.wsClientHandle(
                 kelnerSession,
                 new PredicateStateMatcher<>(
-                        (MessageForClient event) -> ((OrderPaidEvent) event).getLabel().equals(orderLabel),
+                        (MessageForClient event) ->
+                                event instanceof OrderPaidEvent
+                                        && ((OrderPaidEvent) event).getLabel().equals(orderLabel),
                         new CompletableFuture<>()),
                 new TypeReference<MessageForClient>() {
                 });

@@ -16,6 +16,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.ext.ContextResolver;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import static org.dan.jadalnia.test.ws.EmbeddedJetty.EMBEDDED_JETTY;
 import static org.springframework.util.SocketUtils.findAvailableTcpPort;
@@ -95,7 +96,7 @@ public abstract class WsIntegrationTest {
         wsClient.connect(
                 wsHandler,
                 new URI("ws://localhost:" + getWsPort() + urlPath),
-                upgradeReq);
+                upgradeReq).get(5L, TimeUnit.SECONDS);
         return wsHandler;
     }
 

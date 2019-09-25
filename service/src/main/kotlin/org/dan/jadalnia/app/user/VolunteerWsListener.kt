@@ -7,7 +7,10 @@ import org.dan.jadalnia.app.festival.FestivalService
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
-import org.dan.jadalnia.app.user.UserType.*
+import org.dan.jadalnia.app.user.UserType.Kelner
+import org.dan.jadalnia.app.user.UserType.Kasier
+import org.dan.jadalnia.app.user.UserType.Admin
+import org.dan.jadalnia.app.user.UserType.Cook
 import org.dan.jadalnia.app.user.customer.CustomerWsListener.Companion.formatCloseReason
 import org.dan.jadalnia.app.ws.FestivalListeners
 import org.dan.jadalnia.app.ws.PropertyUpdated
@@ -38,13 +41,13 @@ import javax.websocket.server.ServerEndpoint
         configurator = WsHandlerConfigurator::class)
 class VolunteerWsListener
 @Inject constructor(
-        val wsBroadcast: WsBroadcast,
+        private val wsBroadcast: WsBroadcast,
         @Named(UserCacheFactory.USER_SESSIONS)
         val userSessions: AsyncCache<UserSession, UserInfo>,
         @Named(FESTIVAL_CACHE)
         val festivalCache: AsyncCache<Fid, Festival>,
-        val objectMapper: ObjectMapper,
-        val festivalService: FestivalService)
+        private val objectMapper: ObjectMapper,
+        private val festivalService: FestivalService)
     : WsListener {
 
     companion object {

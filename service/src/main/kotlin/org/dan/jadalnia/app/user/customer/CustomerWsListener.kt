@@ -92,11 +92,11 @@ class CustomerWsListener
     @OnOpen
     fun onConnected(httpSession: Session) {
         oSession = Optional.of(WsSession.wrap(httpSession))
-        handleException({
+        handleException {
             oUserSession = Optional.of(
                     getSession().header(SESSION, UserSession.Companion::valueOf))
 
-            userSessions.get(getUserSession()).thenCompose({ userInfo ->
+            userSessions.get(getUserSession()).thenCompose { userInfo ->
                 if (userInfo.userType != UserType.Customer) {
                     throw badRequest("Just Customers are expected")
                 }
@@ -116,8 +116,8 @@ class CustomerWsListener
                 oUserInfo = Optional.of(userInfo)
 
                 sendFestivalStatus()
-            })
-        })
+            }
+        }
     }
 
     private fun sendFestivalStatus(): CompletableFuture<Void> {
@@ -172,10 +172,10 @@ class CustomerWsListener
             futureFactory: () -> CompletableFuture<T>)
             : CompletableFuture<T> {
         try {
-            return futureFactory().exceptionally({ e ->
+            return futureFactory().exceptionally { e ->
                 onError(e)
                 null
-            })
+            }
         } catch (e: Throwable) {
             onError(e)
             val failure = CompletableFuture<T>()

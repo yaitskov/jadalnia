@@ -4,9 +4,9 @@ import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.dan.jadalnia.app.user.VolunteerWsListener;
 import org.dan.jadalnia.app.user.customer.CustomerWsListener;
 import org.dan.jadalnia.sys.JerseyConfig;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -16,7 +16,7 @@ import org.springframework.web.context.ContextLoaderListener;
 
 import java.util.Set;
 
-
+import static java.util.Arrays.asList;
 import static org.dan.jadalnia.sys.AppInitializer.createWebAppCtx;
 import static org.eclipse.jetty.servlet.ServletContextHandler.NO_SESSIONS;
 
@@ -55,7 +55,9 @@ public class EmbeddedJetty {
         WebSocketServerContainerInitializer.configure(
                 contextHandler,
                 (a, container) -> {
-                    container.addEndpoint(CustomerWsListener.class);
+                    for (val listener : asList(CustomerWsListener.class, VolunteerWsListener.class)) {
+                        container.addEndpoint(listener);
+                    }
                 });
 
         jettyServer.start();
