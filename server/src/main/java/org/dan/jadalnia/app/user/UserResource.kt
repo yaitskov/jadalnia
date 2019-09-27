@@ -22,26 +22,25 @@ import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL
 @Path("/")
 @Produces(APPLICATION_JSON)
 class UserResource @Inject constructor(
-        val userDao: UserDao,
-        val clocker: Clocker,
-        @Named(USER_SESSIONS)
-        val userSessions: AsyncCache<UserSession, UserInfo>,
-        @Named(FESTIVAL_CACHE)
-        val festivalCache: AsyncCache<Fid, Festival>,
-        val userService: UserService,
-        val asynSync: AsynSync)
-{
-    companion object {
-        const val USER = "user/"
-        const val REGISTER = USER + "register"
-    }
+    val userDao: UserDao,
+    val clocker: Clocker,
+    @Named(USER_SESSIONS)
+    val userSessions: AsyncCache<UserSession, UserInfo>,
+    @Named(FESTIVAL_CACHE)
+    val festivalCache: AsyncCache<Fid, Festival>,
+    val userService: UserService,
+    val asynSync: AsynSync) {
+  companion object {
+    const val USER = "user/"
+    const val REGISTER = USER + "register"
+  }
 
-    @POST
-    @Path(REGISTER)
-    @Consumes(APPLICATION_JSON)
-    fun register(
-            @Suspended response: AsyncResponse,
-            regRequest: UserRegRequest) {
-        asynSync.sync(userService.register(regRequest), response)
-    }
+  @POST
+  @Path(REGISTER)
+  @Consumes(APPLICATION_JSON)
+  fun register(
+      @Suspended response: AsyncResponse,
+      regRequest: UserRegRequest) {
+    asynSync.sync(userService.register(regRequest), response)
+  }
 }

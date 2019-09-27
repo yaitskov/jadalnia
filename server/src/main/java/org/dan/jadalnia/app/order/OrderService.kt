@@ -25,58 +25,60 @@ import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 class OrderService @Inject constructor(
-        val wsBroadcast: WsBroadcast,
-        val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
-        val orderDao: OrderDao,
-        val daoUpdater: DaoUpdater,
-        val labelService: LabelService) {
+    val wsBroadcast: WsBroadcast,
+    val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
+    val orderDao: OrderDao,
+    val daoUpdater: DaoUpdater,
+    val labelService: LabelService) {
 
   companion object {
     val log = LoggerFactory.getLogger(OrderService::class.java)
   }
 
-    fun putNewOrder(
-            festival: Festival,
-            customerSession: UserSession,
-            newOrderItems: List<OrderItem>): CompletableFuture<OrderLabel> {
-        return labelService
-                .allocate(festival)
-                .thenApply { label -> orderCacheByLabel.inject(
-                        Pair(festival.fid(), label),
-                        OrderMem(
-                                label = label,
-                                customer = customerSession.uid,
-                                items = newOrderItems,
-                                state = AtomicReference(Accepted)
-                        )) }
-                .thenCompose { order -> orderDao.storeNewOrder(festival.fid(), order) }
-    }
+  fun putNewOrder(
+      festival: Festival,
+      customerSession: UserSession,
+      newOrderItems: List<OrderItem>): CompletableFuture<OrderLabel> {
+    return labelService
+        .allocate(festival)
+        .thenApply { label ->
+          orderCacheByLabel.inject(
+              Pair(festival.fid(), label),
+              OrderMem(
+                  label = label,
+                  customer = customerSession.uid,
+                  items = newOrderItems,
+                  state = AtomicReference(Accepted)
+              ))
+        }
+        .thenCompose { order -> orderDao.storeNewOrder(festival.fid(), order) }
+  }
 
-    fun markOrderPaid(festival: Festival, paidOrder: MarkOrderPaid)
-            : CompletableFuture<Boolean> {
-        return orderCacheByLabel.get(key(festival, paidOrder.label))
-                .thenApply { order ->
-                    val stWas = order.state.getAndUpdate { st ->
-                        when (st) {
-                            Paid -> Paid
-                            Accepted -> Paid
-                            else -> throw badRequest(
-                                    "Order cannot be paid", "label", order.label)
-                        }
-                    }
-                    if (stWas == Accepted) {
-                        festival.readyToExecOrders.offer(order.label)
-                        wsBroadcast.broadcastToFreeKelners(
-                                festival, OrderPaidEvent(order.label))
-                        daoUpdater.exec { orderDao.updateState(festival.fid(), order.label, Paid) }
-                        true
-                    } else {
-                        false
-                    }
-                }
-    }
+  fun markOrderPaid(festival: Festival, paidOrder: MarkOrderPaid)
+      : CompletableFuture<Boolean> {
+    return orderCacheByLabel.get(key(festival, paidOrder.label))
+        .thenApply { order ->
+          val stWas = order.state.getAndUpdate { st ->
+            when (st) {
+              Paid -> Paid
+              Accepted -> Paid
+              else -> throw badRequest(
+                  "Order cannot be paid", "label", order.label)
+            }
+          }
+          if (stWas == Accepted) {
+            festival.readyToExecOrders.offer(order.label)
+            wsBroadcast.broadcastToFreeKelners(
+                festival, OrderPaidEvent(order.label))
+            daoUpdater.exec { orderDao.updateState(festival.fid(), order.label, Paid) }
+            true
+          } else {
+            false
+          }
+        }
+  }
 
-    private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
+  private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
 
   fun tryToExecOrder(festival: Festival, kelnerUid: Uid)
       : CompletableFuture<Optional<OrderLabel>> {

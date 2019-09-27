@@ -1,6 +1,5 @@
 package org.dan.jadalnia.app.order
 
-
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -15,55 +14,56 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
 import java.util.stream.Collectors.toList
 
+class OrderDao : AsyncDao() {
+  companion object {
+    val log = LoggerFactory.getLogger(OrderDao::class.java)
+  }
 
-class OrderDao: AsyncDao() {
-    companion object {
-        val log = LoggerFactory.getLogger(OrderDao::class.java)
+  fun loadReadyToExecOrders(fid: Fid): CompletableFuture<List<OrderLabel>> {
+    return execQuery { jooq ->
+      jooq.select(ORDERS.LABEL)
+          .from(ORDERS)
+          .where(ORDERS.FESTIVAL_ID.eq(fid),
+              ORDERS.STATE.eq(OrderState.Paid))
+          .orderBy(ORDERS.OID)
+          .stream()
+          .map { r -> r.get(ORDERS.LABEL) }
+          .collect(toList())
     }
+  }
 
-    fun loadReadyToExecOrders(fid: Fid): CompletableFuture<List<OrderLabel>> {
-        return execQuery {
-            jooq -> jooq.select(ORDERS.LABEL)
-                    .from(ORDERS)
-                    .where(ORDERS.FESTIVAL_ID.eq(fid),
-                            ORDERS.STATE.eq(OrderState.Paid))
-                    .orderBy(ORDERS.OID)
-                    .stream()
-                    .map { r -> r.get(ORDERS.LABEL) }
-                    .collect(toList())
+  fun storeNewOrder(fid: Fid, order: OrderMem):
+      CompletableFuture<OrderLabel> {
+    return execQuery { jooq ->
+      jooq.insertInto(ORDERS,
+          ORDERS.FESTIVAL_ID,
+          ORDERS.CUSTOMER_ID,
+          ORDERS.LABEL,
+          ORDERS.STATE,
+          ORDERS.REQUIREMENTS)
+          .values(fid, order.customer, order.label,
+              order.state.get(), order.items)
+          .returning(ORDERS.OID)
+          .fetchOne()
+          .getOid()
+    }
+        .thenApply { oid ->
+          log.info("Store new order {} => {}", oid, order.label)
+          order.label
         }
-    }
+  }
 
-    fun storeNewOrder(fid: Fid, order: OrderMem):
-            CompletableFuture<OrderLabel>  {
-        return execQuery { jooq ->
-            jooq.insertInto(ORDERS,
-                    ORDERS.FESTIVAL_ID,
-                    ORDERS.CUSTOMER_ID,
-                    ORDERS.LABEL,
-                    ORDERS.STATE,
-                    ORDERS.REQUIREMENTS)
-                    .values(fid, order.customer, order.label,
-                            order.state.get(), order.items)
-                    .returning(ORDERS.OID)
-                    .fetchOne()
-                    .getOid() }
-                .thenApply { oid ->
-                    log.info("Store new order {} => {}", oid, order.label)
-                    order.label
-                }
+  fun updateState(fid: Fid, label: OrderLabel, paid: OrderState): CompletableFuture<Unit> {
+    return execQuery { jooq ->
+      jooq.update(ORDERS)
+          .set(ORDERS.STATE, paid)
+          .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
+          .execute()
     }
-
-    fun updateState(fid: Fid, label: OrderLabel, paid: OrderState): CompletableFuture<Unit> {
-        return execQuery { jooq ->
-            jooq.update(ORDERS)
-                    .set(ORDERS.STATE, paid)
-                    .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
-                    .execute() }
-                .thenApply { updated ->
-                    log.info("Order {}:{} changed paid status ({})", fid, label, updated)
-                }
-    }
+        .thenApply { updated ->
+          log.info("Order {}:{} changed paid status ({})", fid, label, updated)
+        }
+  }
 
   fun assignKelner(fid: Fid, label: OrderLabel, kelnerUid: Uid): CompletableFuture<Unit> {
     return execQuery { jooq ->
@@ -71,27 +71,28 @@ class OrderDao: AsyncDao() {
           .set(ORDERS.STATE, OrderState.Executing)
           .set(ORDERS.KELNER_ID, kelnerUid)
           .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
-          .execute() }
+          .execute()
+    }
         .thenApply { updated ->
           log.info("Order {}:{} is executing by ({})", fid, label, kelnerUid)
         }
   }
 
   fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
-        return execQuery { jooq ->
-            ofNullable(jooq.select()
-                    .from(ORDERS)
-                    .where(ORDERS.FESTIVAL_ID.eq(fid),
-                            ORDERS.LABEL.eq(label))
-                    .fetchOne())
-                    .map { record ->
-                        OrderMem(
-                              customer = record.get(ORDERS.CUSTOMER_ID),
-                                state = AtomicReference(record.get(ORDERS.STATE)),
-                                label = label,
-                                items = record.get(ORDERS.REQUIREMENTS)
-                        )
-                    }
-        }
+    return execQuery { jooq ->
+      ofNullable(jooq.select()
+          .from(ORDERS)
+          .where(ORDERS.FESTIVAL_ID.eq(fid),
+              ORDERS.LABEL.eq(label))
+          .fetchOne())
+          .map { record ->
+            OrderMem(
+                customer = record.get(ORDERS.CUSTOMER_ID),
+                state = AtomicReference(record.get(ORDERS.STATE)),
+                label = label,
+                items = record.get(ORDERS.REQUIREMENTS)
+            )
+          }
     }
+  }
 }
