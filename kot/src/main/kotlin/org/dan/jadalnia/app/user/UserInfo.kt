@@ -33,4 +33,11 @@ data class UserInfo(
         }
         return this
     }
+
+    fun ensureKelner(): UserInfo {
+        if (userType != UserType.Kelner) {
+            throw JadEx(401, Error("user is not kelner"))
+        }
+        return this
+    }
 }

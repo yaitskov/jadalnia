@@ -4,10 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.dan.jadalnia.app.festival.pojo.Festival
 
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.user.Uid
+import org.slf4j.LoggerFactory
+import java.util.*
 
 import javax.inject.Inject
 import java.util.concurrent.ConcurrentHashMap
-
+import java.util.stream.Collectors.toList
 
 class WsBroadcast @Inject constructor(
         val objectMapper: ObjectMapper,
@@ -19,6 +22,19 @@ class WsBroadcast @Inject constructor(
 
         broadcastTo(listeners.customerListeners.values, serializedMessage)
         broadcastTo(listeners.volunteerListeners.values, serializedMessage)
+    }
+
+    fun notifyCustomers(fid: Fid, customers: Collection<Uid>, message: MessageForClient) {
+        val listeners = getListeners(fid)
+        val serializedMessage: ByteArray = objectMapper.writeValueAsBytes(message)
+        log.info("notify customers {} of festival {} with {}", customers, fid, message)
+        broadcastTo(
+            customers.stream()
+                .map { uid -> Optional.ofNullable(listeners.customerListeners[uid]) }
+                .filter { o -> o.isPresent() }
+                .map { o -> o.get() }
+                .collect(toList()),
+        serializedMessage)
     }
 
     fun broadcastTo(listeners: Collection<WsListener>, message: MessageForClient) {
@@ -57,5 +73,7 @@ class WsBroadcast @Inject constructor(
             // close ws on failure
             listeners.forEach { listener -> listener.send(message) }
         }
+
+        val log = LoggerFactory.getLogger(WsBroadcast::class.java)
     }
 }

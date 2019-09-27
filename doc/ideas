@@ -1,0 +1,16 @@
+
+- online presale before festival starts
+- kelner stimulation for award cause everybody's performance is measured
+- pre label plates with numbers 1, 2, 3, 4, 5, 6, ....
+
+
+problems:
+
+- if kelner goes offline with incomplete order how to avoid executing orders twice?
+   - use reasonable time to execute timeout like 1 minute
+- kelner dirty hands and cellphone
+- custom orders:
+     sometimes people want:
+         put on same plate several numbers
+         replace pierogi z kapusta na russkie
+         exclude item from the meal

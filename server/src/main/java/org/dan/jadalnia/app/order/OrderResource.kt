@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
+import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
@@ -17,9 +18,11 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
 import javax.ws.rs.Consumes
+import javax.ws.rs.GET
 import javax.ws.rs.HeaderParam
 import javax.ws.rs.POST
 import javax.ws.rs.Path
+import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.Suspended
@@ -41,6 +44,9 @@ class OrderResource @Inject constructor(
         const val ORDER = "order/"
         const val PUT_ORDER = ORDER + "put"
         const val ORDER_PAID = ORDER + "paid"
+      const val GET_ORDER = ORDER + "get"
+      const val TRY_ORDER = ORDER + "try"
+      const val ORDER_READY = ORDER + "ready"
         val log = LoggerFactory.getLogger(OrderService::class.java)
     }
 
@@ -59,6 +65,35 @@ class OrderResource @Inject constructor(
                         },
                 response)
     }
+
+  @GET
+  @Path(GET_ORDER + "/{label}")
+  fun showOrderToKelner(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label")
+      label: OrderLabel) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose { fid -> orderService.showOrderToKelner(fid, label) },
+        response)
+  }
+
+  @POST
+  @Path(TRY_ORDER)
+  fun tryToExecOrder(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose {
+              festival -> orderService.tryToExecOrder(festival, session.uid)
+            },
+        response)
+  }
 
     @POST
     @Path(PUT_ORDER)

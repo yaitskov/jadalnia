@@ -6,14 +6,14 @@ import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
+import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.ORDERS
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.Optional
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
-import java.util.stream.Collectors.toMap
-import kotlin.collections.LinkedHashMap
+import java.util.stream.Collectors.toList
 
 
 class OrderDao: AsyncDao() {
@@ -21,7 +21,7 @@ class OrderDao: AsyncDao() {
         val log = LoggerFactory.getLogger(OrderDao::class.java)
     }
 
-    fun loadReadyToExecOrders(fid: Fid): CompletableFuture<LinkedHashMap<OrderLabel, Unit>> {
+    fun loadReadyToExecOrders(fid: Fid): CompletableFuture<List<OrderLabel>> {
         return execQuery {
             jooq -> jooq.select(ORDERS.LABEL)
                     .from(ORDERS)
@@ -30,9 +30,7 @@ class OrderDao: AsyncDao() {
                     .orderBy(ORDERS.OID)
                     .stream()
                     .map { r -> r.get(ORDERS.LABEL) }
-                    .collect(toMap({ o -> o }, { Unit },
-                            { _, _ -> throw IllegalStateException() },
-                            { -> LinkedHashMap<OrderLabel, Unit>() }))
+                    .collect(toList())
         }
     }
 
@@ -67,7 +65,19 @@ class OrderDao: AsyncDao() {
                 }
     }
 
-    fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
+  fun assignKelner(fid: Fid, label: OrderLabel, kelnerUid: Uid): CompletableFuture<Unit> {
+    return execQuery { jooq ->
+      jooq.update(ORDERS)
+          .set(ORDERS.STATE, OrderState.Executing)
+          .set(ORDERS.KELNER_ID, kelnerUid)
+          .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
+          .execute() }
+        .thenApply { updated ->
+          log.info("Order {}:{} is executing by ({})", fid, label, kelnerUid)
+        }
+  }
+
+  fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
         return execQuery { jooq ->
             ofNullable(jooq.select()
                     .from(ORDERS)

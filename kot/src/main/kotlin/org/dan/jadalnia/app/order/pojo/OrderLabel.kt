@@ -20,6 +20,10 @@ data class OrderLabel constructor (val name: String) {
         @JvmStatic
         @JsonCreator
         fun of(name: String) = OrderLabel(name)
+
+        // jersey
+        @JvmStatic
+        fun valueOf(name: String) = OrderLabel(name)
     }
 
     fun toInt(): Int {

@@ -84,7 +84,7 @@ class VolunteerWsListener
 
             userSessions.get(getUserSession()).thenCompose { userInfo ->
                 if (!validUserTypes.contains(userInfo.userType)) {
-                    throw badRequest("Only $validUserTypes are expected")
+                    throw badRequest("Only $validUserTypes are expected but ${userInfo.userType}")
                 }
 
                 log.info("Connected {} {} of festival {}",

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.ConcurrentHashMap
-
+import java.util.concurrent.LinkedBlockingDeque
 
 class FestivalCacheLoader @Inject constructor(
         val labelDao: LabelDao,
@@ -35,10 +35,13 @@ class FestivalCacheLoader @Inject constructor(
                                 .thenCompose { readyToExecOrders ->
                                     completedFuture(
                                             Festival(
-                                                    info = AtomicReference(festInfo),
-                                                    readyToExecOrders = readyToExecOrders,
-                                                    freeKelners = ConcurrentHashMap(),
-                                                    nextLabel = AtomicInteger(maxId.getId() + 1)))
+                                                info = AtomicReference(festInfo),
+                                                readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
+                                                readyToPickupOrders = ConcurrentHashMap(),
+                                                busyKelners = ConcurrentHashMap(),
+                                                freeKelners = ConcurrentHashMap(),
+                                                executingOrders = ConcurrentHashMap(), // load from db
+                                                nextLabel = AtomicInteger(maxId.getId() + 1)))
                                 }
                     }
         }

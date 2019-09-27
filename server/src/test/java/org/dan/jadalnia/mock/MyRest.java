@@ -71,6 +71,34 @@ public class MyRest {
         }
     }
 
+    public <R> R post0(String path, UserSession session, GenericType<R> genericType) {
+        return post(path, Optional.of(session), "", genericType);
+    }
+
+    @SneakyThrows
+    public <T, R> R post(String path, Optional<UserSession> session, T entity, GenericType<R> genericType) {
+        final Response response = post(path, session, entity);
+        switch (response.getStatus()) {
+            case 200:
+            case 201:
+            case 204:
+                return response.readEntity(genericType);
+            case 400:
+                throw new JadEx(400, response.readEntity(Error.class), null);
+            default:
+                throw new JadEx(
+                        response.getStatus(),
+                        new Error("post req ["
+                                + path + "] with ["
+                                + om.writeValueAsString(entity)
+                                + "] responded [" + response.getStatus() + "] ["
+                                + response.getStatusInfo().getReasonPhrase() + "] ["
+                                + IOUtils.toString((InputStream) response.getEntity() , UTF_8)
+                                + "]"
+                        ));
+        }
+    }
+
     public <T> Invocation.Builder postBuilder(
             String path, Map<String, String> headers) {
         val request = request().path(path).request(APPLICATION_JSON);
@@ -98,9 +126,9 @@ public class MyRest {
                 .get(gt);
     }
 
-    public <T> T get(String path, SessionAware session, Class<T> resultClass) {
+    public <T> T get(String path, UserSession session, Class<T> resultClass) {
         return request().path(path).request(APPLICATION_JSON)
-                .header(SESSION, session.getSession())
+                .header(SESSION, session)
                 .get(resultClass);
     }
 

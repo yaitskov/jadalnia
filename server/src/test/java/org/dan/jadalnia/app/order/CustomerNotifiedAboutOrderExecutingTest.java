@@ -1,24 +1,26 @@
 package org.dan.jadalnia.app.order;
 
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
-import org.dan.jadalnia.app.festival.pojo.Fid;
-import org.dan.jadalnia.app.order.pojo.MarkOrderPaid;
 import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.order.pojo.OrderState;
 import org.dan.jadalnia.app.user.UserSession;
-import org.dan.jadalnia.app.user.UserType;
 import org.dan.jadalnia.app.user.WsClientHandle;
 import org.dan.jadalnia.app.ws.MessageForClient;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
+import org.hamcrest.core.Is;
 import org.junit.Test;
 
+import javax.ws.rs.core.GenericType;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singletonList;
@@ -28,28 +30,26 @@ import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.genUserKey;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerCustomer;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerUser;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.markAsPaid;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKasier;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKelner;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertThat;
 
-public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
-    public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
-        return registerUser(fid, key, myRest, UserType.Kasier);
+public class CustomerNotifiedAboutOrderExecutingTest extends WsIntegrationTest {
+    public static KelnerOrderView getOrderInfo(MyRest myRest, UserSession session, OrderLabel label) {
+        return myRest.get(OrderResource.GET_ORDER + "/" + label.getName(),  session, KelnerOrderView.class);
     }
 
-    public static UserSession registerKelner(Fid fid, String key, MyRest myRest) {
-        return registerUser(fid, key, myRest, UserType.Kelner);
-    }
-
-    public static Boolean markAsPaid(
-            MyRest myRest, OrderLabel order, UserSession session) {
-        return myRest.post(OrderResource.ORDER_PAID,
-                session,
-                new MarkOrderPaid(order),
-                Boolean.class);
+    public static Optional<OrderLabel> tryExecOrder(
+            MyRest myRest, UserSession kelnerSession) {
+        return myRest.post0(OrderResource.TRY_ORDER, kelnerSession, new GenericType<Optional<OrderLabel>>() {});
     }
 
     @Test
     @SneakyThrows
-    public void customerPutsOrder() {
+    public void kelnerTakesOrderForExecuting() {
         val festival = createFestival(genAdminKey(), myRest());
         val customerSession = registerCustomer(
                 festival.getFid(), genUserKey(), myRest());
@@ -57,7 +57,6 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                 festival.getFid(), genUserKey(), myRest());
         val kelnerSession = registerKelner(
                 festival.getFid(), genUserKey(), myRest());
-
 
         setState(myRest(), festival.getSession(), FestivalState.Open);
 
@@ -69,21 +68,26 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                                 1,
                                 Collections.emptyList())));
 
-        val wsKelnerHandler = WsClientHandle.wsClientHandle(
-                kelnerSession,
+        markAsPaid(myRest(), orderLabel, kasierSession);
+
+        val wsCustomerHandler = WsClientHandle.wsClientHandle(
+                customerSession,
                 new PredicateStateMatcher<>(
                         (MessageForClient event) ->
-                                event instanceof OrderPaidEvent
-                                        && ((OrderPaidEvent) event).getLabel().equals(orderLabel),
+                                event instanceof OrderStateEvent
+                                        && ((OrderStateEvent) event).getLabel().equals(orderLabel)
+                                        && ((OrderStateEvent) event).getState() == OrderState.Executing,
                         new CompletableFuture<>()),
                 new TypeReference<MessageForClient>() {
                 });
 
-        bindUserWsHandler(wsKelnerHandler);
+        bindCustomerWsHandler(wsCustomerHandler);
 
-        markAsPaid(myRest(), orderLabel, kasierSession);
-        // todo customer should be also notified
+        assertThat(getOrderInfo(myRest(), kelnerSession, orderLabel).getItems(),
+                hasItem(hasProperty("quantity", Is.is(1))));
 
-        wsKelnerHandler.waitTillMatcherSatisfied();
+        assertThat(tryExecOrder(myRest(), kelnerSession), Is.is(Optional.of(orderLabel)));
+
+        wsCustomerHandler.waitTillMatcherSatisfied();
     }
 }
