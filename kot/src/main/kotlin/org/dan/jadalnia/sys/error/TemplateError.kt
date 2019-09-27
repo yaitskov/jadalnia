@@ -2,7 +2,7 @@ package org.dan.jadalnia.sys.error;
 
 class TemplateError(
         message: String,
-        val params: MutableMap<String, Any>)
+        val params: Map<String, Any>)
     :
         Error(message) {
 

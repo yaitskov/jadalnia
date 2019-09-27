@@ -94,6 +94,24 @@ class OrderResource @Inject constructor(
   }
 
   @POST
+  @Path(ORDER_READY)
+  fun markOrderReadyToPickup(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      label: OrderLabel) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              orderService.markOrderReadyToPickup(festival, session.uid, label)
+            },
+        response)
+  }
+
+  // user picks order
+
+  @POST
   @Path(PUT_ORDER)
   fun create(
       @Suspended response: AsyncResponse,

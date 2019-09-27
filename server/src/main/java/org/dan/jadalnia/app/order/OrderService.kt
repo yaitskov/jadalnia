@@ -10,11 +10,13 @@ import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
+import org.dan.jadalnia.app.order.pojo.OrderState.Ready
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.db.DaoUpdater
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
+import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import java.util.Optional
@@ -119,4 +121,37 @@ class OrderService @Inject constructor(
   fun showOrderToKelner(fid: Fid, label: OrderLabel) = orderCacheByLabel
       .get(Pair(fid, label))
       .thenApply { order -> KelnerOrderView(order.items) }
+
+  fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
+      : CompletableFuture<Void> {
+    val opLog = OpLog()
+    if (!festival.busyKelners.remove(kelnerUid, label)) {
+      throw badRequest("kelner was not busy with", "order", label)
+    }
+    opLog.add { festival.busyKelners[kelnerUid] = label }
+    festival.freeKelners[kelnerUid] = kelnerUid
+
+    if (!festival.executingOrders.remove(label, kelnerUid)) {
+      opLog.rollback()
+      throw internalError(
+          "Order was not executed by",
+          mapOf(Pair("kelner", kelnerUid),
+              Pair("order", label)))
+    }
+    opLog.add { festival.executingOrders[label] = kelnerUid }
+    return orderCacheByLabel.get(Pair(festival.fid(), label))
+        .thenCompose { order ->
+          log.info("Kelner {} completed executing order {}", kelnerUid, label)
+          festival.freeKelners[kelnerUid] = kelnerUid
+          opLog.add { festival.freeKelners.remove(kelnerUid) }
+          festival.readyToPickupOrders[label] = Unit
+          opLog.add { festival.readyToPickupOrders.remove(label) }
+          orderDao.updateState(festival.fid(), label, Ready)
+              .thenAccept {
+                wsBroadcast.notifyCustomers(
+                    festival.fid(), listOf(order.customer), OrderStateEvent(label, Ready))
+              }
+        }
+        .exceptionally { e -> throw opLog.rollback(e) }
+  }
 }
