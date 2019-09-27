@@ -65,11 +65,11 @@ class FestivalResource @Inject constructor(
       state: FestivalState) {
     asynSync.sync(
         userSessions.get(session)
-            .thenApply({ user -> user.ensureAdmin().fid })
+            .thenApply { user -> user.ensureAdmin().fid }
             .thenCompose(festivalCache::get)
-            .thenCompose({ festival ->
+            .thenCompose { festival ->
               festivalService.setState(festival, state)
-            }),
+            },
         response)
   }
 
@@ -97,11 +97,11 @@ class FestivalResource @Inject constructor(
       items: List<MenuItem>) {
     asynSync.sync(
         userSessions.get(session)
-            .thenApply({ user -> user.ensureAdmin().fid })
+            .thenApply { user -> user.ensureAdmin().fid }
             .thenCompose(festivalCache::get)
-            .thenCompose({ festival ->
+            .thenCompose { festival ->
               festivalService.updateMenu(festival, items)
-            }),
+            },
         response)
   }
 
@@ -112,7 +112,7 @@ class FestivalResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession)
       : CompletableFuture<Void> {
     return userSessions.get(session)
-        .thenApply({ user -> user.ensureAdmin().fid })
-        .thenAccept({ fid -> festivalCache.invalidate(fid) })
+        .thenApply { user -> user.ensureAdmin().fid }
+        .thenAccept { fid -> festivalCache.invalidate(fid) }
   }
 }
