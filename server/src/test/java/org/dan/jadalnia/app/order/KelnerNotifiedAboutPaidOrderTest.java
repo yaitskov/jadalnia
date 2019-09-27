@@ -25,10 +25,10 @@ import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.genUserKey;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerCustomer;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerUser;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerUser;
 
 public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
