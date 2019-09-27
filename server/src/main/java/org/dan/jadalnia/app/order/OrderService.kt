@@ -9,6 +9,7 @@ import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
+import org.dan.jadalnia.app.order.pojo.OrderState.Handed
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
 import org.dan.jadalnia.app.order.pojo.OrderState.Ready
 import org.dan.jadalnia.app.user.Uid
@@ -151,6 +152,23 @@ class OrderService @Inject constructor(
                 wsBroadcast.notifyCustomers(
                     festival.fid(), listOf(order.customer), OrderStateEvent(label, Ready))
               }
+        }
+        .exceptionally { e -> throw opLog.rollback(e) }
+  }
+
+  fun pickUpReadyOrder(festival: Festival, customerUid: Uid, label: OrderLabel)
+      : CompletableFuture<Void> {
+    val opLog = OpLog()
+
+    if (festival.readyToPickupOrders.remove(label) == null) {
+      throw badRequest("Order is  not ready", "order", label)
+    }
+    opLog.add { festival.readyToPickupOrders[label] = Unit }
+    return orderCacheByLabel.get(Pair(festival.fid(), label))
+        .thenCompose { order ->
+          log.info("Customer {} picked up order {}", customerUid, label)
+          orderDao.updateState(festival.fid(), label, Handed)
+              .thenAccept {  }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
   }

@@ -76,6 +76,30 @@ public class MyRest {
     }
 
     @SneakyThrows
+    public <T> void voidPost(String path, UserSession session, T entity) {
+        final Response response = post(path, Optional.of(session), entity);
+        switch (response.getStatus()) {
+            case 200:
+            case 201:
+            case 204:
+                return;
+            case 400:
+                throw new JadEx(400, response.readEntity(Error.class), null);
+            default:
+                throw new JadEx(
+                        response.getStatus(),
+                        new Error("post req ["
+                                + path + "] with ["
+                                + om.writeValueAsString(entity)
+                                + "] responded [" + response.getStatus() + "] ["
+                                + response.getStatusInfo().getReasonPhrase() + "] ["
+                                + IOUtils.toString((InputStream) response.getEntity() , UTF_8)
+                                + "]"
+                        ));
+        }
+    }
+
+    @SneakyThrows
     public <T, R> R post(String path, Optional<UserSession> session, T entity, GenericType<R> genericType) {
         final Response response = post(path, session, entity);
         switch (response.getStatus()) {
