@@ -53,10 +53,11 @@ class OrderDao : AsyncDao() {
         }
   }
 
-  fun updateState(fid: Fid, label: OrderLabel, paid: OrderState): CompletableFuture<Unit> {
+  fun updateState(fid: Fid, label: OrderLabel, state: OrderState)
+      : CompletableFuture<Unit> {
     return execQuery { jooq ->
       jooq.update(ORDERS)
-          .set(ORDERS.STATE, paid)
+          .set(ORDERS.STATE, state)
           .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
           .execute()
     }

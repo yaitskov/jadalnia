@@ -64,7 +64,7 @@ class JadEx : RuntimeException {
         fun internalError(message: String) = internalError(message, HashMap())
 
         @JvmStatic
-        fun internalError(template: String, params: MutableMap<String, Any>)
+        fun internalError(template: String, params: Map<String, Any>)
             = internalError(TemplateError(template, params))
 
         @JvmStatic
