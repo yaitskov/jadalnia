@@ -4,7 +4,6 @@ package org.dan.jadalnia.app.festival.pojo;
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.user.Uid
 import java.util.concurrent.BlockingDeque
-import java.util.concurrent.BlockingQueue
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -17,7 +16,8 @@ class Festival(
         val executingOrders: ConcurrentHashMap<OrderLabel, Uid>,
         val freeKelners: ConcurrentHashMap<Uid, Uid>,
         val busyKelners: ConcurrentHashMap<Uid, OrderLabel>,
-        val nextLabel: AtomicInteger) {
+        val nextLabel: AtomicInteger,
+        val nextToken: AtomicInteger) {
 
     fun fid() = info.get().fid
 }

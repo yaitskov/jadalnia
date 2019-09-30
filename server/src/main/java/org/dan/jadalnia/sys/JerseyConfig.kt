@@ -3,6 +3,7 @@ package org.dan.jadalnia.sys
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
 import org.dan.jadalnia.app.festival.FestivalResource
 import org.dan.jadalnia.app.order.OrderResource
+import org.dan.jadalnia.app.token.TokenResource
 import org.dan.jadalnia.app.user.UserResource
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperContextResolver
 import org.dan.jadalnia.sys.error.DefaultExceptionMapper
@@ -41,12 +42,18 @@ class JerseyConfig : ResourceConfig() {
         register(InvalidTypeIdExceptionMapper::class.java)
         register(UncheckedExecutionExceptionMapper::class.java)
         register(UndeclaredThrowableExecutionExceptionMapper::class.java)
-        packages(false,
-                *asList(UserResource::class.java,
-                        FestivalResource::class.java, OrderResource::class.java)
-                        .stream()
-                        .map({ cls -> cls.`package`.name })
-                        .collect(toList())
-                        .toTypedArray())
+        packages(
+            false,
+            *asList(
+                UserResource::class.java,
+                FestivalResource::class.java,
+                TokenResource::class.java,
+                OrderResource::class.java)
+                .stream()
+                .map { cls -> cls.`package`.name }
+                .collect(toList())
+                .toTypedArray())
     }
+
+
 }

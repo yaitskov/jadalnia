@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.dan.jadalnia.app.order.OrderExecutingEvent
 import org.dan.jadalnia.app.order.OrderPaidEvent
 import org.dan.jadalnia.app.order.OrderStateEvent
+import org.dan.jadalnia.app.token.TokenApprovedEvent
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -19,6 +20,9 @@ import org.dan.jadalnia.app.order.OrderStateEvent
     JsonSubTypes.Type(
         value = OrderStateEvent::class,
         name = "orderState"),
+    JsonSubTypes.Type(
+        value = TokenApprovedEvent::class,
+        name = "tokenApproved"),
     JsonSubTypes.Type(
             value = OrderPaidEvent::class,
             name = "orderPaid")
