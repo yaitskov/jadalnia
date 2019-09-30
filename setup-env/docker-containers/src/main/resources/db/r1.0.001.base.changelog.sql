@@ -22,13 +22,14 @@ create table users(
 );
 
 create table token(
-    tid int(11) not null primary key,
-    operation varchar(3) not null, -- Buy Sell
     festival_id int(11) not null,
+    tid int(11) not null,
+    operation varchar(3) not null, -- Buy Sell
     amount int(11) not null,
     customer_id int(11) not null,
     kasier_id int(11) null,
     created timestamp(3) default current_timestamp(3),
+    primary key (festival_id, tid),
     foreign key (festival_id) references festival(fid),
     foreign key (customer_id) references users(uid),
     foreign key (kasier_id) references users(uid)

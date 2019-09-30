@@ -44,7 +44,7 @@ class FestivalCacheLoader @Inject constructor(
                             busyKelners = ConcurrentHashMap(),
                             freeKelners = ConcurrentHashMap(),
                             executingOrders = ConcurrentHashMap(), // load from db
-                            nextToken = AtomicInteger(maxTokenId.value + 1),
+                            nextToken = AtomicInteger(maxTokenId.value),
                             nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
                   }
             }
