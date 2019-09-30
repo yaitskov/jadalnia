@@ -27,19 +27,19 @@ class TokenService @Inject constructor(
     }
     return tokenDao.requestTokens(
         festival.fid(),
-        TokenId(festival.nextToken.getAndIncrement()),
+        TokenId(festival.nextToken.incrementAndGet()),
         amount, customerUid);
   }
 
   fun approveTokens(
       festival: Festival,
-      customerUid: Uid,
+      kasierUid: Uid,
       approveReq: TokenApproveReq): CompletableFuture<TokenId> {
     return tokenDao.findTokenForApprove(festival.fid(), approveReq)
         .thenCompose { tokenId ->
-          tokenDao.approveTokens(festival.fid(), tokenId, customerUid).thenApply {
+          tokenDao.approveTokens(festival.fid(), tokenId, kasierUid).thenApply {
             wsBroadcast.notifyCustomers(
-                festival.fid(), listOf(customerUid), TokenApprovedEvent(tokenId))
+                festival.fid(), listOf(approveReq.customer), TokenApprovedEvent(tokenId))
             tokenId
           }
         }
