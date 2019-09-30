@@ -8,6 +8,7 @@ import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.label.LabelDao
 import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
+import org.dan.jadalnia.app.token.TokenDao
 import org.dan.jadalnia.app.ws.WsBroadcast
 
 import javax.inject.Inject
@@ -20,30 +21,34 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingDeque
 
 class FestivalCacheLoader @Inject constructor(
-        val labelDao: LabelDao,
-        val orderDao: OrderDao,
-        val festivalDao: FestivalDao,
-        val orderAggregator: OrderAggregator,
-        val wsBroadcast: WsBroadcast) :
-        CacheLoader<Fid, CompletableFuture<Festival>>()  {
+    val labelDao: LabelDao,
+    val orderDao: OrderDao,
+    val tokenDao: TokenDao,
+    val festivalDao: FestivalDao,
+    val orderAggregator: OrderAggregator,
+    val wsBroadcast: WsBroadcast) :
+    CacheLoader<Fid, CompletableFuture<Festival>>()  {
 
-    override fun load(fid: Fid): CompletableFuture<Festival> {
-        return festivalDao.getById(fid).thenCompose { festInfo ->
-            labelDao.maxOrderNumber(fid)
-                    .thenCompose { maxId ->
-                        orderDao.loadReadyToExecOrders(fid)
-                                .thenCompose { readyToExecOrders ->
-                                    completedFuture(
-                                            Festival(
-                                                info = AtomicReference(festInfo),
-                                                readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
-                                                readyToPickupOrders = ConcurrentHashMap(),
-                                                busyKelners = ConcurrentHashMap(),
-                                                freeKelners = ConcurrentHashMap(),
-                                                executingOrders = ConcurrentHashMap(), // load from db
-                                                nextLabel = AtomicInteger(maxId.getId() + 1)))
-                                }
-                    }
-        }
+  override fun load(fid: Fid): CompletableFuture<Festival> {
+    return festivalDao.getById(fid).thenCompose { festInfo ->
+      labelDao.maxOrderNumber(fid)
+          .thenCompose { maxLabelId ->
+            tokenDao.maxTokenNumber(fid).thenCompose { maxTokenId ->
+              orderDao.loadReadyToExecOrders(fid)
+                  .thenCompose { readyToExecOrders ->
+                    completedFuture(
+                        Festival(
+                            info = AtomicReference(festInfo),
+                            readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
+                            readyToPickupOrders = ConcurrentHashMap(),
+                            busyKelners = ConcurrentHashMap(),
+                            freeKelners = ConcurrentHashMap(),
+                            executingOrders = ConcurrentHashMap(), // load from db
+                            nextToken = AtomicInteger(maxTokenId.value + 1),
+                            nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
+                  }
+            }
+          }
     }
+  }
 }

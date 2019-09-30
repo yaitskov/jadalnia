@@ -74,6 +74,16 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.json.OrderLabelConverter</binding>
                                 </customType>
                                 <customType>
+                                    <name>TokenPoints</name>
+                                    <type>org.dan.jadalnia.app.token.TokenPoints</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.num.TokenPointsConverter</binding>
+                                </customType>
+                                <customType>
+                                    <name>TokenId</name>
+                                    <type>org.dan.jadalnia.app.token.TokenId</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.num.TokenConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>Uid</name>
                                     <type>org.dan.jadalnia.app.user.Uid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.UidConverter</binding>
@@ -107,6 +117,11 @@
                                     <name>UserType</name>
                                     <type>org.dan.jadalnia.app.user.UserType</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.enums.UserTypeConverter</binding>
+                                </customType>
+                                <customType>
+                                    <name>TokenOp</name>
+                                    <type>org.dan.jadalnia.app.token.TokenOp</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.enums.TokenOpConverter</binding>
                                 </customType>
                                 <customType>
                                     <name>UserState</name>
@@ -180,6 +195,46 @@
                                 <forcedType>
                                     <name>OrderItems</name>
                                     <expression>.*orders\.requirements</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenId</name>
+                                    <expression>.*token\.tid</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenOp</name>
+                                    <expression>.*token\.operation</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Fid</name>
+                                    <expression>.*token\.festival_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenPoints</name>
+                                    <expression>.*token\.amount</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Uid</name>
+                                    <expression>.*token\.customer_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Uid</name>
+                                    <expression>.*token\.kasier_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenId</name>
+                                    <expression>.*token\.token_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenPoints</name>
+                                    <expression>.*orders\.points_cost</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
