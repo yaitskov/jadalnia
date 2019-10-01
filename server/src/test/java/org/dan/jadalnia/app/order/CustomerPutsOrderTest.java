@@ -19,6 +19,8 @@ import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
+import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FRYTKI_ORDER;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
 import static org.junit.Assert.assertThat;
@@ -38,16 +40,10 @@ public class CustomerPutsOrderTest extends WsIntegrationTest {
         val customerSession = registerCustomer(
                 festival.getFid(), genUserKey(), myRest());
         setState(myRest(), festival.getSession(), FestivalState.Open);
+        setMenu(myRest(), festival.getSession());
 
         assertThat(
-                putOrder(myRest(),
-                        customerSession,
-                        singletonList(
-                                new OrderItem(
-                                        new DishName("rzemniaki"),
-                                        1,
-                                        Collections.emptyList())))
-                        .toString(),
+                putOrder(myRest(), customerSession, FRYTKI_ORDER).toString(),
                 Matchers.matchesPattern("^[A-Z][0-9]+$"));
     }
 }

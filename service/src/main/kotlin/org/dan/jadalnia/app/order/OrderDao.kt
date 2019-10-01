@@ -40,9 +40,10 @@ class OrderDao : AsyncDao() {
           ORDERS.CUSTOMER_ID,
           ORDERS.LABEL,
           ORDERS.STATE,
+          ORDERS.POINTS_COST,
           ORDERS.REQUIREMENTS)
           .values(fid, order.customer, order.label,
-              order.state.get(), order.items)
+              order.state.get(), order.cost, order.items)
           .returning(ORDERS.OID)
           .fetchOne()
           .getOid()
@@ -81,7 +82,9 @@ class OrderDao : AsyncDao() {
 
   fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
     return execQuery { jooq ->
-      ofNullable(jooq.select()
+      ofNullable(jooq.select(
+          ORDERS.CUSTOMER_ID, ORDERS.STATE,
+          ORDERS.POINTS_COST, ORDERS.REQUIREMENTS)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.LABEL.eq(label))
@@ -91,6 +94,7 @@ class OrderDao : AsyncDao() {
                 customer = record.get(ORDERS.CUSTOMER_ID),
                 state = AtomicReference(record.get(ORDERS.STATE)),
                 label = label,
+                cost = record.get(ORDERS.POINTS_COST),
                 items = record.get(ORDERS.REQUIREMENTS)
             )
           }

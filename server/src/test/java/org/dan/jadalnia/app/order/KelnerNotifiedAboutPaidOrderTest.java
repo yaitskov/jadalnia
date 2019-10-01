@@ -19,18 +19,24 @@ import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
+import static org.dan.jadalnia.app.festival.SetMenuTest.FRYTKI;
+import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerUser;
 
 public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
+    public static final List<OrderItem> FRYTKI_ORDER = singletonList(
+            new OrderItem(FRYTKI, 1, Collections.emptyList()));
+
     public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
         return registerUser(fid, key, myRest, UserType.Kasier);
     }
@@ -51,6 +57,7 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     @SneakyThrows
     public void customerPutsOrder() {
         val festival = createFestival(genAdminKey(), myRest());
+
         val customerSession = registerCustomer(
                 festival.getFid(), genUserKey(), myRest());
         val kasierSession = registerKasier(
@@ -60,14 +67,9 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
 
 
         setState(myRest(), festival.getSession(), FestivalState.Open);
+        setMenu(myRest(), festival.getSession());
 
-        val orderLabel = putOrder(myRest(),
-                customerSession,
-                singletonList(
-                        new OrderItem(
-                                new DishName("rzemniaki"),
-                                1,
-                                Collections.emptyList())));
+        val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
 
         val wsKelnerHandler = WsClientHandle.wsClientHandle(
                 kelnerSession,

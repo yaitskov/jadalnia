@@ -32,6 +32,7 @@ class OrderService @Inject constructor(
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
     val orderDao: OrderDao,
     val daoUpdater: DaoUpdater,
+    val costEstimator: CostEstimator,
     val labelService: LabelService) {
 
   companion object {
@@ -51,6 +52,7 @@ class OrderService @Inject constructor(
                   label = label,
                   customer = customerSession.uid,
                   items = newOrderItems,
+                  cost = costEstimator.howMuchFor(festival, newOrderItems),
                   state = AtomicReference(Accepted)
               ))
         }
