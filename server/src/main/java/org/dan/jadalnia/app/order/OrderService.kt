@@ -1,17 +1,27 @@
 package org.dan.jadalnia.app.order
 
 import org.dan.jadalnia.app.festival.pojo.Festival
+import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.label.LabelService
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ALREADY_PAID
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.CANCELLED
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.FESTIVAL_OVER
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.NOT_ENOUGH_FUNDS
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID
+import org.dan.jadalnia.app.order.PaymentAttemptOutcome.RETRY
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
+import org.dan.jadalnia.app.order.pojo.OrderState.Cancelled
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
 import org.dan.jadalnia.app.order.pojo.OrderState.Handed
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
 import org.dan.jadalnia.app.order.pojo.OrderState.Ready
+import org.dan.jadalnia.app.token.TokenBalance
+import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
@@ -33,6 +43,7 @@ class OrderService @Inject constructor(
     val orderDao: OrderDao,
     val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
+    val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
     val labelService: LabelService) {
 
   companion object {
@@ -62,7 +73,7 @@ class OrderService @Inject constructor(
   fun markOrderPaid(festival: Festival, paidOrder: MarkOrderPaid)
       : CompletableFuture<Boolean> {
     return orderCacheByLabel.get(key(festival, paidOrder.label))
-        .thenApply { order ->
+        .thenCompose { order ->
           val stWas = order.state.getAndUpdate { st ->
             when (st) {
               Paid -> Paid
@@ -72,15 +83,22 @@ class OrderService @Inject constructor(
             }
           }
           if (stWas == Accepted) {
-            festival.readyToExecOrders.offer(order.label)
-            wsBroadcast.broadcastToFreeKelners(
-                festival, OrderPaidEvent(order.label))
-            daoUpdater.exec { orderDao.updateState(festival.fid(), order.label, Paid) }
-            true
+            persistPaidOrderAndNotify(festival, order)
+                .thenApply { true }
           } else {
-            false
+            completedFuture(false)
           }
         }
+  }
+
+  private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem): CompletableFuture<Unit> {
+    festival.readyToExecOrders.offer(order.label)
+    // notify customer
+    wsBroadcast.broadcastToFreeKelners(
+        festival, OrderPaidEvent(order.label))
+    return daoUpdater.exec {
+      orderDao.updateState(festival.fid(), order.label, Paid)
+    }
   }
 
   private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
@@ -173,5 +191,56 @@ class OrderService @Inject constructor(
               .thenAccept {  }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
+  }
+
+  fun customerPays(festival: Festival,
+                   session: UserSession,
+                   orderLabel: OrderLabel)
+      : CompletableFuture<PaymentAttemptOutcome> {
+    // check festival status
+    if (festival.info.get().state != FestivalState.Open) {
+      return completedFuture(FESTIVAL_OVER)
+    }
+    return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
+        .thenCompose { order ->
+          when (order.state.get()) {
+            Cancelled -> completedFuture(CANCELLED)
+            Accepted ->
+              tokenBalanceCache
+                  .get(Pair(festival.fid(), session.uid))
+                  .thenCompose { balance ->
+                    val balanceAmount = balance.balance.get();
+                    if (balanceAmount.value < order.cost.value) {
+                      completedFuture(NOT_ENOUGH_FUNDS)
+                    } else {
+                      val opLog = OpLog()
+                      if (balance.balance.compareAndSet(balanceAmount,
+                              TokenPoints(balanceAmount.value - order.cost.value))) {
+                        opLog.add {
+                          balance.balance.updateAndGet {
+                            b -> TokenPoints(b.value + order.cost.value)
+                          }
+                        }
+                        if (order.state.compareAndSet(Accepted, Paid)) {
+                          persistPaidOrderAndNotify(festival, order)
+                              .thenApply { ORDER_PAID }
+                              .whenComplete { u, e ->
+                                if (e != null) {
+                                  opLog.rollback()
+                                  throw internalError("failed persist order status", e)
+                                }
+                              }
+                        } else {
+                          opLog.rollback()
+                          completedFuture(RETRY)
+                        }
+                      } else {
+                        completedFuture(RETRY)
+                      }
+                    }
+                  }
+            else -> completedFuture(ALREADY_PAID)
+          }
+        }
   }
 }

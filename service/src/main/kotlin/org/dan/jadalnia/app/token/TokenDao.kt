@@ -67,4 +67,17 @@ class TokenDao: AsyncDao() {
         .orElseGet { TokenId(0) }
     }
   }
+
+  fun loadBalance(fid: Fid, customer: Uid): CompletableFuture<TokenPoints> {
+    return execQuery { jooq -> ofNullable(jooq
+        .select(TOKEN.AMOUNT.sum().`as`(TOKEN.AMOUNT))
+        .from(TOKEN)
+        .where(TOKEN.FESTIVAL_ID.eq(fid),
+            TOKEN.CUSTOMER_ID.eq(customer),
+            TOKEN.KASIER_ID.isNotNull())
+        .fetchOne())
+        .map { r -> r.get(TOKEN.AMOUNT) }
+        .orElseGet { TokenPoints(0) }
+    }
+  }
 }

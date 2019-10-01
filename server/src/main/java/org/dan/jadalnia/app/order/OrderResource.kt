@@ -46,6 +46,7 @@ class OrderResource @Inject constructor(
     const val TRY_ORDER = ORDER + "try"
     const val ORDER_READY = ORDER + "ready"
     const val PICKUP_ORDER = ORDER + "pickup"
+    const val PAY_ORDER = ORDER + "pay"
     val log = LoggerFactory.getLogger(OrderService::class.java)
   }
 
@@ -139,6 +140,23 @@ class OrderResource @Inject constructor(
             .thenCompose { festival ->
               orderService.putNewOrder(
                   festival, session, newOrderItems)
+            },
+        response)
+  }
+
+  @POST
+  @Path(PAY_ORDER)
+  fun customerPaysForOrder(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      orderLabel: OrderLabel) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              orderService.customerPays(
+                  festival, session, orderLabel)
             },
         response)
   }

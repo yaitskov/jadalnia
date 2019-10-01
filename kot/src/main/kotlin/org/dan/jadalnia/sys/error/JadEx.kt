@@ -76,7 +76,7 @@ class JadEx : RuntimeException {
             = JadEx(INTERNAL_SERVER_ERROR_500, error)
 
         @JvmStatic
-        fun internalError(clientMessage: String, e: Exception)
+        fun internalError(clientMessage: String, e: Throwable)
             = JadEx(INTERNAL_SERVER_ERROR_500,
                 TemplateError(clientMessage, HashMap()), e)
     }
