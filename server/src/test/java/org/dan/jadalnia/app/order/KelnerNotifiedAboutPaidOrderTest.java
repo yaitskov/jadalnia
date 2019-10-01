@@ -16,6 +16,7 @@ import org.dan.jadalnia.app.ws.MessageForClient;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -71,7 +72,19 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
 
         val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
 
-        val wsKelnerHandler = WsClientHandle.wsClientHandle(
+        val wsKelnerHandler = orderPaidWaiter(kelnerSession, orderLabel);
+
+        bindUserWsHandler(wsKelnerHandler);
+
+        markAsPaid(myRest(), orderLabel, kasierSession);
+        // todo customer should be also notified
+
+        wsKelnerHandler.waitTillMatcherSatisfied();
+    }
+
+    @NotNull
+    public static WsClientHandle<MessageForClient> orderPaidWaiter(UserSession kelnerSession, OrderLabel orderLabel) {
+        return WsClientHandle.wsClientHandle(
                 kelnerSession,
                 new PredicateStateMatcher<>(
                         (MessageForClient event) ->
@@ -80,12 +93,5 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                         new CompletableFuture<>()),
                 new TypeReference<MessageForClient>() {
                 });
-
-        bindUserWsHandler(wsKelnerHandler);
-
-        markAsPaid(myRest(), orderLabel, kasierSession);
-        // todo customer should be also notified
-
-        wsKelnerHandler.waitTillMatcherSatisfied();
     }
 }

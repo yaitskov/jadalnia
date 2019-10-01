@@ -15,7 +15,7 @@ class OrderCacheFactory @Inject constructor(val loader: OrderCacheLoader) {
         val log = LoggerFactory.getLogger(OrderCacheFactory::class.java)
     }
 
-    @Bean
+    @Bean(name = ["orderCacheByLabel"])
     fun create(): AsyncCache<Pair<Fid, OrderLabel>, OrderMem> {
         return AsyncCache(
                 CacheBuilder
