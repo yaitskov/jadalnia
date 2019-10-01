@@ -14,7 +14,7 @@ class TokenBalanceCacheFactory @Inject constructor(val loader: TokenBalanceCache
         val log = LoggerFactory.getLogger(TokenBalanceCacheFactory::class.java)
     }
 
-    @Bean
+    @Bean(name = ["tokenBalanceCache"])
     fun create(): AsyncCache<Pair<Fid, Uid>, TokenBalance> {
         return AsyncCache(
                 CacheBuilder

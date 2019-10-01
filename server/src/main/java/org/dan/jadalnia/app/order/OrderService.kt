@@ -36,13 +36,16 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
+import javax.inject.Named
 
 class OrderService @Inject constructor(
     val wsBroadcast: WsBroadcast,
+    @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
     val orderDao: OrderDao,
     val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
+    @Named("tokenBalanceCache")
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
     val labelService: LabelService) {
 
@@ -128,6 +131,10 @@ class OrderService @Inject constructor(
             throw badRequest("kelner is busy with", "order", prevOrder)
           }
           opLog.add { festival.busyKelners.remove(kelnerUid, label) }
+          if (!order.state.compareAndSet(Paid, Executing)) {
+            throw internalError("order is not paid", "state", order.state.get())
+          }
+          opLog.add { order.state.set(Paid) }
           festival.executingOrders[label] = kelnerUid
           opLog.add { festival.executingOrders.remove(label, kelnerUid) }
           orderDao.assignKelner(festival.fid(), label, kelnerUid)
@@ -162,6 +169,10 @@ class OrderService @Inject constructor(
     opLog.add { festival.executingOrders[label] = kelnerUid }
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
+          if (!order.state.compareAndSet(Executing, Ready)) {
+            throw internalError("order is not executing", "state", order.state.get())
+          }
+          opLog.add { order.state.set(Executing) }
           log.info("Kelner {} completed executing order {}", kelnerUid, label)
           festival.freeKelners[kelnerUid] = kelnerUid
           opLog.add { festival.freeKelners.remove(kelnerUid) }
@@ -186,6 +197,10 @@ class OrderService @Inject constructor(
     opLog.add { festival.readyToPickupOrders[label] = Unit }
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
+          if (!order.state.compareAndSet(Ready, Handed)) {
+            throw badRequest("order is not ready", "state", order.state.get())
+          }
+          opLog.add { order.state.set(Ready) }
           log.info("Customer {} picked up order {}", customerUid, label)
           orderDao.updateState(festival.fid(), label, Handed)
               .thenAccept {  }
@@ -197,7 +212,6 @@ class OrderService @Inject constructor(
                    session: UserSession,
                    orderLabel: OrderLabel)
       : CompletableFuture<PaymentAttemptOutcome> {
-    // check festival status
     if (festival.info.get().state != FestivalState.Open) {
       return completedFuture(FESTIVAL_OVER)
     }
@@ -209,15 +223,15 @@ class OrderService @Inject constructor(
               tokenBalanceCache
                   .get(Pair(festival.fid(), session.uid))
                   .thenCompose { balance ->
-                    val balanceAmount = balance.balance.get();
+                    val balanceAmount = balance.effective.get();
                     if (balanceAmount.value < order.cost.value) {
                       completedFuture(NOT_ENOUGH_FUNDS)
                     } else {
                       val opLog = OpLog()
-                      if (balance.balance.compareAndSet(balanceAmount,
+                      if (balance.effective.compareAndSet(balanceAmount,
                               TokenPoints(balanceAmount.value - order.cost.value))) {
                         opLog.add {
-                          balance.balance.updateAndGet {
+                          balance.effective.updateAndGet {
                             b -> TokenPoints(b.value + order.cost.value)
                           }
                         }
