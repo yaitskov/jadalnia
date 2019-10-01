@@ -7,5 +7,6 @@ import org.springframework.context.annotation.Import
     OrderCacheFactory::class,
     OrderCacheLoader::class,
     OrderService::class,
+    CostEstimator::class,
     OrderAggregator::class)
 class OrderCtx
