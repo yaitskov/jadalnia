@@ -20,7 +20,6 @@ import javax.ws.rs.POST
 import javax.ws.rs.Path
 import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
-import javax.ws.rs.QueryParam
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.Suspended
 import javax.ws.rs.core.MediaType.APPLICATION_JSON
@@ -41,6 +40,7 @@ class TokenResource @Inject constructor(
     const val REQUEST_TOKEN = TOKEN + "request"
     const val APPROVE_REQUEST = TOKEN + "approve"
     const val LIST_REQUESTS_FOR_APPROVE = TOKEN + "list-for-approve"
+    const val GET_MY_BALANCE = TOKEN + "myBalance"
   }
 
   @POST
@@ -72,6 +72,21 @@ class TokenResource @Inject constructor(
             .thenCompose(festivalCache::get)
             .thenCompose { festival ->
               tokenService.findTokensForApprove(festival, customer)
+            },
+        response)
+  }
+
+  @GET
+  @Path(GET_MY_BALANCE)
+  fun getMyBalance(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) customerSession: UserSession) {
+    asynSync.sync(
+        userSessions.get(customerSession)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              tokenService.getBalance(festival, customerSession.uid)
             },
         response)
   }
