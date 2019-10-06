@@ -4,6 +4,7 @@ import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
@@ -13,10 +14,13 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
 import javax.ws.rs.Consumes
+import javax.ws.rs.GET
 import javax.ws.rs.HeaderParam
 import javax.ws.rs.POST
 import javax.ws.rs.Path
+import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
+import javax.ws.rs.QueryParam
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.Suspended
 import javax.ws.rs.core.MediaType.APPLICATION_JSON
@@ -36,6 +40,7 @@ class TokenResource @Inject constructor(
     const val TOKEN = "token/"
     const val REQUEST_TOKEN = TOKEN + "request"
     const val APPROVE_REQUEST = TOKEN + "approve"
+    const val LIST_REQUESTS_FOR_APPROVE = TOKEN + "list-for-approve"
   }
 
   @POST
@@ -54,12 +59,29 @@ class TokenResource @Inject constructor(
         response)
   }
 
+  @GET
+  @Path(LIST_REQUESTS_FOR_APPROVE + "/{customerUid}")
+  fun kasierApprovesRequests(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("customerUid")
+      customer: Uid) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKasier().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              tokenService.findTokensForApprove(festival, customer)
+            },
+        response)
+  }
+
   @POST
   @Path(APPROVE_REQUEST)
   fun kasierApprovesRequests(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
-      approveReq: TokenApproveReq) {
+      approveReq: TokensApproveReq) {
     asynSync.sync(
         userSessions.get(session)
             .thenApply { user -> user.ensureKasier().fid }

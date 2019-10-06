@@ -5,12 +5,18 @@ import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.TOKEN
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
+import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 
 class TokenDao: AsyncDao() {
+  companion object {
+    val log = LoggerFactory.getLogger(TokenDao::class.java)
+  }
+
   fun requestTokens(
       fid: Fid, tokenId: TokenId,
       amount: TokenPoints, customerId: Uid): CompletableFuture<TokenId> {
@@ -23,38 +29,40 @@ class TokenDao: AsyncDao() {
         TOKEN.OPERATION)
         .values(tokenId, fid, customerId, amount, TokenOp.Buy)
         .execute()
-    }.thenApply { tokenId }
-  }
-
-  fun findTokenForApprove(fid: Fid, approveReq: TokenApproveReq)
-      : CompletableFuture<TokenId> {
-    return execQuery { jooq -> Optional.of(jooq.select(TOKEN.TID)
-        .from(TOKEN)
-        .where(TOKEN.FESTIVAL_ID.eq(fid),
-            TOKEN.CUSTOMER_ID.eq(approveReq.customer),
-            TOKEN.KASIER_ID.isNull(),
-            TOKEN.AMOUNT.eq(approveReq.amount))
-        .fetchOne())
-        .map { r -> r.get(TOKEN.TID) }
-        .orElseThrow { badRequest("no token for approve") }
+    }.thenApply {
+      log.info("Customer {} requested token {}", customerId, tokenId)
+      tokenId
     }
   }
 
-  fun approveTokens(fid: Fid, tokenId: TokenId,
-                    kasierUid: Uid): CompletableFuture<TokenId> {
+  fun findTokenForApprove(fid: Fid, customer: Uid)
+      : CompletableFuture<List<PreApproveTokenView>> {
+    return execQuery { jooq -> jooq.select(TOKEN.TID, TOKEN.AMOUNT)
+        .from(TOKEN)
+        .where(TOKEN.FESTIVAL_ID.eq(fid),
+            TOKEN.CUSTOMER_ID.eq(customer),
+            TOKEN.KASIER_ID.isNull())
+        .forUpdate()
+        .fetch()
+        .map { r -> PreApproveTokenView(r.get(TOKEN.TID), r.get(TOKEN.AMOUNT)) }
+    }
+  }
+
+  fun approveToken(tokenId: TokenId, kasierUid: Uid)
+      : CompletableFuture<Void> {
     return execQuery { jooq -> jooq.update(TOKEN)
         .set(TOKEN.KASIER_ID, kasierUid)
         .where(
             TOKEN.TID.eq(tokenId),
-            TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.KASIER_ID.isNull)
         .execute()
+    }.thenAccept { rows ->
+      if (rows != 1) {
+        throw conflict("just token DB record was not updated")
+      } else {
+        log.info("Token {} is approved by {}", tokenId, kasierUid)
+      }
     }
-        .thenAccept { rows ->
-          if (rows != 1) {
-            throw internalError("token DB record was not updated")
-          }
-        }.thenApply { tokenId }
   }
 
   fun maxTokenNumber(fid: Fid): CompletableFuture<TokenId> {
@@ -85,10 +93,25 @@ class TokenDao: AsyncDao() {
         .from(TOKEN)
         .where(TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.CUSTOMER_ID.eq(customer),
-            TOKEN.KASIER_ID.isNotNull())
+            TOKEN.KASIER_ID.isNotNull)
         .fetchOne())
         .map { r -> r.get(TOKEN.AMOUNT) }
         .orElseGet { TokenPoints(0) }
+    }
+  }
+
+  fun getCustomerPendingTokensByIds(customerId: Uid, tokens: List<TokenId>)
+      : CompletableFuture<List<PreApproveTokenView>> {
+    return execQuery { jooq -> jooq
+        .select(TOKEN.TID, TOKEN.AMOUNT)
+        .from(TOKEN)
+        .where(TOKEN.CUSTOMER_ID.eq(customerId),
+            TOKEN.TID.`in`(tokens),
+            TOKEN.KASIER_ID.isNull)
+        .fetch()
+        .map { r -> PreApproveTokenView(
+            r.get(TOKEN.TID), r.get(TOKEN.AMOUNT))
+        }
     }
   }
 }

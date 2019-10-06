@@ -12,4 +12,6 @@ class TokenPoints constructor(value: Int): ImmutableNumber(value) {
     @JvmStatic @JsonCreator
     fun valueOf(id: Int) = TokenPoints(id)
   }
+
+  fun plus(other: TokenPoints) = TokenPoints(value + other.value)
 }
