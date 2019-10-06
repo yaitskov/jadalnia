@@ -209,7 +209,7 @@ class OrderService @Inject constructor(
   }
 
   fun customerPays(festival: Festival,
-                   session: UserSession,
+                   customerUid: Uid,
                    orderLabel: OrderLabel)
       : CompletableFuture<PaymentAttemptOutcome> {
     if (festival.info.get().state != FestivalState.Open) {
@@ -218,10 +218,14 @@ class OrderService @Inject constructor(
     return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
         .thenCompose { order ->
           when (order.state.get()) {
-            Cancelled -> completedFuture(CANCELLED)
+            Cancelled -> {
+              log.info("Fid {}; Reject payment of order {} due cancelled",
+                  festival.fid(), order.label)
+              completedFuture(CANCELLED)
+            }
             Accepted ->
               tokenBalanceCache
-                  .get(Pair(festival.fid(), session.uid))
+                  .get(Pair(festival.fid(), customerUid))
                   .thenCompose { balance ->
                     val balanceAmount = balance.effective.get();
                     if (balanceAmount.value < order.cost.value) {
@@ -229,31 +233,43 @@ class OrderService @Inject constructor(
                     } else {
                       val opLog = OpLog()
                       if (balance.effective.compareAndSet(balanceAmount,
-                              TokenPoints(balanceAmount.value - order.cost.value))) {
+                              balanceAmount.minus(order.cost))) {
+                        log.info("Balance {} of customer {} is reduced by {}",
+                            balanceAmount, customerUid, order.cost)
                         opLog.add {
                           balance.effective.updateAndGet {
                             b -> TokenPoints(b.value + order.cost.value)
                           }
                         }
                         if (order.state.compareAndSet(Accepted, Paid)) {
+                          log.info("Fid {}; Status of order {} is Paid",
+                              festival.fid(), order.label)
                           persistPaidOrderAndNotify(festival, order)
                               .thenApply { ORDER_PAID }
-                              .whenComplete { u, e ->
+                              .whenComplete { _, e ->
                                 if (e != null) {
                                   opLog.rollback()
                                   throw internalError("failed persist order status", e)
                                 }
                               }
                         } else {
+                          log.info("Fid {} Status of order {} is already Paid",
+                              festival.fid(), order.label)
                           opLog.rollback()
                           completedFuture(RETRY)
                         }
                       } else {
+                        log.info("Fid {} effective balance changed {}",
+                            festival.fid(), balanceAmount)
                         completedFuture(RETRY)
                       }
                     }
                   }
-            else -> completedFuture(ALREADY_PAID)
+            else -> {
+              log.info("Fid {}; Reject payment of order {} due already paid",
+                  festival.fid(), order.label)
+              completedFuture(ALREADY_PAID)
+            }
           }
         }
   }
