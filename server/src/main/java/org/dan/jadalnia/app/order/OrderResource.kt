@@ -150,12 +150,13 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       orderLabel: OrderLabel) {
+    log.info("Customer {} try to pay order {}", session.uid, orderLabel)
     asynSync.sync(
         userSessions.get(session)
             .thenApply { user -> user.ensureCustomer().fid }
             .thenCompose(festivalCache::get)
             .thenCompose { festival ->
-              orderService.customerPays(festival, session, orderLabel)
+              orderService.customerPays(festival, session.uid, orderLabel)
             },
         response)
   }
