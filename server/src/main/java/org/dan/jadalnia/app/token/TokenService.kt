@@ -1,6 +1,5 @@
 package org.dan.jadalnia.app.token
 
-import com.github.jasync.sql.db.util.map
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.OpLog
@@ -13,7 +12,6 @@ import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.stream.Collectors.toList
 import javax.inject.Inject
 
 
@@ -105,6 +103,15 @@ class TokenService @Inject constructor(
                       successUpdates
                     }
               }
+        }
+  }
+
+  fun getBalance(festival: Festival, uid: Uid): CompletableFuture<TokenBalanceView> {
+    return tokenBalanceCache.get(Pair(festival.fid(), uid))
+        .thenApply { balance ->
+          TokenBalanceView(
+              pendingTokens = balance.pending.get(),
+              effectiveTokens = balance.effective.get())
         }
   }
 }
