@@ -100,4 +100,18 @@ class OrderDao : AsyncDao() {
           }
     }
   }
+
+  fun loadUnpaidCustomerOrders(fid: Fid, customerUid: Uid)
+      : CompletableFuture<List<OrderLabel>> {
+    return execQuery { jooq -> jooq
+        .select(ORDERS.LABEL)
+        .from(ORDERS)
+        .where(ORDERS.FESTIVAL_ID.eq(fid),
+            ORDERS.CUSTOMER_ID.eq(customerUid),
+            ORDERS.STATE.eq(OrderState.Accepted))
+        .forUpdate()
+        .fetch()
+        .map { r -> r.get(ORDERS.LABEL) }
+    }
+  }
 }

@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderLabel
+import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
@@ -47,6 +48,7 @@ class OrderResource @Inject constructor(
     const val ORDER_READY = ORDER + "ready"
     const val PICKUP_ORDER = ORDER + "pickup"
     const val PAY_ORDER = ORDER + "pay"
+    const val KASIER_PAY_ORDER = ORDER + "kasierPay"
     val log = LoggerFactory.getLogger(OrderService::class.java)
   }
 
@@ -157,6 +159,24 @@ class OrderResource @Inject constructor(
             .thenCompose(festivalCache::get)
             .thenCompose { festival ->
               orderService.customerPays(festival, session.uid, orderLabel)
+            },
+        response)
+  }
+
+  @POST
+  @Path(KASIER_PAY_ORDER)
+  fun kasierPaysCustomerOrders(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) kasierSession: UserSession,
+      customerUid: Uid) {
+    log.info("Kasier {} try to pay orders for {}",
+        kasierSession.uid, customerUid)
+    asynSync.sync(
+        userSessions.get(kasierSession)
+            .thenApply { user -> user.ensureKasier().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              orderService.kasierPaysCustomerOrders(festival, customerUid)
             },
         response)
   }
