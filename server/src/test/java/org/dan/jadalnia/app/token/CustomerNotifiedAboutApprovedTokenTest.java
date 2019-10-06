@@ -2,6 +2,7 @@ package org.dan.jadalnia.app.token;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.val;
+import org.assertj.core.api.Condition;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.user.Uid;
 import org.dan.jadalnia.app.user.UserSession;
@@ -10,17 +11,28 @@ import org.dan.jadalnia.app.ws.MessageForClient;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
+import org.hamcrest.core.Is;
 import org.junit.Test;
 
+import javax.ws.rs.core.GenericType;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static java.util.Arrays.asList;
+
+import static java.util.Collections.singletonMap;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKasier;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.junit.Assert.assertThat;
 
 
 public class CustomerNotifiedAboutApprovedTokenTest extends WsIntegrationTest {
@@ -30,10 +42,19 @@ public class CustomerNotifiedAboutApprovedTokenTest extends WsIntegrationTest {
                 session, points, TokenId.class);
     }
 
-    public static TokenId approveToken(
-            MyRest myRest, Uid customerId, TokenPoints points, UserSession session) {
+    public static List<PreApproveTokenView> listPendingTokens(
+            MyRest myRest, Uid customerUid, UserSession kasierSession) {
+        return myRest.get(TokenResource.LIST_REQUESTS_FOR_APPROVE + "/" + customerUid,
+                () -> kasierSession,
+                new GenericType<List<PreApproveTokenView>>() {});
+    }
+
+    public static List<PreApproveTokenView> approveToken(
+            MyRest myRest, Uid customerId, List<TokenId> tokenIds, UserSession session) {
         return myRest.post(TokenResource.APPROVE_REQUEST,
-                session, new TokenApproveReq(customerId, points), TokenId.class);
+                Optional.of(session),
+                new TokensApproveReq(customerId, tokenIds),
+                new GenericType<List<PreApproveTokenView>>() {});
     }
 
     @Test
@@ -60,11 +81,20 @@ public class CustomerNotifiedAboutApprovedTokenTest extends WsIntegrationTest {
                 });
 
         bindCustomerWsHandler(wsCustomerHandler);
+        val pendingTokenIds = listPendingTokens(myRest(), customerSession.getUid(), kasierSession);
+        assertThat(pendingTokenIds, hasItem(hasProperty("tokenId", Is.is(tokenId))));
+        val approvedToken = approveToken(
+                myRest(), customerSession.getUid(), asList(tokenId), kasierSession);
 
-        val approvedTokenId = approveToken(myRest(), customerSession.getUid(), pointsInToken, kasierSession);
+        assertThat(approvedToken,
+                hasItem(
+                        allOf(
+                                hasProperty("amount", Is.is(pointsInToken)),
+                                hasProperty("tokenId", Is.is(tokenId)))));
 
-        assertThat(approvedTokenId).isEqualTo(tokenId);
-
+        assertThat(
+                listPendingTokens(myRest(), customerSession.getUid(), kasierSession),
+                Is.is(empty()));
         wsCustomerHandler.waitTillMatcherSatisfied();
     }
 }
