@@ -28,6 +28,8 @@ import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.db.DaoUpdater
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
+import org.dan.jadalnia.util.Futures
+import org.dan.jadalnia.util.Futures.Companion.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import java.util.Optional
@@ -96,9 +98,8 @@ class OrderService @Inject constructor(
 
   private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem): CompletableFuture<Unit> {
     festival.readyToExecOrders.offer(order.label)
-    // notify customer
     wsBroadcast.broadcastToFreeKelners(
-        festival, OrderPaidEvent(order.label))
+        festival, OrderStateEvent(order.label, Paid))
     return daoUpdater.exec {
       orderDao.updateState(festival.fid(), order.label, Paid)
     }
@@ -208,6 +209,27 @@ class OrderService @Inject constructor(
         .exceptionally { e -> throw opLog.rollback(e) }
   }
 
+  fun kasierPaysCustomerOrders(festival: Festival, customerUid: Uid)
+      : CompletableFuture<List<OrderLabel>> {
+    return orderDao.loadUnpaidCustomerOrders(festival.fid(), customerUid)
+        .thenCompose { labels ->
+          allOf(labels.map {
+            label -> customerPays(festival, customerUid, label)
+              .thenApply { status -> Pair(label, status) }
+          }).thenApply { labeledStatuses ->
+            labeledStatuses
+                .filter { entry -> entry.second == ORDER_PAID }
+                .map { entry -> entry.first }
+                .onEach { label ->
+                  wsBroadcast.notifyCustomers(
+                      festival.fid(),
+                      listOf(customerUid),
+                      OrderStateEvent(label, Paid))
+                }
+          }
+        }
+  }
+
   fun customerPays(festival: Festival,
                    customerUid: Uid,
                    orderLabel: OrderLabel)
@@ -237,9 +259,7 @@ class OrderService @Inject constructor(
                         log.info("Balance {} of customer {} is reduced by {}",
                             balanceAmount, customerUid, order.cost)
                         opLog.add {
-                          balance.effective.updateAndGet {
-                            b -> TokenPoints(b.value + order.cost.value)
-                          }
+                          balance.effective.updateAndGet { b -> b.plus(order.cost) }
                         }
                         if (order.state.compareAndSet(Accepted, Paid)) {
                           log.info("Fid {}; Status of order {} is Paid",

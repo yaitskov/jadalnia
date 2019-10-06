@@ -3,7 +3,6 @@ package org.dan.jadalnia.app.ws
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.dan.jadalnia.app.order.OrderExecutingEvent
-import org.dan.jadalnia.app.order.OrderPaidEvent
 import org.dan.jadalnia.app.order.OrderStateEvent
 import org.dan.jadalnia.app.token.TokenApprovedEvent
 
@@ -22,9 +21,6 @@ import org.dan.jadalnia.app.token.TokenApprovedEvent
         name = "orderState"),
     JsonSubTypes.Type(
         value = TokenApprovedEvent::class,
-        name = "tokenApproved"),
-    JsonSubTypes.Type(
-            value = OrderPaidEvent::class,
-            name = "orderPaid")
+        name = "tokenApproved")
 ])
 interface MessageForClient

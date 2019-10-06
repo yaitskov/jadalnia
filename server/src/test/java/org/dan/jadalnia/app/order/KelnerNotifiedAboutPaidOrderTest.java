@@ -3,12 +3,12 @@ package org.dan.jadalnia.app.order;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid;
 import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.order.pojo.OrderState;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.app.user.UserType;
 import org.dan.jadalnia.app.user.WsClientHandle;
@@ -88,8 +88,9 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                 kelnerSession,
                 new PredicateStateMatcher<>(
                         (MessageForClient event) ->
-                                event instanceof OrderPaidEvent
-                                        && ((OrderPaidEvent) event).getLabel().equals(orderLabel),
+                                event instanceof OrderStateEvent
+                                        && ((OrderStateEvent) event).getState() == OrderState.Paid
+                                        && ((OrderStateEvent) event).getLabel().equals(orderLabel),
                         new CompletableFuture<>()),
                 new TypeReference<MessageForClient>() {
                 });
