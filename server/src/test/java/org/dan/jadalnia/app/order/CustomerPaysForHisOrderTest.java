@@ -23,6 +23,7 @@ import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.regist
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKelner;
 import static org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID;
 import static org.dan.jadalnia.app.token.CustomerNotifiedAboutApprovedTokenTest.approveToken;
+import static org.dan.jadalnia.app.token.CustomerNotifiedAboutApprovedTokenTest.listPendingTokens;
 import static org.dan.jadalnia.app.token.CustomerNotifiedAboutApprovedTokenTest.requestToken;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
@@ -57,6 +58,7 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
         val pointsInToken = TokenPoints.valueOf(10);
         val tokenId = requestToken(myRest(), pointsInToken, customerSession);
         val approved = approveToken(myRest(), customerSession.getUid(), asList(tokenId), kasierSession);
+        listPendingTokens(myRest(), customerSession.getUid(), kasierSession);
         assertThat(approved, hasItem(hasProperty("tokenId", Is.is(tokenId))));
         val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
         val wsKelnerHandler = orderPaidWaiter(kelnerSession, orderLabel);
