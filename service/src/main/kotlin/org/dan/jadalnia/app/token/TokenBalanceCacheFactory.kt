@@ -11,10 +11,11 @@ import javax.inject.Inject
 
 class TokenBalanceCacheFactory @Inject constructor(val loader: TokenBalanceCacheLoader) {
     companion object {
+        const val TOKEN_BALANCE_CACHE = "tokenBalanceCache"
         val log = LoggerFactory.getLogger(TokenBalanceCacheFactory::class.java)
     }
 
-    @Bean(name = ["tokenBalanceCache"])
+    @Bean(name = [TOKEN_BALANCE_CACHE])
     fun create(): AsyncCache<Pair<Fid, Uid>, TokenBalance> {
         return AsyncCache(
                 CacheBuilder

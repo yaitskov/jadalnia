@@ -4,11 +4,8 @@ import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.TOKEN
-import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
-import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 
@@ -48,17 +45,18 @@ class TokenDao: AsyncDao() {
     }
   }
 
-  fun approveToken(tokenId: TokenId, kasierUid: Uid)
+  fun approveToken(fid: Fid, tokenId: TokenId, kasierUid: Uid)
       : CompletableFuture<Void> {
     return execQuery { jooq -> jooq.update(TOKEN)
         .set(TOKEN.KASIER_ID, kasierUid)
         .where(
+            TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.TID.eq(tokenId),
             TOKEN.KASIER_ID.isNull)
         .execute()
     }.thenAccept { rows ->
       if (rows != 1) {
-        throw conflict("just token DB record was not updated")
+        throw conflict("just token DB record was not updated: " + rows)
       } else {
         log.info("Token {} is approved by {}", tokenId, kasierUid)
       }
@@ -77,26 +75,30 @@ class TokenDao: AsyncDao() {
   }
 
   fun loadNotApprovedBalance(fid: Fid, customer: Uid): CompletableFuture<TokenPoints> {
-    return execQuery { jooq -> ofNullable(jooq
-        .select(TOKEN.AMOUNT.sum().`as`(TOKEN.AMOUNT))
+    return execQuery { jooq -> TokenPoints(jooq
+        .select(TOKEN.AMOUNT, TOKEN.OPERATION)
         .from(TOKEN)
         .where(TOKEN.FESTIVAL_ID.eq(fid), TOKEN.CUSTOMER_ID.eq(customer))
-        .fetchOne())
-        .map { r -> r.get(TOKEN.AMOUNT) }
-        .orElseGet { TokenPoints(0) }
+        .fetch()
+        .map { r -> r.get(TOKEN.AMOUNT).value * r.get(TOKEN.OPERATION).sign() }
+        .stream()
+        .mapToInt{ a -> a }
+        .sum())
     }
   }
 
   fun loadBalance(fid: Fid, customer: Uid): CompletableFuture<TokenPoints> {
-    return execQuery { jooq -> ofNullable(jooq
-        .select(TOKEN.AMOUNT.sum().`as`(TOKEN.AMOUNT))
+    return execQuery { jooq -> TokenPoints(jooq
+        .select(TOKEN.AMOUNT, TOKEN.OPERATION)
         .from(TOKEN)
         .where(TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.CUSTOMER_ID.eq(customer),
             TOKEN.KASIER_ID.isNotNull)
-        .fetchOne())
-        .map { r -> r.get(TOKEN.AMOUNT) }
-        .orElseGet { TokenPoints(0) }
+        .fetch()
+        .map { r -> r.get(TOKEN.AMOUNT).value * r.get(TOKEN.OPERATION).sign() }
+        .stream()
+        .mapToInt { a -> a }
+        .sum())
     }
   }
 

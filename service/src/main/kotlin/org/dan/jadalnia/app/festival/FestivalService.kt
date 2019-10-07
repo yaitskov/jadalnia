@@ -46,6 +46,7 @@ class FestivalService @Inject constructor(
     return festivalDao
         .create(newFestival)
         .thenCompose { fid ->
+          log.info("Register admin for fid {}", fid)
           userDao.register(fid, Admin, Approved,
               newFestival.userName, newFestival.userKey)
               .thenApply { userSession ->
