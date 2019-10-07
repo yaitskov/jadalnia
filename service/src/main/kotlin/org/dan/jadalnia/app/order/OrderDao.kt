@@ -5,10 +5,11 @@ import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
+import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.ORDERS
 import org.slf4j.LoggerFactory
-import java.util.Optional
+import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
@@ -98,6 +99,30 @@ class OrderDao : AsyncDao() {
                 items = record.get(ORDERS.REQUIREMENTS)
             )
           }
+    }
+  }
+
+  fun loadSumOfPaidOrders(fid: Fid, customerUid: Uid)
+      : CompletableFuture<TokenPoints> {
+    return execQuery { jooq -> ofNullable(jooq
+        .select(ORDERS.POINTS_COST.sum()
+            .cast(Integer::class.java).`as`("totalSpend"))
+        .from(ORDERS)
+        .where(ORDERS.FESTIVAL_ID.eq(fid),
+            ORDERS.CUSTOMER_ID.eq(customerUid),
+            ORDERS.STATE.`in`(listOf(
+                OrderState.Paid,
+                OrderState.Executing,
+                OrderState.Ready,
+                OrderState.Handed)))
+        .forUpdate()
+        .fetchOne())
+        .map { r ->
+          val result = TokenPoints(r.get("totalSpend", Int::class.java))
+          log.info("User {} spended {}", customerUid, result)
+          result
+        }
+        .orElseGet { TokenPoints(0) }
     }
   }
 

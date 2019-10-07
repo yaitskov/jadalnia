@@ -4,6 +4,7 @@ import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.token.TokenBalanceCacheFactory.Companion.TOKEN_BALANCE_CACHE
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
@@ -28,6 +29,8 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 class TokenResource @Inject constructor(
+    @Named(TOKEN_BALANCE_CACHE)
+    val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
     val tokenService: TokenService,
     @Named(USER_SESSIONS)
     val userSessions: AsyncCache<UserSession, UserInfo>,
@@ -41,6 +44,22 @@ class TokenResource @Inject constructor(
     const val APPROVE_REQUEST = TOKEN + "approve"
     const val LIST_REQUESTS_FOR_APPROVE = TOKEN + "list-for-approve"
     const val GET_MY_BALANCE = TOKEN + "myBalance"
+    const val INVALIDATE_BALANCE_CACHE = TOKEN + "invalidateBalanceCache"
+  }
+
+  @POST
+  @Path(INVALIDATE_BALANCE_CACHE)
+  fun invalidateBalanceCache(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenAccept { fid ->
+              log.info("Invalidate balance cache {} in fid {}", session.uid, fid)
+              tokenBalanceCache.invalidate(Pair(fid, session.uid))
+            },
+        response)
   }
 
   @POST

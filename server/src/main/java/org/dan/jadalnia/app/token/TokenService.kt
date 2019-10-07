@@ -69,16 +69,17 @@ class TokenService @Inject constructor(
       festival: Festival,
       kasierUid: Uid,
       approveReq: TokensApproveReq): CompletableFuture<List<PreApproveTokenView>> {
+    val fid = festival.fid()
     return tokenDao.getCustomerPendingTokensByIds(
         approveReq.customer, approveReq.tokens)
         .thenCompose { tokens ->
           validate(tokens, approveReq)
-          tokenBalanceCache.get(Pair(festival.fid(), approveReq.customer))
+          tokenBalanceCache.get(Pair(fid, approveReq.customer))
               .thenCompose { balance ->
                 Futures.allOf(
                     tokens.map { token ->
                       log.info("Kasier {} tries to approve token {}", kasierUid, token.tokenId)
-                      tokenDao.approveToken(token.tokenId, kasierUid).thenAccept {
+                      tokenDao.approveToken(fid, token.tokenId, kasierUid).thenAccept {
                         balance.effective.updateAndGet {
                           points ->
                           log.info("Increase effective balance by {} for {}",
@@ -97,7 +98,7 @@ class TokenService @Inject constructor(
                           .map { update -> update.get() }
                       successUpdates.forEach { successUpdate ->
                         wsBroadcast.notifyCustomers(
-                            festival.fid(), listOf(approveReq.customer),
+                            fid, listOf(approveReq.customer),
                             TokenApprovedEvent(successUpdate.tokenId))
                       }
                       successUpdates
