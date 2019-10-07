@@ -251,15 +251,18 @@ class OrderService @Inject constructor(
                   .thenCompose { balance ->
                     val balanceAmount = balance.effective.get();
                     if (balanceAmount.value < order.cost.value) {
+                      log.info("Reject payment for order {} due no funds", order.label)
                       completedFuture(NOT_ENOUGH_FUNDS)
                     } else {
                       val opLog = OpLog()
                       if (balance.effective.compareAndSet(balanceAmount,
                               balanceAmount.minus(order.cost))) {
+                        balance.pending.updateAndGet { p -> p.minus(order.cost) }
                         log.info("Balance {} of customer {} is reduced by {}",
                             balanceAmount, customerUid, order.cost)
                         opLog.add {
                           balance.effective.updateAndGet { b -> b.plus(order.cost) }
+                          balance.pending.updateAndGet { p -> p.plus(order.cost) }
                         }
                         if (order.state.compareAndSet(Accepted, Paid)) {
                           log.info("Fid {}; Status of order {} is Paid",
