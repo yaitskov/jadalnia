@@ -44,6 +44,7 @@ class OrderResource @Inject constructor(
     const val PUT_ORDER = ORDER + "put"
     const val ORDER_PAID = ORDER + "paid"
     const val GET_ORDER = ORDER + "get"
+    const val MY_ORDERS = ORDER + "listMine"
     const val TRY_ORDER = ORDER + "try"
     const val ORDER_READY = ORDER + "ready"
     const val PICKUP_ORDER = ORDER + "pickup"
@@ -81,6 +82,18 @@ class OrderResource @Inject constructor(
             .thenCompose { festival ->
               orderService.pickUpReadyOrder(festival, session.uid, label)
             },
+        response)
+  }
+
+  @GET
+  @Path(MY_ORDERS)
+  fun listMyOrders(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose { fid -> orderService.listCustomerOrders(fid, session.uid) },
         response)
   }
 
