@@ -29,6 +29,7 @@ import javax.websocket.OnOpen
 import javax.websocket.Session
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 import javax.inject.Named
 import javax.websocket.CloseReason
@@ -91,31 +92,37 @@ class VolunteerWsListener
                         userInfo.userType, getUserSession().uid, userInfo.fid)
 
                 val listeners = wsBroadcast.getListeners(userInfo.fid)
-                registerVolunteerConnection(listeners, userInfo)
-                val earlier = listeners.volunteerListeners
+                registerVolunteerConnection(listeners, userInfo).thenAccept {
+                    val earlier = listeners.volunteerListeners
                         .putIfAbsent(userInfo.uid, this)
-                if (earlier != null) {
-                    throw badRequest("Multiple web sockets are not allowed")
-                }
-                log.info("Online volunteers {} for {}",
+                    if (earlier != null) {
+                        throw badRequest("Multiple web sockets are not allowed")
+                    }
+                    log.info("Online volunteers {} for {}",
                         listeners.volunteerListeners.size,
                         userInfo.fid)
 
-                oUserInfo = Optional.of(userInfo)
+                    oUserInfo = Optional.of(userInfo)
 
-                sendFestivalStatus()
+                    sendFestivalStatus()
+                }
             }
         }
     }
 
     private fun registerVolunteerConnection(
-            listeners: FestivalListeners, userInfo: UserInfo) {
+        listeners: FestivalListeners, userInfo: UserInfo)
+        : CompletableFuture<Void> {
         listeners.addUid(userInfo.uid, userInfo.userType)
 
         if (userInfo.userType == Kelner) {
-            festivalCache.get(userInfo.fid).thenAccept { festival ->
+            log.info("Mark kelner {} as free", userInfo.uid)
+            return festivalCache.get(userInfo.fid).thenAccept { festival ->
                 festival.freeKelners[userInfo.uid] = userInfo.uid
+                log.info("Mark kelner {} is free", userInfo.uid)
             }
+        } else {
+            return completedFuture(null)
         }
     }
 

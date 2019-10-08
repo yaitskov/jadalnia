@@ -16,7 +16,7 @@ public class PredicateStateMatcher<T> implements StateMatcher<T> {
         return new PredicateStateMatcher<>(pass, new CompletableFuture<>());
     }
 
-    public CompletableFuture<T> satisfied() {
+    public CompletableFuture<T> satisfied(String condition) {
         return passedArgument;
     }
 
@@ -31,7 +31,7 @@ public class PredicateStateMatcher<T> implements StateMatcher<T> {
         return false;
     }
 
-    public RuntimeException report() {
+    public RuntimeException report(String condition) {
         return new MatcherNotFiredException(this);
     }
 }

@@ -17,8 +17,10 @@ import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FESTIVAL_STATUS_COND;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FRYTKI_ORDER;
-import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.orderPaidWaiter;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.ORDER_PAID_COND;
+import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.festivalStatusAndOrderPaidWaiter;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKasier;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKelner;
 import static org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID;
@@ -57,15 +59,19 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
 
         val pointsInToken = TokenPoints.valueOf(10);
         val tokenId = requestToken(myRest(), pointsInToken, customerSession);
-        val approved = approveToken(myRest(), customerSession.getUid(), asList(tokenId), kasierSession);
         listPendingTokens(myRest(), customerSession.getUid(), kasierSession);
+        val approved = approveToken(
+                myRest(), customerSession.getUid(),
+                asList(tokenId), kasierSession);
         assertThat(approved, hasItem(hasProperty("tokenId", Is.is(tokenId))));
         val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
-        val wsKelnerHandler = orderPaidWaiter(kelnerSession, orderLabel);
+        val wsKelnerHandler = festivalStatusAndOrderPaidWaiter(kelnerSession, orderLabel);
         bindUserWsHandler(wsKelnerHandler);
+
+        wsKelnerHandler.waitTillMatcherSatisfied(FESTIVAL_STATUS_COND);
 
         assertThat(tryPayOrder(myRest(), customerSession, orderLabel), Is.is(ORDER_PAID));
 
-        wsKelnerHandler.waitTillMatcherSatisfied();
+        wsKelnerHandler.waitTillMatcherSatisfied(ORDER_PAID_COND);
     }
 }

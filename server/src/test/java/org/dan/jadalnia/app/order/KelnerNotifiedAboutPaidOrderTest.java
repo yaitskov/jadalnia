@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.val;
+import org.dan.jadalnia.app.festival.FestivalService;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid;
@@ -13,7 +14,9 @@ import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.app.user.UserType;
 import org.dan.jadalnia.app.user.WsClientHandle;
 import org.dan.jadalnia.app.ws.MessageForClient;
+import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.mock.MyRest;
+import org.dan.jadalnia.test.match.ManyMatchers;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +40,8 @@ import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.
 public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     public static final List<OrderItem> FRYTKI_ORDER = singletonList(
             new OrderItem(FRYTKI, 1, Collections.emptyList()));
+    public static final String FESTIVAL_STATUS_COND = "festivalStatus";
+    public static final String ORDER_PAID_COND = "orderStatus";
 
     public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
         return registerUser(fid, key, myRest, UserType.Kasier);
@@ -92,6 +97,31 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                                         && ((OrderStateEvent) event).getState() == OrderState.Paid
                                         && ((OrderStateEvent) event).getLabel().equals(orderLabel),
                         new CompletableFuture<>()),
+                new TypeReference<MessageForClient>() {
+                });
+    }
+
+    @NotNull
+    public static WsClientHandle<MessageForClient> festivalStatusAndOrderPaidWaiter(
+            UserSession kelnerSession, OrderLabel orderLabel) {
+        return WsClientHandle.wsClientHandle(
+                kelnerSession,
+                new ManyMatchers<>(
+                        FESTIVAL_STATUS_COND,
+                        new PredicateStateMatcher<>(
+                                (MessageForClient event) ->
+                                        event instanceof PropertyUpdated
+                                                && ((PropertyUpdated) event).getName().equals(
+                                                        FestivalService.Companion.getFESTIVAL_STATE()),
+                                new CompletableFuture<>()),
+                        ORDER_PAID_COND,
+                        new PredicateStateMatcher<>(
+                                (MessageForClient event) ->
+                                        event instanceof OrderStateEvent
+                                                && ((OrderStateEvent) event).getState() == OrderState.Paid
+                                                && ((OrderStateEvent) event).getLabel().equals(orderLabel),
+                                new CompletableFuture<>())
+                ),
                 new TypeReference<MessageForClient>() {
                 });
     }

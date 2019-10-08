@@ -110,12 +110,16 @@ public class WsClientHandle<T> implements WsHandler {
         oSession.ifPresent(Session::close);
     }
 
-    @SneakyThrows
     public T waitTillMatcherSatisfied() {
+        return waitTillMatcherSatisfied("default");
+    }
+
+    @SneakyThrows
+    public T waitTillMatcherSatisfied(String condition) {
         try {
-            return inMessageMatcher.satisfied().get(11L, TimeUnit.SECONDS);
+            return inMessageMatcher.satisfied(condition).get(6L, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            throw inMessageMatcher.report();
+            throw inMessageMatcher.report(condition);
         }
     }
 }

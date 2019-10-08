@@ -4,6 +4,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface StateMatcher<T> {
     boolean was(T o);
-    RuntimeException report();
-    CompletableFuture<T> satisfied();
+    RuntimeException report(String condition);
+    CompletableFuture<T> satisfied(String condition);
 }

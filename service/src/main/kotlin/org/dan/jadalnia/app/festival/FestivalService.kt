@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import org.dan.jadalnia.app.user.UserState.Approved
 import org.dan.jadalnia.app.user.UserType.Admin
 
-class FestivalService @Inject constructor(
+public class FestivalService @Inject constructor(
     val festivalDao: FestivalDao,
     val userDao: UserDao,
     @Named(FESTIVAL_CACHE)
