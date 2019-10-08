@@ -21,14 +21,12 @@ import org.dan.jadalnia.app.order.pojo.OrderState.Handed
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
 import org.dan.jadalnia.app.order.pojo.OrderState.Ready
 import org.dan.jadalnia.app.token.TokenBalance
-import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.db.DaoUpdater
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
-import org.dan.jadalnia.util.Futures
 import org.dan.jadalnia.util.Futures.Companion.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
@@ -295,5 +293,10 @@ class OrderService @Inject constructor(
             }
           }
         }
+  }
+
+  fun listCustomerOrders(fid: Fid, customerUid: Uid)
+      : CompletableFuture<List<OrderItemView>> {
+    return orderDao.findOrdersForCustomer(fid, customerUid)
   }
 }

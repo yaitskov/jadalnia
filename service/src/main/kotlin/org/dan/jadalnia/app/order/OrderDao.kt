@@ -139,4 +139,20 @@ class OrderDao : AsyncDao() {
         .map { r -> r.get(ORDERS.LABEL) }
     }
   }
+
+  fun findOrdersForCustomer(fid: Fid, customerUid: Uid)
+      : CompletableFuture<List<OrderItemView>> {
+    return execQuery { jooq -> jooq
+        .select(ORDERS.CREATED, ORDERS.LABEL, ORDERS.STATE)
+        .from(ORDERS)
+        .where(ORDERS.FESTIVAL_ID.eq(fid),
+            ORDERS.CUSTOMER_ID.eq(customerUid))
+        .fetch()
+        .map { r -> OrderItemView(
+            label = r.get(ORDERS.LABEL),
+            created = r.get(ORDERS.CREATED),
+            state = r.get(ORDERS.STATE))
+        }
+    }
+  }
 }
