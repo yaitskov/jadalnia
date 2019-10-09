@@ -7,7 +7,6 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import { T } from 'i18n/translate-tag';
 import { MyCo } from 'component/my-component';
-import { SignUpSr } from 'app/auth/sign-up-service';
 import { Footer } from 'app/component/footer';
 import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
@@ -62,16 +61,8 @@ class FF extends MyCo<{}, {}> {
 }
 
 export class LandingPage extends TransCom<{}, LandingPageS> {
-  // @ts-ignore
-  private $signUp: SignUpSr;
-
-  regAsAdmin() {
-    this.$signUp.signUpAnonymous().tn(o => route('/festival/new/admin'));
-  }
-
   constructor(props) {
     super(props);
-    this.regAsAdmin = this.regAsAdmin.bind(this);
     this.st = {at: this.at()};
   }
 
@@ -133,10 +124,10 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
 
       <SecCon>
         <div class={bulma.buttons + ' ' + bulma['is-centered']}>
-          <button class={bulma.button + ' ' + bulma['is-primary'] + ' ' + bulma['is-large']}
-                  onClick={this.regAsAdmin}>
+          <Link class={bulma.button + ' ' + bulma['is-primary'] + ' ' + bulma['is-large']}
+                href="/festival/new/start">
             <TI m="Create festival"/>
-          </button>
+          </Link>
         </div>
       </SecCon>
       <FooterI/>
