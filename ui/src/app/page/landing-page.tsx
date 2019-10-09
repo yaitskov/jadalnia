@@ -55,9 +55,9 @@ class TileLine extends MyCo<{}, {}> {
   }
 }
 
-class CS extends MyCo<{}, {}> {
+class FF extends MyCo<{}, {}> {
   render() {
-    return <span>Cloud-Sport</span>;
+    return <span>FoodFest</span>;
   }
 }
 
@@ -65,81 +65,78 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
   // @ts-ignore
   private $signUp: SignUpSr;
 
-  regAsReferee() {
-    this.$signUp.signUpAnonymous().tn(o => route('/tournament/new/choose-sport'));
+  regAsAdmin() {
+    this.$signUp.signUpAnonymous().tn(o => route('/festival/new/admin'));
   }
 
   constructor(props) {
     super(props);
-    this.regAsReferee = this.regAsReferee.bind(this);
+    this.regAsAdmin = this.regAsAdmin.bind(this);
     this.st = {at: this.at()};
   }
 
   render() {
     const [TI, TitleStdMainMenuI, FooterI] = this.c3(T, TitleStdMainMenu, Footer);
     return <div>
-      <TitleStdMainMenuI t$title="Welcome to Cloud-Sport"/>
+      <TitleStdMainMenuI t$title="Welcome to FoodFest"/>
       <SecCon>
-        <h1 class={bulma.title}>What is <CS/>?</h1>
+        <h1 class={bulma.title}>What is <FF/>?</h1>
         <Par>
-          <CS/> is a modern place for conducting sport tournaments in tennis and ping-pong between amateurs.
+          <FF/> is an online queue for serving food on festivals.
         </Par>
         <Par>
-          Amateur tournaments have their own specific and <CS/> takes that into account.
-          Referees have more freedom and control over a tournament flow,
-          e.g. there is no problem to add a participant to a group even all its matches are over.
+          Integrate with <FF/> if festival stuff cannot serve food orders quickly
+          and you want to relief visitors from the burden being in line and missing entertainment part.
+        </Par>
+        <h4 class={bulma.title}>How it works?</h4>
+        <Par>
+          Festival's administrator creates a festival in the system, defines menu,
+          invites volunteers to work as waiters and cashiers.
         </Par>
         <Par>
-          In short, the slogan of <CS/> is to allow <strong>change rules as a game goes!</strong>
+          A visitor goes by festival link and automaticaly signed up with an anonymous account.
+          After that visitor can explore festival's menu without hassle, put and pay order.
+          Visitor can buys tokens in advance.
         </Par>
         <Par>
-          If you don't know how many people will take a part in the mid of tournament,
-          then <CS/> is exactly for you.
+          Cashier accepts cash and approves electronic tokens,
+          which could be used by visitors for payments on the festival.
+        </Par>
+        <Par>
+          Waiter picks order from line, prepares it and marks it as complete.
+          Visitor is notified about his ready order in a web browser.
         </Par>
       </SecCon>
 
       <SecCon css={bulma.noTop}>
         <TileLine>
           <Tile t$title="No paper"
-                t$body="track a tournament with a phone and save time on printing blanks and rewriting protocols due mistakes"
+                t$body="No need to print tokens"
                 color="turquoise" />
-          <Tile t$title="No desk"
-                t$body="less furniture and more space for games" color="yellow" />
-          <Tile t$title="No lines"
-                t$body="online registration" color="blue" />
+          <Tile t$title="Scaleble order accepting"
+                t$body="Visitor puts order on their own" color="yellow" />
+          <Tile t$title="Lineless"
+                t$body="No live line. Visitors enjoy action." color="blue" />
         </TileLine>
 
         <TileLine>
-          <Tile t$title="Enjoy watching"
-                t$body="participants submit their own results and referee is out of the loop, but he keeps control and can override match outcome" color="red" />
-          <Tile t$title="Facebook integration"
-                t$body="publish results in 1 click" color="blue" />
-          <Tile t$title="Crowdless"
-                t$body="aren't you tired of participants hanging around your desk waiting for their turn and constantly asking boring repetitive questions?! Give them an opportunity to relax in a cafe nearby before the next match starts and don't worry about missing their turn" color="green" />
+          <Tile t$title="Competionary environment"
+                t$body="Performance for every waiter is observable" color="red" />
+          <Tile t$title="Observable demand"
+                t$body="Be aware of needs of all waiting visitor" color="blue" />
+          <Tile t$title="Dialog with visitor"
+                t$body="An alternative way for feedback and notification about your next festival"
+                color="turquoise" />
         </TileLine>
 
-        <TileLine>
-          <Tile t$title="Free"
-                t$body="amature tournaments are low budget events"
-                color="turquoise" />
-          <Tile t$title="Flexible"
-                t$body="often clubs adhere to some free interpretation of official sport rules, which complicates using traditional ridgid systems, but here you have rule designer and can reflect the unique club culture"
-                color="yellow" />
-          <Tile t$title="Understandable"
-                t$body="group ranking follows drill down approach and explains every decision in ordering rivals."
-                color="blue" />
-        </TileLine>
       </SecCon>
 
       <SecCon>
         <div class={bulma.buttons + ' ' + bulma['is-centered']}>
           <button class={bulma.button + ' ' + bulma['is-primary'] + ' ' + bulma['is-large']}
-                  onClick={this.regAsReferee}>
-            <TI m="Create demo tournament"/>
+                  onClick={this.regAsAdmin}>
+            <TI m="Create festival"/>
           </button>
-          <Link class={bulma.button + ' ' + bulma['is-large']} href="/features/all">
-            <TI m="Detailed feature list"/>
-          </Link>
         </div>
       </SecCon>
       <FooterI/>
