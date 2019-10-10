@@ -44,10 +44,10 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewTennisTour = async () => await import('./page/tournament/new/tennis')
     .then(m => this.inj(m as AsyncModule, 'tennis'));
 
-  SetMenu = async (u, cb, props) => await import('./page/festival/set-menu')
+  FestMenu = async (u, cb, props) => await import('./page/festival/fest-menu')
     .then(m => {
       console.log(`props  ${o2j(props)}`);
-      return this.inj(m as AsyncModule, 'set-menu');
+      return this.inj(m as AsyncModule, 'fest-menu');
     });
 
   SignUp = async () => await import('app/page/sign-up/sign-up')
@@ -66,7 +66,7 @@ export class MainCom extends InjSubCom<{}, {}> {
   render() {
     return <Router>
       <AsyncRoute path='/' getComponent={this.LPG} />
-      <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.SetMenu} />
+      <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
       <AsyncRoute path='/tournament/new/tennis' getComponent={this.NewTennisTour} />
       <AsyncRoute path='/festival/new/start' getComponent={this.NewFestival} />
       <AsyncRoute path='/terms' getComponent={this.Terms} />

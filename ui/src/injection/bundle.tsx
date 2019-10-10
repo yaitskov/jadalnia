@@ -1,5 +1,5 @@
 import { Component } from 'preact';
-import { Instantiable, gNew,Tobj } from 'collection/typed-object';
+import { Instantiable, gNew, Tobj } from 'collection/typed-object';
 import { inject, Container, FwdContainer } from 'injection/inject-1k';
 import { I18Trans } from 'i18n/i18n-translator';
 
