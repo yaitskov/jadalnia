@@ -32,12 +32,12 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Path("/")
 @Produces(APPLICATION_JSON)
 class FestivalResource @Inject constructor(
-    val festivalService: FestivalService,
+    private val festivalService: FestivalService,
     @Named(USER_SESSIONS)
     val userSessions: AsyncCache<UserSession, UserInfo>,
     @Named(FESTIVAL_CACHE)
     val festivalCache: AsyncCache<Fid, Festival>,
-    val asynSync: AsynSync) {
+    private val asynSync: AsynSync) {
   companion object {
     const val FESTIVAL = "festival/"
     const val FESTIVAL_MENU = FESTIVAL + "menu"
@@ -74,7 +74,7 @@ class FestivalResource @Inject constructor(
   }
 
   @GET
-  @Path(FESTIVAL_STATE + "/{fid}")
+  @Path("$FESTIVAL_STATE/{fid}")
   fun getState(
       @Suspended response: AsyncResponse,
       @PathParam("fid") fid: Fid) {
@@ -82,7 +82,7 @@ class FestivalResource @Inject constructor(
   }
 
   @GET
-  @Path(FESTIVAL_MENU + "/{fid}")
+  @Path("$FESTIVAL_MENU/{fid}")
   fun listMenu(
       @Suspended response: AsyncResponse,
       @PathParam("fid") fid: Fid) {
