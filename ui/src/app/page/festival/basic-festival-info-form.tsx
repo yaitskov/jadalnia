@@ -19,7 +19,8 @@ export class BasicFestInfoForm extends TransCom<BasicFestInfoFormP, TransComS> {
     class NextCancelFormT extends NextCancelForm<BasicFestInfo> { };
     const [BasicFestInfoFieldsI, NextCancelFormTI] = this.c2(BasicFestInfoFields, NextCancelFormT);
     return <NextCancelFormTI t$next="Define menu"
-                            origin={this.props.info} next={this.props.onSubmit}>
+                             origin={this.props.info}
+                             next={this.props.onSubmit}>
       <BasicFestInfoFieldsI />
     </NextCancelFormTI>;
   }

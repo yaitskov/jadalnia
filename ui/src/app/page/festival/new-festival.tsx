@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { SignUpSr } from 'app/auth/sign-up-service';
 import { resolved } from 'async/abortable-promise';
 import { Link, route } from 'preact-router';
 import { Container } from 'injection/inject-1k';
@@ -30,6 +31,8 @@ function newFest(): NewFestival {
 class NewFest extends TransCom<{}, NewFestS> {
   // @ts-ignore
   private $locStore: LocalStorage;
+  // @ts-ignore
+  private $signUp: SignUpSr;
 
   constructor(props) {
     super(props);
@@ -40,9 +43,12 @@ class NewFest extends TransCom<{}, NewFestS> {
     this.st.fest = opt(this.$locStore.jGet<NewFestival>('newFestival').elf(newFest));
   }
 
-  gotoRules(info: BasicFestInfo): void {
-    this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>('newFestival', {...v, basic: info}));
-    route('/festival/new/menu');
+  goToMenu(info: BasicFestInfo): void {
+    this.$signUp.signUpAdmin(info).tn(() => {
+      this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
+        'newFestival', {...v, basic: info}));
+      route('/festival/new/menu');
+    });
   }
 
   render() {
@@ -51,7 +57,7 @@ class NewFest extends TransCom<{}, NewFestS> {
       <TitleStdMainMenuI t$title="New Festival"/>
       <SecCon>
         <BasicFestInfoFormI info={this.st.fest.val.basic}
-                            onSubmit={info => this.gotoRules(info)} />
+                            onSubmit={info => this.goToMenu(info)} />
       </SecCon>
     </div>;
   }

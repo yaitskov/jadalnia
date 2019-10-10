@@ -5,6 +5,7 @@ import { Thenable } from 'async/abortable-promise';
 import removeEmptyVals from 'collection/remove-empty-values';
 import { CommonUtil } from 'app/common-util';
 import { optS } from 'collection/optional';
+import { BasicFestInfo } from 'app/page/festival/basic-festival-info';
 
 export class SignUpSr {
   // @ts-ignore
@@ -13,12 +14,11 @@ export class SignUpSr {
   // @ts-ignore
   private $userAuth: UserAuth;
 
-  public signUpAnonymous(): Thenable<Response> {
-    return this.signUp({
-      fullName: `anonymous ${new Date().getTime()}`,
-      phone: '',
-      email: ''
-    });
+  public signUpAdmin(basicFestInfo: BasicFestInfo): Thenable<Response> {
+    return postJ('/api/festival/create', basicFestInfo)
+      .tnr(r => r.json().then((r) =>
+        this.$userAuth.storeSession(r.session, r.fid, basicFestInfo.userName, optS(''), 'admin')))
+      .ctch(e => console.log(`ops ${e}`));
   }
 
   public signUp(regReq: UserRegReq): Thenable<Response> {
