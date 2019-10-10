@@ -1,5 +1,6 @@
 import { h, Component } from 'preact';
 
+import { o2j } from 'util/json';
 import { Router, Route, route } from 'preact-router';
 import AsyncRoute from 'preact-async-route';
 import { inject, Container } from 'injection/inject-1k';
@@ -43,8 +44,11 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewTennisTour = async () => await import('./page/tournament/new/tennis')
     .then(m => this.inj(m as AsyncModule, 'tennis'));
 
-  SetMenu = async () => await import('./page/festival/set-menu')
-    .then(m => this.inj(m as AsyncModule, 'set-menu'));
+  SetMenu = async (u, cb, props) => await import('./page/festival/set-menu')
+    .then(m => {
+      console.log(`props  ${o2j(props)}`);
+      return this.inj(m as AsyncModule, 'set-menu');
+    });
 
   SignUp = async () => await import('app/page/sign-up/sign-up')
     .then(m => this.inj(m as AsyncModule, 'sign-up'));
@@ -62,7 +66,7 @@ export class MainCom extends InjSubCom<{}, {}> {
   render() {
     return <Router>
       <AsyncRoute path='/' getComponent={this.LPG} />
-      <AsyncRoute path='/festival/new/menu' getComponent={this.SetMenu} />
+      <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.SetMenu} />
       <AsyncRoute path='/tournament/new/tennis' getComponent={this.NewTennisTour} />
       <AsyncRoute path='/festival/new/start' getComponent={this.NewFestival} />
       <AsyncRoute path='/terms' getComponent={this.Terms} />

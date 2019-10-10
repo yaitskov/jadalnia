@@ -9,14 +9,17 @@ import { NewFestival } from 'app/page/festival/festival-types';
 class SetMenu extends InjSubCom<{}, {}> {
   // @ts-ignore
   private $locStore: LocalStorage;
+  //// @ts-ignore
+  // private $menuSr: MenuService;
 
   render() {
-    return this.$locStore.jGet<NewFestival>('newFestival')
-      .map(newFest =>
-        <div>
-          <p>menu stub</p>
-        </div>)
-      .elf(() => <div>no basic info about festival</div>);
+    return <div>DD</div>;
+    /* return this.$menuSr.list()
+    *   .map(menuItems =>
+     *     <div>
+     *       <p>menu stub</p>
+     *     </div>)
+     *   .elf(() => <div>menu empty</div>); */
   }
 }
 

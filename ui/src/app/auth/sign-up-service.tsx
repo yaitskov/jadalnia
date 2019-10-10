@@ -6,6 +6,7 @@ import removeEmptyVals from 'collection/remove-empty-values';
 import { CommonUtil } from 'app/common-util';
 import { optS } from 'collection/optional';
 import { BasicFestInfo } from 'app/page/festival/basic-festival-info';
+import { Fid } from 'app/page/festival/festival-types';
 
 export class SignUpSr {
   // @ts-ignore
@@ -14,10 +15,14 @@ export class SignUpSr {
   // @ts-ignore
   private $userAuth: UserAuth;
 
-  public signUpAdmin(basicFestInfo: BasicFestInfo): Thenable<Response> {
+  public signUpAdmin(basicFestInfo: BasicFestInfo): Thenable<Fid> {
     return postJ('/api/festival/create', basicFestInfo)
-      .tnr(r => r.json().then((r) =>
-        this.$userAuth.storeSession(r.session, r.fid, basicFestInfo.userName, optS(''), 'admin')))
+      .tn(r => r.json().then((r) => {
+        this.$userAuth.storeSession(
+          `${r.session.uid}${r.session.key}`,
+          r.fid, basicFestInfo.userName, optS(''), 'admin');
+        return r.fid as Fid;
+      }))
       .ctch(e => console.log(`ops ${e}`));
   }
 

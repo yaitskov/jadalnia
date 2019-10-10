@@ -15,7 +15,8 @@ import { LocalStorage } from 'app/persistence/local-storage';
 import { Thenable } from 'async/abortable-promise';
 import { Opt, nic, opt } from 'collection/optional';
 import { BasicFestInfo, newBasicFestInfo } from 'app/page/festival/basic-festival-info';
-import { NewFestival } from 'app/page/festival/festival-types';
+import { NewFestival, Fid } from 'app/page/festival/festival-types';
+import { UserAuth } from 'app/auth/user-auth';
 
 import bulma from 'app/style/my-bulma.sass';
 
@@ -34,6 +35,8 @@ class NewFest extends TransCom<{}, NewFestS> {
   private $locStore: LocalStorage;
   // @ts-ignore
   private $signUp: SignUpSr;
+  // @ts-ignore
+  private $userAuth: UserAuth;
 
   constructor(props) {
     super(props);
@@ -49,10 +52,10 @@ class NewFest extends TransCom<{}, NewFestS> {
         .signUpAdmin(
           {...info,
            opensAt: time2Str(new Date(info.opensAt))})
-        .tn(() => {
+        .tn((fid: Fid) => {
           this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
             'newFestival', {...v, basic: info}));
-          route('/festival/new/menu');
+          route(`/festival/new/menu/${fid}`);
         });
   }
 
