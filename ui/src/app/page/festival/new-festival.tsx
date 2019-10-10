@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { time2Str } from 'util/my-time';
 import { SignUpSr } from 'app/auth/sign-up-service';
 import { resolved } from 'async/abortable-promise';
 import { Link, route } from 'preact-router';
@@ -44,11 +45,15 @@ class NewFest extends TransCom<{}, NewFestS> {
   }
 
   goToMenu(info: BasicFestInfo): void {
-    this.$signUp.signUpAdmin(info).tn(() => {
-      this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
-        'newFestival', {...v, basic: info}));
-      route('/festival/new/menu');
-    });
+    this.$signUp
+        .signUpAdmin(
+          {...info,
+           opensAt: time2Str(new Date(info.opensAt))})
+        .tn(() => {
+          this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
+            'newFestival', {...v, basic: info}));
+          route('/festival/new/menu');
+        });
   }
 
   render() {
