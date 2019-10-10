@@ -6,6 +6,7 @@ import org.dan.jadalnia.app.order.OrderResource
 import org.dan.jadalnia.app.token.TokenResource
 import org.dan.jadalnia.app.user.UserResource
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperContextResolver
+import org.dan.jadalnia.sys.error.CompletionExceptionMapper
 import org.dan.jadalnia.sys.error.DefaultExceptionMapper
 import org.dan.jadalnia.sys.error.InvalidTypeIdExceptionMapper
 import org.dan.jadalnia.sys.error.JadExMapper
@@ -41,6 +42,7 @@ class JerseyConfig : ResourceConfig() {
         register(JsonMappingExceptionMapper::class.java)
         register(InvalidTypeIdExceptionMapper::class.java)
         register(UncheckedExecutionExceptionMapper::class.java)
+        register(CompletionExceptionMapper::class.java)
         register(UndeclaredThrowableExecutionExceptionMapper::class.java)
         packages(
             false,
