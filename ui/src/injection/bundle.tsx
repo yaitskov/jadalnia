@@ -16,3 +16,12 @@ Instantiable<T> {
                        .sBean('bundleName', bundleName)
                        .sBeanInj('i18Trans', new I18Trans()) as FwdContainer)));
 }
+
+export function regBundle<T extends Component>(
+    bundleName: string,
+    mainContainer: Container,
+    componentClass: Instantiable<T>):
+    Instantiable<T> {
+  return regBundleCtx(bundleName, mainContainer, componentClass, o => o);
+}
+

@@ -7,8 +7,9 @@ import { I18Trans, LanguageCode } from 'i18n/i18n-translator';
 import { UserAuth } from 'app/auth/user-auth';
 import { LocalStorage } from 'app/persistence/local-storage';
 import { CommonUtil } from 'app/common-util';
-import { Container, inject } from 'injection/inject-1k';
+import { Container } from 'injection/inject-1k';
 import { SignUpSr } from 'app/auth/sign-up-service';
+import { RestSr } from "app/service/rest-service";
 
 export const container = new Container();
 
@@ -20,6 +21,7 @@ container
       ['cutil', CommonUtil],
       ['signUp', SignUpSr],
       ['userAuth', UserAuth],
+      ['restSr', RestSr],
       ['valiform', Valiform],
       ['validation', Validation],
       ['i18Trans', I18Trans],

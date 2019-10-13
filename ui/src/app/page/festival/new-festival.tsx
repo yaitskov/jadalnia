@@ -1,8 +1,7 @@
 import { h } from 'preact';
 import { time2Str } from 'util/my-time';
 import { SignUpSr } from 'app/auth/sign-up-service';
-import { resolved } from 'async/abortable-promise';
-import { Link, route } from 'preact-router';
+import { route } from 'preact-router';
 import { Container } from 'injection/inject-1k';
 import { regBundleCtx } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -12,13 +11,10 @@ import { BasicFestInfoForm } from 'app/page/festival/basic-festival-info-form';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { SecCon } from 'app/component/section-container';
 import { LocalStorage } from 'app/persistence/local-storage';
-import { Thenable } from 'async/abortable-promise';
 import { Opt, nic, opt } from 'collection/optional';
 import { BasicFestInfo, newBasicFestInfo } from 'app/page/festival/basic-festival-info';
 import { NewFestival, Fid } from 'app/page/festival/festival-types';
 import { UserAuth } from 'app/auth/user-auth';
-
-import bulma from 'app/style/my-bulma.sass';
 
 export interface NewFestS extends TransComS {
   fest: Opt<NewFestival>;

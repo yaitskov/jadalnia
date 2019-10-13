@@ -81,7 +81,8 @@ class MergeAndFlushI18nPlugin {
 
     if (staticRootFiles.length !== 1) {
       throw new Error(
-        `expected 1 static root file but got ${JSON.stringify(staticRootFiles)}`);
+        `expected 1 static root file but got ${JSON.stringify(staticRootFiles)}. 
+        Check that static imports having absolute paths.`);
     }
 
     const uniqueBaseNames = new Set([...rootFiles].map(file => fPath.basename(file)));

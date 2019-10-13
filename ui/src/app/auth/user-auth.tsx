@@ -1,6 +1,7 @@
 import { LocalStorage } from 'app/persistence/local-storage';
 import { Opt, nic } from 'collection/optional';
 import { route } from 'preact-router';
+import { Fid } from 'app/page/festival/festival-types';
 
 export const MySession = 'mySession';
 export const Admin = 'admin';
@@ -11,7 +12,6 @@ export const MyEmail = 'myEmail';
 export const MyName = 'myName';
 export const MyFid = 'myFid';
 
-export type Fid = string;
 export type UserType = string;
 
 export type Phone = Opt<string>;
@@ -59,8 +59,8 @@ export class UserAuth {
     return this.$locStore.get(MyName);
   }
 
-  public myFid(): Opt<string> {
-    return this.$locStore.get(MyFid);
+  public myFid(): Opt<Fid> {
+    return this.$locStore.get(MyFid).map(f => +f);
   }
 
   public requireLogin(): void {
@@ -77,7 +77,7 @@ export class UserAuth {
   public storeSession(fullSession: string, fid: Fid, name: string, email: Email, type: UserType): void {
     console.log(`Authenticated as ${fullSession}`);
     this.$locStore.store(MySession, fullSession);
-    this.$locStore.store(MyFid, fid);
+    this.$locStore.store(MyFid, `$fid`);
     this.$locStore.store(MyName, name);
     this.$locStore.store(MyType, type);
     email.ifV(e => this.$locStore.store(MyEmail, e));
