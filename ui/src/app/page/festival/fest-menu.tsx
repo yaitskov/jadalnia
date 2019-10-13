@@ -34,7 +34,6 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
       <TitleStdMainMenuI t$title="Welcome to FoodFest"/>
       <AddMenuItemBtnI fid={this.props.fid} />
       <SecCon>
-        fid = {this.props.fid}
         <If f={!this.st.items}>
           <div>loading</div>
         </If>
