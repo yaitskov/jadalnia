@@ -19,7 +19,7 @@ export class SignUpSr {
     return postJ('/api/festival/create', basicFestInfo)
       .tn(r => r.json().then((r) => {
         this.$userAuth.storeSession(
-          `${r.session.uid}${r.session.key}`,
+          `${r.session.uid}:${r.session.key}`,
           r.fid, basicFestInfo.userName, optS(''), 'admin');
         return r.fid as Fid;
       }))
