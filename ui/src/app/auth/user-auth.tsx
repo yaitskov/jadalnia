@@ -77,7 +77,7 @@ export class UserAuth {
   public storeSession(fullSession: string, fid: Fid, name: string, email: Email, type: UserType): void {
     console.log(`Authenticated as ${fullSession}`);
     this.$locStore.store(MySession, fullSession);
-    this.$locStore.store(MyFid, `$fid`);
+    this.$locStore.store(MyFid, `${fid}`);
     this.$locStore.store(MyName, name);
     this.$locStore.store(MyType, type);
     email.ifV(e => this.$locStore.store(MyEmail, e));
