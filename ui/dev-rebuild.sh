@@ -1,4 +1,4 @@
 #!/bin/bash
 
 
-rm dist/index.* ; webpack-cli
+rm dist/{*.br,*.gz} ; webpack-cli
