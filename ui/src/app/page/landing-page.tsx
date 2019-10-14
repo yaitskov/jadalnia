@@ -104,8 +104,8 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
           <Tile t$title="No paper"
                 t$body="No need to print tokens"
                 color="turquoise" />
-          <Tile t$title="Scaleble order accepting"
-                t$body="Visitor puts order on their own" color="yellow" />
+          <Tile t$title="Scalable order accepting"
+                t$body="Visitor puts order without volunteer" color="yellow" />
           <Tile t$title="Lineless"
                 t$body="No live line. Visitors enjoy action." color="blue" />
         </TileLine>
