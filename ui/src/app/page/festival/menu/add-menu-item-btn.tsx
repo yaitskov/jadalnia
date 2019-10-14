@@ -9,7 +9,7 @@ export class AddMenuItemBtn extends InjSubCom<{fid: Fid}, {}> {
   render() {
     const TI = this.c(T);
     return <div class={bulma.buttons + ' ' + bulma['is-centered']}>
-        <Link class={bulma.button + ' ' + bulma['is-primary'] + ' ' + bulma['is-large']}
+        <Link class={bulma.button + ' ' + bulma['is-primary']}
               href={"/admin/festival/menu/new/item/" + this.props.fid}>
           <TI m="Add item"/>
         </Link>

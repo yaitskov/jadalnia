@@ -10,6 +10,7 @@ import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import {AddMenuItemBtn} from "app/page/festival/menu/add-menu-item-btn";
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {nic, Opt, opt} from 'collection/optional';
+import bulma from "app/style/my-bulma.sass";
 
 interface FestMenuS extends TransComS {
   items: Opt<MenuItemView[]>
@@ -34,13 +35,18 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
     return <div>
       <TitleStdMainMenuI t$title="Welcome to FoodFest"/>
       <AddMenuItemBtnI fid={this.props.fid} />
-      <If f={this.st.items.empty}>
-        <div>loading</div>
-      </If>
-      <If f={this.st.items.map(l => l.length).el(1) == 0}>
-        <div>menu is empty</div>
-      </If>
-      {this.st.items.el([]).map(item => <div>{item.name} / {item.price}</div>)}
+      <section>
+        <ul class={bulma.list}>
+          <If f={this.st.items.empty}>
+            <li class={bulma.listItem}>loading</li>
+          </If>
+          <If f={this.st.items.map(l => l.length).el(1) == 0}>
+            <li class={bulma.listItem}>menu is empty</li>
+          </If>
+          {this.st.items.el([])
+            .map(i => <li class={bulma.listItem}>{i.name} / {i.price}</li>)}
+        </ul>
+      </section>
       <AddMenuItemBtnI fid={this.props.fid} />
     </div>;
   }
