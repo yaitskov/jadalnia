@@ -1,24 +1,17 @@
 import { h, Component } from 'preact';
 
 import { o2j } from 'util/json';
-import { Router, Route, route } from 'preact-router';
+import { Router } from 'preact-router';
 import AsyncRoute from 'preact-async-route';
-import { inject, Container } from 'injection/inject-1k';
+import { Container } from 'injection/inject-1k';
 import { InjSubCom } from 'injection/inject-sub-components';
-import { Instantiable, gNew, Tobj, keysM } from 'collection/typed-object';
-//import { I18Trans } from 'i18n/i18n-translator';
+import { Instantiable } from 'collection/typed-object';
 
 interface AsyncModule {
   default: (name: string, mainContainer: Container) => Instantiable<Component>;
-  //  default: Instantiable<Component>;
 }
 
-//import { LandingPage } from 'app/landing-page';
-
 export class MainCom extends InjSubCom<{}, {}> {
-  // @ts-ignore
-  // $bundlesCtx: Tobj<FwdContainer>;
-
   private inj(module: AsyncModule, name: string): Instantiable<Component> {
     return module.default(name, this.$container);
   }
@@ -38,10 +31,10 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewFestival = async () => await import('./page/festival/new-festival')
     .then(m => this.inj(m as AsyncModule, 'new-festival'));
 
-  NewFestMenuItem = async () => await import('./page/festival/new-fest-menu-item')
+  NewFestMenuItem = async () => await import('./page/festival/menu/new-fest-menu-item')
     .then(m => this.inj(m as AsyncModule, 'new-fest-menu-item'));
 
-  FestMenu = async (u, cb, props) => await import('./page/festival/fest-menu')
+  FestMenu = async (u, cb, props) => await import('./page/festival/menu/fest-menu')
     .then(m => {
       console.log(`props  ${o2j(props)}`);
       return this.inj(m as AsyncModule, 'fest-menu');
@@ -56,8 +49,6 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewTodo = async () => await import('./new-todo')
     .then(m => this.inj(m as AsyncModule, 'new-todo'));
 
-  // SignIn = async () => await import('./app/page/sign-in').then(m => this.inj(m as AsyncModule, 'sign-in'));
-  // <AsyncRoute path='/sign-in' getComponent={this.SignIn} />
   // <Route path='/' component={this.c(Terms)} />
 
   render() {

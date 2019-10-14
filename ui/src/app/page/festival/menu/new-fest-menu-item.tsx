@@ -4,7 +4,7 @@ import { regBundleCtx } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import { T } from 'i18n/translate-tag';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
-import { FestMenuItemForm } from 'app/page/festival/fest-menu-item-form';
+import { FestMenuItemForm } from 'app/page/festival/menu/fest-menu-item-form';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { SecCon } from 'app/component/section-container';
 import { Opt, nic, opt } from 'collection/optional';
@@ -12,7 +12,7 @@ import { FestMenuItemFull, emptyFestMenuItem } from 'app/service/fest-menu-types
 
 import {goBack} from "util/routing";
 import {FestMenuSr} from "app/service/fest-menu-service";
-import {Fid} from "./festival-types";
+import {Fid} from "../festival-types";
 
 export interface FestMenuItemS extends TransComS {
   menuItem: Opt<FestMenuItemFull>;
