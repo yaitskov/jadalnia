@@ -111,7 +111,7 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
         </TileLine>
 
         <TileLine>
-          <Tile t$title="Competionary environment"
+          <Tile t$title="Competitionary environment"
                 t$body="Performance for every waiter is observable" color="red" />
           <Tile t$title="Observable demand"
                 t$body="Be aware of needs of all waiting visitor" color="blue" />
