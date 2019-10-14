@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { T } from 'i18n/translate-tag';
 import { Container } from 'injection/inject-1k'
 import { Instantiable } from 'collection/typed-object';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { Footer } from 'app/component/footer';
@@ -11,11 +11,9 @@ import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
 
 import bulma from 'bulma/bulma.sass';
+import {APP_URL, APP_NAME} from "app/app-const";
 
-export interface TermsS extends TransComS {
-}
-
-export class Terms extends TransCom<{}, TermsS> {
+export class Terms extends TransCom<{}, TransComS> {
   constructor(props) {
     super(props);
     this.st = {at: this.at()};
@@ -26,15 +24,15 @@ export class Terms extends TransCom<{}, TermsS> {
     return <div>
       <TitleStdMainMenuI t$title="Terms of service"/>
       <SecCon>
-        <h1 class={bulma.title}>Cloud-Sport Terms of Service</h1>
+        <h1 class={bulma.title}>{APP_NAME} Terms of Service</h1>
 
         <Par>
-          Last updated: May 20th 2018.
+          Last updated: October 13th 2019.
         </Par>
 
         <Par>
           Please read these Terms of Service ("Terms") carefully before using
-          the <a href="https://cloud-sport.org">https://cloud-sport.org</a>.
+          the <a href={APP_URL}>{APP_URL}</a>.
           The website (the "Service") operated by Daniil Iaitskov ("us", "we", or
           "our").
         </Par>
@@ -72,6 +70,7 @@ export class Terms extends TransCom<{}, TermsS> {
   at(): string[] { return []; }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<Terms> {
-  return regBundleCtx(bundleName, mainContainer, Terms, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<Terms> {
+  return regBundle(bundleName, mainContainer, Terms);
 }

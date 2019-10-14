@@ -9,6 +9,7 @@ import { Footer } from 'app/component/footer';
 
 import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
+import {APP_NAME} from "app/app-const";
 
 import bulma from 'bulma/bulma.sass';
 
@@ -23,51 +24,38 @@ export class Privacy extends TransCom<{}, TransComS> {
     return <div>
       <TitleStdMainMenuI t$title="Privacy policy"/>
       <SecCon>
-        <h1 class={bulma.title}>Cloud-Sport Privacy Policy</h1>
+        <h1 class={bulma.title}>{APP_NAME} Privacy Policy</h1>
 
         <Par>
-          Cloud-Sport (CS) collects, stores and uses all information about its users,
+          {APP_NAME} collects, stores and uses all information about its users,
           which is provided by users explicitly (filing web forms),
           or implicitly. This information is used to please users as much as possible.
           Though keep in mind that accidental data leaks
           are possible, due bugs in software or its configuration,
           which could be exploited by evil hackers or rivals.
-          In that case Cloud-Sport cannot give any warranty how user data could be used.
+          In that case {APP_NAME} cannot give any warranty how user data could be used.
         </Par>
 
         <Par>
-          Most of user data on Cloud-Sport is publicly available like fullname,
-          history of competitions in sport tournaments including outcomes of particular matches.
+          Customer orders aon {APP_NAME} are publicly available, but account could be anonymous.
+          Volunteer accounts are publicly available and cannot be anonymous.
         </Par>
 
         <Par>
-          Cloud-Sport is integrated with 3rd party systems like
+          {APP_NAME} is integrated with 3rd party systems like
           Speech Recognition from <a href="https://google.com">Google</a> and {' '}
           <a href="https://facebook.com">Facebook</a> social network.
-          Those systems could receive user data or provide them to Cloud-Sport.
+          Those systems could receive user data or provide them to {APP_NAME}.
         </Par>
 
         <Par>
-          A Cloud-Sport user could <b>NOT</b> remove his/her account from
-          the system, if the user participated in a tournament, because of
-          tournament logical consistency limitation, but the user could
-          request to anonymize the account, by
-          filing <a href="https://github.com/yaitskov/ping-pong/issues">an
-          issue</a>.
+          A {APP_NAME} customer user is anonymous by default,
+          until you bind your account to Facebook or other authentication system.
         </Par>
 
         <Par>
-          An anonymized account has a random name, erased contact
-          information and all sessions. Login is disabled for an anonymized
-          account. Tournaments owned by an anonymized account are deleted.
-          An account before being anonymized walks over all running
-          tournaments, whose user participates in.
-        </Par>
-
-        <Par>
-          Information about complete tournaments could be archived or removed
-          automatically, if nobody is interested in a tournament during long
-          time.
+          Information about complete festivals could be archived or removed
+          automatically.
         </Par>
 
         <Par>
@@ -75,7 +63,7 @@ export class Privacy extends TransCom<{}, TransComS> {
         </Par>
 
         <Par>
-          The policy is issued on May 20th 2018.
+          The policy is issued on October 13th 2019.
         </Par>
       </SecCon>
       <FooterI/>

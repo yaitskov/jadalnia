@@ -37,7 +37,7 @@ module.exports = {
   module: makeWebPackModule([ visitorFactory ]),
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Cloud-Sport',
+      title: 'FoodFest',
       favicon: 'favicon.png',
       meta: {viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'}
     }),
