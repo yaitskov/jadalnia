@@ -81,13 +81,17 @@ public class FestivalService @Inject constructor(
 
   fun listMenu(fid: Fid): CompletableFuture<List<MenuItem>> {
     return festivalCache.get(fid)
-        .thenApply(Festival::info)
+        .thenApply { fest ->
+          log.info("Load festival menu from {}", fest.hashCode())
+          fest.info
+        }
         .thenApply { info -> info.get() }
         .thenApply(FestivalInfo::menu)
   }
 
   fun updateMenu(festival: Festival, items: List<MenuItem>)
       : CompletableFuture<Int> {
+    log.info("Update festival menu in {}", festival.hashCode())
     festival.info.updateAndGet { info -> info.withMenu(items) }
     return festivalDao.setMenu(festival.info.get().fid, items)
   }
