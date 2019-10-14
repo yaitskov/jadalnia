@@ -1,5 +1,6 @@
 import { h } from 'preact';
-import { Link, route } from 'preact-router';
+import { jne } from 'collection/join-non-empty';
+import { Link } from 'preact-router';
 import { regBundleCtx } from 'injection/bundle';
 import { Container } from 'injection/inject-1k';
 import { Tobj, Instantiable } from 'collection/typed-object';
@@ -34,8 +35,8 @@ const colors: Tobj<string> = {
 
 class Tile extends MyCo<TileP, {}> {
   render() {
-    return <div class={bulma.tile + ' ' + bulma.isParent}>
-      <article class={bulma.tile + ' ' + bulma.isChild + ' ' + bulma.notification + ' ' + colors[this.props.color]}>
+    return <div class={jne(bulma.tile, bulma.isParent)}>
+      <article class={jne(bulma.tile, bulma.isChild, bulma.notification, colors[this.props.color])}>
         <p class={bulma.title}>
           {this.props.t$title}
         </p>
@@ -50,7 +51,7 @@ class Tile extends MyCo<TileP, {}> {
 class TileLine extends MyCo<{}, {}> {
   render() {
     // @ts-ignore
-    return <div class={bulma.tile + ' ' + bulma.isAncestor}>{this.props.children}</div>;
+    return <div class={jne(bulma.tile, bulma.isAncestor)}>{this.props.children}</div>;
   }
 }
 
@@ -60,7 +61,7 @@ class FF extends MyCo<{}, {}> {
   }
 }
 
-export class LandingPage extends TransCom<{}, LandingPageS> {
+export class LandingPage extends TransCom<{}, TransComS> {
   constructor(props) {
     super(props);
     this.st = {at: this.at()};
@@ -85,7 +86,7 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
           invites volunteers to work as waiters and cashiers.
         </Par>
         <Par>
-          A visitor goes by festival link and automaticaly signed up with an anonymous account.
+          A visitor goes by festival link and automatically signed up with an anonymous account.
           After that visitor can explore festival's menu without hassle, put and pay order.
           Visitor can buys tokens in advance.
         </Par>
@@ -119,7 +120,6 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
                 t$body="An alternative way for feedback and notification about your next festival"
                 color="turquoise" />
         </TileLine>
-
       </SecCon>
 
       <SecCon>
@@ -137,6 +137,7 @@ export class LandingPage extends TransCom<{}, LandingPageS> {
   at(): string[] { return []; }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<LandingPage> {
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<LandingPage> {
   return regBundleCtx(bundleName, mainContainer, LandingPage, (o) => o);
 }
