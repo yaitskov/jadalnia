@@ -7,12 +7,12 @@ import { FestMenuSr } from 'app/service/fest-menu-service';
 import { MenuItemView } from 'app/service/fest-menu-types';
 import { If } from 'component/if';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
-import { SecCon } from 'app/component/section-container';
 import {AddMenuItemBtn} from "app/page/festival/menu/add-menu-item-btn";
 import { TransCom, TransComS } from 'i18n/trans-component';
+import {nic, Opt, opt} from 'collection/optional';
 
 interface FestMenuS extends TransComS {
-  items: MenuItemView[]
+  items: Opt<MenuItemView[]>
 }
 
 class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
@@ -21,11 +21,12 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
 
   constructor(props) {
     super(props);
-    this.st = {items: [], at: this.at()};
+    this.st = {items: nic(), at: this.at()};
   }
 
   wMnt() {
-    this.$festMenuSr.list(this.props.fid).tn(lst => this.st.items = lst);
+    this.$festMenuSr.list(this.props.fid).tn(
+      lst => this.ust(st => ({...st, items: opt(lst)})));
   }
 
   render() {
@@ -33,15 +34,13 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
     return <div>
       <TitleStdMainMenuI t$title="Welcome to FoodFest"/>
       <AddMenuItemBtnI fid={this.props.fid} />
-      <SecCon>
-        <If f={!this.st.items}>
-          <div>loading</div>
-        </If>
-        <If f={this.st.items && !this.st.items.length}>
-          <div>menu is empty</div>
-        </If>
-        {this.st.items.map(item => <div>{item.name} / {item.price}</div>)}
-      </SecCon>
+      <If f={this.st.items.empty}>
+        <div>loading</div>
+      </If>
+      <If f={this.st.items.map(l => l.length).el(1) == 0}>
+        <div>menu is empty</div>
+      </If>
+      {this.st.items.el([]).map(item => <div>{item.name} / {item.price}</div>)}
       <AddMenuItemBtnI fid={this.props.fid} />
     </div>;
   }
