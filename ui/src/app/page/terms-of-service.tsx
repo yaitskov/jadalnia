@@ -1,5 +1,4 @@
 import { h } from 'preact';
-import { T } from 'i18n/translate-tag';
 import { Container } from 'injection/inject-1k'
 import { Instantiable } from 'collection/typed-object';
 import { regBundle } from 'injection/bundle';
@@ -20,7 +19,7 @@ export class Terms extends TransCom<{}, TransComS> {
   }
 
   render() {
-    const [TI, TitleStdMainMenuI, FooterI] = this.c3(T, TitleStdMainMenu, Footer);
+    const [TitleStdMainMenuI, FooterI] = this.c2(TitleStdMainMenu, Footer);
     return <div>
       <TitleStdMainMenuI t$title="Terms of service"/>
       <SecCon>
