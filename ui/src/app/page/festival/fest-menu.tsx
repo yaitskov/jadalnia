@@ -33,7 +33,7 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
   render() {
     const [AddMenuItemBtnI, TitleStdMainMenuI] = this.c2(AddMenuItemBtn, TitleStdMainMenu);
     return <div>
-      <TitleStdMainMenuI t$title="Welcome to FoodFest"/>
+      <TitleStdMainMenuI t$title="Festival Menu"/>
       <AddMenuItemBtnI fid={this.props.fid} />
       <section>
         <ul class={bulma.list}>
