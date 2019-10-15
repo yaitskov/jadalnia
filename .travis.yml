@@ -8,7 +8,7 @@ services:
 install:
   - echo "my install"
 before_script:
-  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('root') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - echo "USE mysql;\nUPDATE user SET authentication_string=PASSWORD('root') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
 script:
   - echo "my script"
   - cp .travis.settings.xml $HOME/.m2/settings.xml
