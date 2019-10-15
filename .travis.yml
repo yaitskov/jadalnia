@@ -1,0 +1,18 @@
+sudo: false
+language: java
+cache:
+  directories:
+    - "$HOME/.m2/repository"
+services:
+  - mysql
+install:
+  - echo "my install"
+before_script:
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('root') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+script:
+  - echo "my script"
+  - cp .travis.settings.xml $HOME/.m2/settings.xml
+  - mvn -B -P upgrade-db -pl server -am install -Dmaven.test.redirectTestOutputToFile=true
+deploy:
+  provider: script
+  script: echo "my deploy"
