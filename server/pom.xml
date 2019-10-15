@@ -18,7 +18,7 @@
         <aspectj.version>1.8.8</aspectj.version>
         <jersey.version>2.22.2</jersey.version>
         <restassured.version>3.0.1</restassured.version>
-        <http.port>8080</http.port>
+        <http.port>8280</http.port>
         <debug.port>5008</debug.port>
         <jacoco.version>0.7.6.201602180812</jacoco.version>
         <sandbox.env.prop.file>docker-env.properties</sandbox.env.prop.file>
@@ -467,7 +467,7 @@
                         <version>9.4.19.v20190610</version>
                         <configuration>
                             <httpConnector>
-                                <port>8081</port>
+                                <port>${http.port}</port>
                             </httpConnector>
                         </configuration>
                         <executions>
