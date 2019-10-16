@@ -50,7 +50,7 @@
                                     <arguments>
                                         <argument>drop-containers.sh</argument>
                                         <argument>${mysql.port}</argument>
-                                        <argument>8080</argument>
+                                        <argument>8280</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
