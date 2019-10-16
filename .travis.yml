@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: java
 dist: trusty
 jdk:
@@ -12,6 +12,7 @@ install:
   - echo "my install"
 before_script:
   - echo "USE mysql;\nUPDATE user SET authentication_string=PASSWORD('root') WHERE user='root@localhost';\nFLUSH PRIVILEGES;\n" | mysql -u root
+  - mysql -u root -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('root')"
 script:
   - echo "my script"
   - cp .travis.settings.xml $HOME/.m2/settings.xml
