@@ -3,34 +3,46 @@ package org.dan.jadalnia.app.order;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.dan.jadalnia.app.festival.menu.DishName;
+import org.dan.jadalnia.app.festival.FestivalService;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid;
 import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.order.pojo.OrderState;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.app.user.UserType;
 import org.dan.jadalnia.app.user.WsClientHandle;
 import org.dan.jadalnia.app.ws.MessageForClient;
+import org.dan.jadalnia.app.ws.PropertyUpdated;
 import org.dan.jadalnia.mock.MyRest;
+import org.dan.jadalnia.test.match.ManyMatchers;
 import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.genUserKey;
+import static org.dan.jadalnia.app.festival.SetMenuTest.FRYTKI;
+import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerCustomer;
-import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.registerUser;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
+import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerUser;
 
 public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
+    public static final List<OrderItem> FRYTKI_ORDER = singletonList(
+            new OrderItem(FRYTKI, 1, Collections.emptyList()));
+    public static final String FESTIVAL_STATUS_COND = "festivalStatus";
+    public static final String ORDER_PAID_COND = "orderStatus";
+
     public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
         return registerUser(fid, key, myRest, UserType.Kasier);
     }
@@ -51,6 +63,7 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     @SneakyThrows
     public void customerPutsOrder() {
         val festival = createFestival(genAdminKey(), myRest());
+
         val customerSession = registerCustomer(
                 festival.getFid(), genUserKey(), myRest());
         val kasierSession = registerKasier(
@@ -60,24 +73,11 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
 
 
         setState(myRest(), festival.getSession(), FestivalState.Open);
+        setMenu(myRest(), festival.getSession());
 
-        val orderLabel = putOrder(myRest(),
-                customerSession,
-                singletonList(
-                        new OrderItem(
-                                new DishName("rzemniaki"),
-                                1,
-                                Collections.emptyList())));
+        val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
 
-        val wsKelnerHandler = WsClientHandle.wsClientHandle(
-                kelnerSession,
-                new PredicateStateMatcher<>(
-                        (MessageForClient event) ->
-                                event instanceof OrderPaidEvent
-                                        && ((OrderPaidEvent) event).getLabel().equals(orderLabel),
-                        new CompletableFuture<>()),
-                new TypeReference<MessageForClient>() {
-                });
+        val wsKelnerHandler = orderPaidWaiter(kelnerSession, orderLabel);
 
         bindUserWsHandler(wsKelnerHandler);
 
@@ -85,5 +85,44 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
         // todo customer should be also notified
 
         wsKelnerHandler.waitTillMatcherSatisfied();
+    }
+
+    @NotNull
+    public static WsClientHandle<MessageForClient> orderPaidWaiter(UserSession kelnerSession, OrderLabel orderLabel) {
+        return WsClientHandle.wsClientHandle(
+                kelnerSession,
+                new PredicateStateMatcher<>(
+                        (MessageForClient event) ->
+                                event instanceof OrderStateEvent
+                                        && ((OrderStateEvent) event).getState() == OrderState.Paid
+                                        && ((OrderStateEvent) event).getLabel().equals(orderLabel),
+                        new CompletableFuture<>()),
+                new TypeReference<MessageForClient>() {
+                });
+    }
+
+    @NotNull
+    public static WsClientHandle<MessageForClient> festivalStatusAndOrderPaidWaiter(
+            UserSession kelnerSession, OrderLabel orderLabel) {
+        return WsClientHandle.wsClientHandle(
+                kelnerSession,
+                new ManyMatchers<>(
+                        FESTIVAL_STATUS_COND,
+                        new PredicateStateMatcher<>(
+                                (MessageForClient event) ->
+                                        event instanceof PropertyUpdated
+                                                && ((PropertyUpdated) event).getName().equals(
+                                                        FestivalService.Companion.getFESTIVAL_STATE()),
+                                new CompletableFuture<>()),
+                        ORDER_PAID_COND,
+                        new PredicateStateMatcher<>(
+                                (MessageForClient event) ->
+                                        event instanceof OrderStateEvent
+                                                && ((OrderStateEvent) event).getState() == OrderState.Paid
+                                                && ((OrderStateEvent) event).getLabel().equals(orderLabel),
+                                new CompletableFuture<>())
+                ),
+                new TypeReference<MessageForClient>() {
+                });
     }
 }

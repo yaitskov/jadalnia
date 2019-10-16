@@ -32,88 +32,87 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Path("/")
 @Produces(APPLICATION_JSON)
 class FestivalResource @Inject constructor(
-        val festivalService: FestivalService,
-        @Named(USER_SESSIONS)
-        val  userSessions: AsyncCache<UserSession, UserInfo>,
-        @Named(FESTIVAL_CACHE)
-        val  festivalCache: AsyncCache<Fid, Festival>,
-        val asynSync: AsynSync
-) {
-    companion object {
-        const val FESTIVAL = "festival/"
-        const val FESTIVAL_MENU = FESTIVAL + "menu"
-        const val FESTIVAL_STATE = FESTIVAL + "state"
-        const val FESTIVAL_CREATE = FESTIVAL + "create"
-        const val INVALIDATE_CACHE = FESTIVAL + "invalidate/cache"
-        val log = LoggerFactory.getLogger(FestivalResource::class.java)
-    }
+    val festivalService: FestivalService,
+    @Named(USER_SESSIONS)
+    val userSessions: AsyncCache<UserSession, UserInfo>,
+    @Named(FESTIVAL_CACHE)
+    val festivalCache: AsyncCache<Fid, Festival>,
+    val asynSync: AsynSync) {
+  companion object {
+    const val FESTIVAL = "festival/"
+    const val FESTIVAL_MENU = FESTIVAL + "menu"
+    const val FESTIVAL_STATE = FESTIVAL + "state"
+    const val FESTIVAL_CREATE = FESTIVAL + "create"
+    const val INVALIDATE_CACHE = FESTIVAL + "invalidate/cache"
+    val log = LoggerFactory.getLogger(FestivalResource::class.java)
+  }
 
-    @POST
-    @Path(FESTIVAL_CREATE)
-    @Consumes(APPLICATION_JSON)
-    fun create(
-            @Suspended response: AsyncResponse,
-            newFestival: NewFestival) {
-        asynSync.sync(festivalService.create(newFestival), response)
-    }
+  @POST
+  @Path(FESTIVAL_CREATE)
+  @Consumes(APPLICATION_JSON)
+  fun create(
+      @Suspended response: AsyncResponse,
+      newFestival: NewFestival) {
+    asynSync.sync(festivalService.create(newFestival), response)
+  }
 
-    @POST
-    @Path(FESTIVAL_STATE)
-    @Consumes(APPLICATION_JSON)
-    fun setState(
-            @Suspended response: AsyncResponse,
-            @HeaderParam(SESSION) session: UserSession,
-            state: FestivalState) {
-        asynSync.sync(
-                userSessions.get(session)
-                        .thenApply({ user -> user.ensureAdmin().fid })
-                        .thenCompose(festivalCache::get)
-                        .thenCompose({
-                            festival -> festivalService.setState(festival, state)
-                        }),
-                response)
-    }
+  @POST
+  @Path(FESTIVAL_STATE)
+  @Consumes(APPLICATION_JSON)
+  fun setState(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      state: FestivalState) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureAdmin().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              festivalService.setState(festival, state)
+            },
+        response)
+  }
 
-    @GET
-    @Path(FESTIVAL_STATE + "/{fid}")
-    fun getState(
-            @Suspended response: AsyncResponse,
-            @PathParam("fid") fid: Fid) {
-        asynSync.sync(festivalService.getState(fid), response)
-    }
+  @GET
+  @Path(FESTIVAL_STATE + "/{fid}")
+  fun getState(
+      @Suspended response: AsyncResponse,
+      @PathParam("fid") fid: Fid) {
+    asynSync.sync(festivalService.getState(fid), response)
+  }
 
-    @GET
-    @Path(FESTIVAL_MENU + "/{fid}")
-    fun listMenu(
-            @Suspended response: AsyncResponse,
-            @PathParam("fid") fid: Fid) {
-        asynSync.sync(festivalService.listMenu(fid), response)
-    }
+  @GET
+  @Path(FESTIVAL_MENU + "/{fid}")
+  fun listMenu(
+      @Suspended response: AsyncResponse,
+      @PathParam("fid") fid: Fid) {
+    asynSync.sync(festivalService.listMenu(fid), response)
+  }
 
-    @POST
-    @Path(FESTIVAL_MENU)
-    fun updateMenu(
-            @Suspended response: AsyncResponse,
-            @HeaderParam(SESSION) session: UserSession,
-            items: List<MenuItem>) {
-        asynSync.sync(
-                userSessions.get(session)
-                        .thenApply({ user -> user.ensureAdmin().fid })
-                        .thenCompose(festivalCache::get)
-                        .thenCompose({ festival ->
-                            festivalService.updateMenu(festival, items)
-                        }),
-                response)
-    }
+  @POST
+  @Path(FESTIVAL_MENU)
+  fun updateMenu(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      items: List<MenuItem>) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureAdmin().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              festivalService.updateMenu(festival, items)
+            },
+        response)
+  }
 
-    @POST
-    @Path(INVALIDATE_CACHE)
-    @Consumes(APPLICATION_JSON)
-    fun invalidateCache(
-            @HeaderParam(SESSION) session: UserSession)
-            : CompletableFuture<Void> {
-        return userSessions.get(session)
-                .thenApply({ user -> user.ensureAdmin().fid })
-                .thenAccept({ fid -> festivalCache.invalidate(fid) })
-    }
+  @POST
+  @Path(INVALIDATE_CACHE)
+  @Consumes(APPLICATION_JSON)
+  fun invalidateCache(
+      @HeaderParam(SESSION) session: UserSession)
+      : CompletableFuture<Void> {
+    return userSessions.get(session)
+        .thenApply { user -> user.ensureAdmin().fid }
+        .thenAccept { fid -> festivalCache.invalidate(fid) }
+  }
 }

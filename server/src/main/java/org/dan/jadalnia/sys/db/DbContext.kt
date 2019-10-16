@@ -3,6 +3,8 @@ package org.dan.jadalnia.sys.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jooq.DSLContext
+import org.jooq.SQLDialect.valueOf
+import org.jooq.impl.DSL.using
 import org.jooq.impl.DataSourceConnectionProvider
 import org.jooq.impl.DefaultConfiguration
 import org.springframework.beans.factory.annotation.Value
@@ -11,12 +13,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.transaction.annotation.EnableTransactionManagement
-
 import javax.inject.Named
 import javax.sql.DataSource
-
-import org.jooq.SQLDialect.valueOf
-import org.jooq.impl.DSL.using
 
 @EnableTransactionManagement
 @EnableAspectJAutoProxy(proxyTargetClass = true)
@@ -44,7 +42,7 @@ class DbContext {
         config.connectionTestQuery = "select 1"
         config.maximumPoolSize = 1
         config.minimumIdle = 1
-        config.isAutoCommit = true
+        config.isAutoCommit = false
         config.transactionIsolation = "TRANSACTION_READ_COMMITTED"
         config.poolName = "db-pool"
         return HikariDataSource(config)

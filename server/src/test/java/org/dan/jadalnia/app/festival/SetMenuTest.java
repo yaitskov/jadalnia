@@ -28,11 +28,14 @@ import static org.junit.Assert.assertThat;
 @Category(JerseySpringTest.class)
 @ContextConfiguration(classes = TestCtx.class)
 public class SetMenuTest extends AbstractSpringJerseyTest {
-    static final DishName FRYTKI = new DishName("Frytki");
+    public static final DishName FRYTKI = new DishName("Frytki");
+
+    public static int setMenu(MyRest myRest, UserSession session, List<MenuItem> items) {
+        return myRest.post(FESTIVAL_MENU, session, items, Integer.class);
+    }
 
     public static int setMenu(MyRest myRest, UserSession session) {
-        return myRest.post(FESTIVAL_MENU,
-                session,
+        return setMenu(myRest, session,
                 singletonList(
                         new MenuItem(
                                 FRYTKI,
@@ -45,8 +48,7 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
                                         0.0,
                                         false,
                                         null)
-                                ))),
-                Integer.class);
+                                ))));
     }
 
     public static List<MenuItem> getMenu(MyRest myRest, Fid fid) {

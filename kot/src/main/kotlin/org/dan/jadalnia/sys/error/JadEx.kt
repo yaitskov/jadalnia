@@ -7,7 +7,7 @@ import org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404
 import org.eclipse.jetty.http.HttpStatus.UNAUTHORIZED_401
 
 import com.google.common.collect.ImmutableMap
-
+import org.eclipse.jetty.http.HttpStatus.CONFLICT_409
 
 class JadEx : RuntimeException {
     val status: Int
@@ -64,7 +64,7 @@ class JadEx : RuntimeException {
         fun internalError(message: String) = internalError(message, HashMap())
 
         @JvmStatic
-        fun internalError(template: String, params: MutableMap<String, Any>)
+        fun internalError(template: String, params: Map<String, Any>)
             = internalError(TemplateError(template, params))
 
         @JvmStatic
@@ -76,7 +76,13 @@ class JadEx : RuntimeException {
             = JadEx(INTERNAL_SERVER_ERROR_500, error)
 
         @JvmStatic
-        fun internalError(clientMessage: String, e: Exception)
+        fun conflict(error: Error) = JadEx(CONFLICT_409, error)
+
+        @JvmStatic
+        fun conflict(error: String) = conflict(TemplateError(error, HashMap()))
+
+        @JvmStatic
+        fun internalError(clientMessage: String, e: Throwable)
             = JadEx(INTERNAL_SERVER_ERROR_500,
                 TemplateError(clientMessage, HashMap()), e)
     }

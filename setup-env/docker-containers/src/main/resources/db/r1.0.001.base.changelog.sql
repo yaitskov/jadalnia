@@ -1,7 +1,7 @@
 --liquibase formatted sql
 --changeset diaitskov:r1.0.001
 
-create table festival (
+create table festival(
     fid int(11) not null auto_increment primary key,
     state varchar(10) not null, -- pending, open, closed
     opens_at timestamp(3) not null,
@@ -21,11 +21,26 @@ create table users(
     foreign key (festival_id) references festival(fid)
 );
 
-create table orders (
+create table token(
+    festival_id int(11) not null,
+    tid int(11) not null,
+    operation varchar(3) not null, -- Buy Sell
+    amount int(11) not null,
+    customer_id int(11) not null,
+    kasier_id int(11) null,
+    created timestamp(3) default current_timestamp(3),
+    primary key (festival_id, tid),
+    foreign key (festival_id) references festival(fid),
+    foreign key (customer_id) references users(uid),
+    foreign key (kasier_id) references users(uid)
+);
+
+create table orders(
     oid int(11) not null auto_increment primary key,
     label int(11) not null,
     festival_id int(11) not null,
     kelner_id int(11) null,
+    points_cost int(11) not null,
     customer_id int(11) not null,
     requirements text not null, -- json
     created timestamp(3) default current_timestamp(3),
