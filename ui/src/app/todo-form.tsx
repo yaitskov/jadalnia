@@ -4,6 +4,7 @@ import { Sform } from 'component/form/sform';
 import { Submit } from 'component/form/submit';
 import { ActionField } from 'app/action-field';
 import { PriorityField } from 'app/priority-field';
+import { Thenable } from 'async/abortable-promise';
 
 export interface ToDo {
   action: string;
@@ -11,7 +12,7 @@ export interface ToDo {
 }
 
 export interface ToDoFormP {
-  onSubmit: (d: ToDo) => void;
+  onSubmit: (d: ToDo) => Thenable<any>;
   todo: ToDo;
 }
 

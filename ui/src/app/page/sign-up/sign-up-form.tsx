@@ -5,6 +5,7 @@ import { Submit } from 'component/form/submit';
 import { FullNameField } from 'app/page/sign-up/full-name-field';
 import { EmailField } from 'app/page/sign-up/email-field';
 import { PhoneField } from 'app/page/sign-up/phone-field';
+import { Thenable } from 'async/abortable-promise';
 
 export interface UserRegReq {
   fullName: string;
@@ -13,7 +14,7 @@ export interface UserRegReq {
 }
 
 export interface SignUpFormP {
-  onSubmit: (d: UserRegReq) => void;
+  onSubmit: (d: UserRegReq) => Thenable<any>;
   regReq: UserRegReq;
 }
 

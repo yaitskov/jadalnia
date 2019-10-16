@@ -3,10 +3,11 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import { BasicTourInfoFields } from 'app/page/tournament/basic-tournament-fields';
 import { NextCancelForm } from 'app/component/next-cancel-form';
 import { BasicTourInfo } from 'app/page/tournament/basic-tournament-info';
+import { Thenable } from 'async/abortable-promise';
 
 export interface BasicTourInfoFormP {
   info: BasicTourInfo;
-  onSubmit: (info: BasicTourInfo) => void;
+  onSubmit: (info: BasicTourInfo) => Thenable<any>;
 }
 
 export class BasicTourInfoForm extends TransCom<BasicTourInfoFormP, TransComS> {

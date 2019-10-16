@@ -5,36 +5,58 @@ import { Sform } from 'component/form/sform';
 import { Submit } from 'component/form/submit';
 
 import bulma from 'app/style/my-bulma.sass';
+import {Thenable} from "async/abortable-promise";
+import {goBack} from "util/routing";
+import { jne } from 'collection/join-non-empty';
 
 export interface NextCancelFormP<P> {
   origin: P;
   t$next: string;
-  next: (p: P) => void;
+  next: (p: P) => Thenable<any>;
 }
 
-export class NextCancelForm<P> extends TransCom<NextCancelFormP<P>, TransComS> {
+export interface NextCancelFormS extends TransComS {
+  e?: Error;
+}
+
+const renderError = (e) => {
+  return <div class={jne(bulma.field, bulma.hasTextDanger)}>
+    {e.message}
+  </div>;
+};
+
+export class NextCancelForm<P>
+  extends TransCom<NextCancelFormP<P>, NextCancelFormS> {
   constructor(props) {
     super(props);
     this.st = {at: this.at()};
-    this.cancel = this.cancel.bind(this);
-  }
 
-  private cancel(): void {
-    window.history.go(-1);
   }
 
   render() {
-    class SFormT extends Sform<P> { };
+    class SFormT extends Sform<P> {}
     const [TI, SformTI, SubmitI] = this.c3(T, SFormT, Submit);
 
-    return <SformTI data={this.props.origin} onSend={this.props.next}>
+    return <SformTI data={this.props.origin}
+                    onSend={(d) => this.props.next(d)
+                      .tn(result => {
+                        this.ust(s => {
+                          let {e, ...noE} = s;
+                          return noE;
+                        });
+                        return result;})
+                      .ctch(e => this.ust(s => ({...s, e: e})))
+                    }>
       {
         this.props.children // @ts-ignore
+      }
+      {
+        this.st.e && renderError(this.st.e)
       }
       <div class={bulma.control}>
         <div class={bulma.buttons}>
           <SubmitI css={bulma.isPrimary} t$text={this.props.t$next} />
-          <button class={bulma.button + ' ' + bulma.isDanger} onClick={this.cancel}>
+          <button class={jne(bulma.button, bulma.isDanger)} onClick={goBack}>
             <TI m="Cancel"/>
           </button>
         </div>

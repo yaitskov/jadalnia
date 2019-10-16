@@ -3,10 +3,11 @@ import removeEmptyVals from 'collection/remove-empty-values';
 import { MyCo } from 'component/my-component';
 import { Wm } from 'component/will-mount';
 import { Valiform, FormLevel } from 'component/form/validation/form-validation';
+import {Thenable} from "../../async/abortable-promise";
 
 export interface SformP<T> {
   data: T;
-  onSend: (d: T) => void;
+  onSend: (d: T) => Thenable<any>;
 }
 
 export class Sform<T> extends MyCo<SformP<T>, {}> {

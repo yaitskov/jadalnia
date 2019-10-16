@@ -3,7 +3,6 @@ import removeEmptyVals from 'collection/remove-empty-values';
 import { Tobj, forM, mapO } from 'collection/typed-object';
 import { InputIf, ValiFieldLi } from 'component/form/validation/input-if';
 import { tJoin, tFold, Thenable } from 'async/abortable-promise';
-import { Container, inject } from 'injection/inject-1k';
 import { InputCheckP, CheckOn } from 'component/form/validation/input-check-def';
 import { Invalid } from 'component/form/validation/invalid';
 import { Validation, Validator } from 'component/form/validation/validation';
@@ -33,7 +32,7 @@ export class FormLevel {
   private curInput: InputIf;
   private inputByName: Tobj<MetaInput> = {};
   // @ts-ignore TS2564
-  private onSubmit: (d: any) => void;
+  private onSubmit: (d: any) => Thenable<any>;
 
   public check(c: InputCheckP): void {
     failIf(this.curInput, 'wrap input into checks');
@@ -116,7 +115,7 @@ export class FormLevel {
     });
   }
 
-  setSubmit(callback: (d: any) => void) {
+  setSubmit(callback: (d: any) => Thenable<any>) {
     this.onSubmit = callback;
   }
 

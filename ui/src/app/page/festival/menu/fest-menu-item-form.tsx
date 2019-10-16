@@ -5,10 +5,11 @@ import { FestMenuItemFull } from 'app/service/fest-menu-types';
 import { TxtField } from "app/component/field/txt-field";
 
 import bulma from 'app/style/my-bulma.sass';
+import {Thenable} from "async/abortable-promise";
 
 export interface FestMenuItemFormP {
   menuItem: FestMenuItemFull;
-  onSubmit: (fields: FestMenuItemFull) => void;
+  onSubmit: (fields: FestMenuItemFull) => Thenable<any>;
 }
 
 export class FestMenuItemForm extends TransCom<FestMenuItemFormP, TransComS> {

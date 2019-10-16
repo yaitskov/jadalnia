@@ -14,7 +14,7 @@ import { LocalStorage } from 'app/persistence/local-storage';
 import { Opt, nic, opt } from 'collection/optional';
 import { BasicFestInfo, newBasicFestInfo } from 'app/page/festival/basic-festival-info';
 import { NewFestival, Fid } from 'app/page/festival/festival-types';
-import { UserAuth } from 'app/auth/user-auth';
+import {Thenable} from "../../../async/abortable-promise";
 
 export interface NewFestS extends TransComS {
   fest: Opt<NewFestival>;
@@ -31,8 +31,6 @@ class NewFest extends TransCom<{}, NewFestS> {
   private $locStore: LocalStorage;
   // @ts-ignore
   private $signUp: SignUpSr;
-  // @ts-ignore
-  private $userAuth: UserAuth;
 
   constructor(props) {
     super(props);
@@ -43,16 +41,16 @@ class NewFest extends TransCom<{}, NewFestS> {
     this.st.fest = opt(this.$locStore.jGet<NewFestival>('newFestival').elf(newFest));
   }
 
-  goToMenu(info: BasicFestInfo): void {
-    this.$signUp
-        .signUpAdmin(
-          {...info,
-           opensAt: time2Str(new Date(info.opensAt))})
-        .tn((fid: Fid) => {
-          this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
-            'newFestival', {...v, basic: info}));
-          route(`/festival/new/menu/${fid}`);
-        });
+  goToMenu(info: BasicFestInfo): Thenable<boolean> {
+    return this.$signUp
+      .signUpAdmin(
+        {...info,
+          opensAt: time2Str(new Date(info.opensAt))})
+      .tn((fid: Fid) => {
+        this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
+          'newFestival', {...v, basic: info}));
+        return route(`/festival/new/menu/${fid}`);
+      });
   }
 
   render() {

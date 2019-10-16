@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { resolved } from 'async/abortable-promise';
-import { Link, route } from 'preact-router';
+import { route } from 'preact-router';
 import { Container } from 'injection/inject-1k';
 import { regBundleCtx } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -38,12 +38,14 @@ class NewTennisTour extends TransCom<{}, NewTennisTourS> {
   }
 
   wMnt() {
-    this.st.tour = opt(this.$locStore.jGet<NewTournament<TennisTournamentRules> >('newTournament').elf(newTennisTour));
+    this.st.tour = opt(this.$locStore.jGet<NewTournament<TennisTournamentRules> >('newTournament')
+      .elf(newTennisTour));
   }
 
-  gotoRules(info: BasicTourInfo): void {
-    this.st.tour.ifV(v => this.$locStore.jStore<NewTournament<TennisTournamentRules> >('newTournament', {...v, basic: info}));
-    route('/tournament/new/tennis/rules');
+  gotoRules(info: BasicTourInfo): Thenable<any> {
+    this.st.tour.ifV(v => this.$locStore.jStore<NewTournament<TennisTournamentRules> >(
+      'newTournament', {...v, basic: info}));
+    return resolved(route('/tournament/new/tennis/rules'));
   }
 
   render() {
@@ -61,6 +63,7 @@ class NewTennisTour extends TransCom<{}, NewTennisTourS> {
 }
 
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<NewTennisTour> {
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<NewTennisTour> {
   return regBundleCtx(bundleName, mainContainer, NewTennisTour, (o) => o);
 }

@@ -6,24 +6,34 @@ import removeEmptyVals from 'collection/remove-empty-values';
 import { CommonUtil } from 'app/common-util';
 import { optS } from 'collection/optional';
 import { BasicFestInfo } from 'app/page/festival/basic-festival-info';
-import { Fid } from 'app/page/festival/festival-types';
+import {Fid, Uid} from 'app/page/festival/festival-types';
+import { RestSr } from 'app/service/rest-service';
+
+interface UserSession {
+  uid: Uid;
+  key: string;
+}
+interface AdminSignUpResponse {
+  fid: Fid;
+  session: UserSession;
+}
 
 export class SignUpSr {
   // @ts-ignore
   private $cutil: CommonUtil;
-
   // @ts-ignore
   private $userAuth: UserAuth;
+  // @ts-ignore
+  private $restSr: RestSr;
 
   public signUpAdmin(basicFestInfo: BasicFestInfo): Thenable<Fid> {
-    return postJ('/api/festival/create', basicFestInfo)
-      .tn(r => r.json().then((r) => {
+    return this.$restSr.postJ<AdminSignUpResponse>('/api/festival/create', basicFestInfo)
+      .tn(r => {
         this.$userAuth.storeSession(
           `${r.session.uid}:${r.session.key}`,
           r.fid, basicFestInfo.userName, optS(''), 'admin');
-        return r.fid as Fid;
-      }))
-      .ctch(e => console.log(`ops ${e}`));
+        return r.fid;
+      });
   }
 
   public signUp(regReq: UserRegReq): Thenable<Response> {

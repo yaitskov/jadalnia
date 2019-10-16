@@ -19,7 +19,7 @@ export class FestMenuSr {
 
   addItemToCurrentMenu(fid: Fid, item: FestMenuItemFull): Thenable<boolean> {
     return this.list(fid).tn(
-      menuItems => this.$restSr.postJ("/api/festival/menu", [...menuItems, item])
+      menuItems => this.$restSr.postJ<number>("/api/festival/menu", [...menuItems, item])
         .tn(updated => updated > 0));
   }
 }

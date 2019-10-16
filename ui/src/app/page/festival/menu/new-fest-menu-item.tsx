@@ -12,6 +12,7 @@ import { FestMenuItemFull, emptyFestMenuItem } from 'app/service/fest-menu-types
 
 import {goBack} from "util/routing";
 import {FestMenuSr} from "app/service/fest-menu-service";
+import {Thenable} from "async/abortable-promise";
 import {Fid} from "../festival-types";
 
 export interface FestMenuItemS extends TransComS {
@@ -31,8 +32,8 @@ class NewFestMenuItem extends TransCom<{fid: Fid}, FestMenuItemS> {
     this.st.menuItem = opt(this.$festMenuSr.newFestMenuItem());
   }
 
-  addItem(item: FestMenuItemFull): void {
-    this.$festMenuSr.addItemToCurrentMenu(this.props.fid, item)
+  addItem(item: FestMenuItemFull): Thenable<void> {
+    return this.$festMenuSr.addItemToCurrentMenu(this.props.fid, item)
       .tn(success => {
         if (success) {
           goBack();

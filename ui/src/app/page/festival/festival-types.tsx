@@ -6,3 +6,4 @@ export interface NewFestival {
 }
 
 export type Fid = number;
+export type Uid = number;
