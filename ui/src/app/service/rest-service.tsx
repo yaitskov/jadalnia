@@ -1,34 +1,34 @@
 import { postJ } from 'async/abortable-fetch';
 import { Thenable } from 'async/abortable-promise';
 import { UserAuth } from 'app/auth/user-auth';
-import {Tobj} from "collection/typed-object";
-
+import { RestErr } from 'component/err/error-types';
 
 const nonJsonBody = (response, ex: Error): any => {
   if (ex instanceof RestErr) {
     throw ex;
   }
-  throw new RestErr('non-json', `status ${response.status} ${ex.message}`, {});
+  throw new RestErr('n/a', 'raw', `status ${response.status} ${ex.message}`, {});
 };
 
-type ErrorId = string;
-
-class RestErr extends Error {
-  constructor(public id: ErrorId,
-              public message: string,
-              public params: Tobj<any>) {
-    super(message);
-  }
-}
-
-const structuredError = (err) => {
-  if (err['@type'] == 'Error') {
-    throw new RestErr(err.id, err.message, {});
-  } else if (err['@type'] == 'TemplateError') {
-    throw new RestErr(err.id, err.message, err.params);
+const structuredError = (jsonResp) => {
+  if (jsonResp['@type'] == 'Error') {
+    throw new RestErr(jsonResp.id, 'raw', jsonResp.message, {});
+  } else if (jsonResp['@type'] == 'TemplateError') {
+    throw new RestErr(jsonResp.id, 'tpl', jsonResp.message, jsonResp.params);
   } else {
-    throw new RestErr('no-id', err.message, {});
+    return jsonResp;
   }
+};
+
+export const handleRestResponse = <T extends any >(r): Promise<T> => {
+    let contentType = r.headers.get("content-type");
+    if (contentType.startsWith("application/json")) {
+      return r.json().then(jsonResp => structuredError(jsonResp))
+        .catch(ex => nonJsonBody(r, ex));
+    } else {
+      return r.text().then(
+        rawError => { throw new RestErr('n/a', 'raw', rawError, {}); })
+    }
 };
 
 export class RestSr {
@@ -37,13 +37,6 @@ export class RestSr {
 
   postJ<T>(url: string, jsonData: {}): Thenable<T> {
     return postJ(url, jsonData, {session: this.$userAuth.mySession().el('')})
-      .tn(response => {
-        if (response.status < 300) {
-          return response.json() as Promise<T>;
-        } else {
-          return (response.json().then(error => structuredError(error))
-            .catch(ex => nonJsonBody(response, ex)));
-        }
-      });
+      .tn(handleRestResponse);
   }
 }

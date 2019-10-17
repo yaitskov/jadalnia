@@ -8,6 +8,7 @@ import bulma from 'app/style/my-bulma.sass';
 import {Thenable} from "async/abortable-promise";
 import {goBack} from "util/routing";
 import { jne } from 'collection/join-non-empty';
+import { RestErrCo } from 'component/err/error';
 
 export interface NextCancelFormP<P> {
   origin: P;
@@ -18,12 +19,6 @@ export interface NextCancelFormP<P> {
 export interface NextCancelFormS extends TransComS {
   e?: Error;
 }
-
-const renderError = (e) => {
-  return <div class={jne(bulma.field, bulma.hasTextDanger)}>
-    {e.message}
-  </div>;
-};
 
 export class NextCancelForm<P>
   extends TransCom<NextCancelFormP<P>, NextCancelFormS> {
@@ -50,9 +45,7 @@ export class NextCancelForm<P>
       {
         this.props.children // @ts-ignore
       }
-      {
-        this.st.e && renderError(this.st.e)
-      }
+      <RestErrCo e={this.st.e} />
       <div class={bulma.control}>
         <div class={bulma.buttons}>
           <SubmitI css={bulma.isPrimary} t$text={this.props.t$next} />
