@@ -6,15 +6,18 @@ import org.dan.jadalnia.app.order.OrderResource
 import org.dan.jadalnia.app.token.TokenResource
 import org.dan.jadalnia.app.user.UserResource
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperContextResolver
+import org.dan.jadalnia.sys.error.unwrap.CompletionExceptionMapper
 import org.dan.jadalnia.sys.error.DefaultExceptionMapper
+import org.dan.jadalnia.sys.error.unwrap.ExtractorExceptionMapper
+import org.dan.jadalnia.sys.error.unwrap.HeaderParamExceptionMapper
 import org.dan.jadalnia.sys.error.InvalidTypeIdExceptionMapper
 import org.dan.jadalnia.sys.error.JadExMapper
 import org.dan.jadalnia.sys.error.JerseyExceptionMapper
 import org.dan.jadalnia.sys.error.JerseyValidationExceptionMapper
 import org.dan.jadalnia.sys.error.JooqExceptionMapper
 import org.dan.jadalnia.sys.error.JsonMappingExceptionMapper
-import org.dan.jadalnia.sys.error.UncheckedExecutionExceptionMapper
-import org.dan.jadalnia.sys.error.UndeclaredThrowableExecutionExceptionMapper
+import org.dan.jadalnia.sys.error.unwrap.UncheckedExecutionExceptionMapper
+import org.dan.jadalnia.sys.error.unwrap.UndeclaredThrowableExecutionExceptionMapper
 import org.dan.jadalnia.sys.error.UnrecognizedPropertyExceptionMapper
 import org.glassfish.jersey.filter.LoggingFilter
 import org.glassfish.jersey.server.ResourceConfig
@@ -41,6 +44,9 @@ class JerseyConfig : ResourceConfig() {
         register(JsonMappingExceptionMapper::class.java)
         register(InvalidTypeIdExceptionMapper::class.java)
         register(UncheckedExecutionExceptionMapper::class.java)
+        register(CompletionExceptionMapper::class.java)
+        register(ExtractorExceptionMapper::class.java)
+        register(HeaderParamExceptionMapper::class.java)
         register(UndeclaredThrowableExecutionExceptionMapper::class.java)
         packages(
             false,

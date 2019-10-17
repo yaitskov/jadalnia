@@ -1,6 +1,8 @@
 --liquibase formatted sql
 --changeset diaitskov:r1.0.001
 
+ALTER DATABASE jadalnia CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 create table festival(
     fid int(11) not null auto_increment primary key,
     state varchar(10) not null, -- pending, open, closed

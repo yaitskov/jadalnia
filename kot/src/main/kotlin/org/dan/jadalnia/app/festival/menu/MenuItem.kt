@@ -5,5 +5,5 @@ data class MenuItem(
     val description: String?,
     val price: Double,
     val disabled: Boolean,
-    val additions: MutableList<MenuItem>?)
+    val additions: List<MenuItem>)
 

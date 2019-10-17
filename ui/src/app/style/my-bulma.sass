@@ -1,0 +1,28 @@
+@charset "utf-8"
+
+// $size-1: 6rem !default
+// $size-2: 5rem !default
+// $size-3: 4rem !default
+// $size-4: 3rem !default
+// $size-5: 2.5rem !default
+// $size-6: 2rem !default;
+// $size-7: 1.5rem !default
+
+@import "bulma/bulma"
+
+.no-top
+  padding-top: 3px !important
+
+.buttons
+  div + .button
+    margin-left: 0.5em
+
+.flag-icon + span
+  margin-left: 0.5em
+
+.list
+  .list-item
+    border: none
+
+section + section, section + .buttons
+  margin-top: 20px

@@ -18,6 +18,7 @@ import java.util.List;
 
 import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.FestivalResource.FESTIVAL_MENU;
+import static org.dan.jadalnia.app.festival.MenItemUtil.ofDish;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.hamcrest.Matchers.hasItem;
@@ -42,13 +43,7 @@ public class SetMenuTest extends AbstractSpringJerseyTest {
                                 "fried potatoes",
                                 3.14,
                                 false,
-                                singletonList(new MenuItem(
-                                        new DishName("sos ostry"),
-                                        null,
-                                        0.0,
-                                        false,
-                                        null)
-                                ))));
+                                singletonList(ofDish("sos ostry")))));
     }
 
     public static List<MenuItem> getMenu(MyRest myRest, Fid fid) {

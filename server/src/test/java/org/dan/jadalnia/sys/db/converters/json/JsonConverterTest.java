@@ -1,7 +1,7 @@
 package org.dan.jadalnia.sys.db.converters.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.dan.jadalnia.sys.jackson.ObjectMapperFactory;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
@@ -15,7 +15,7 @@ public class JsonConverterTest {
         public ConverterX() {
             super(
                     new TypeReference<X>() {},
-                    new ObjectMapper());
+                    ObjectMapperFactory.INSTANCE.create());
         }
     }
 

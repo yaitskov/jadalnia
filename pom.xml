@@ -32,5 +32,6 @@
         <module>jooq</module>
         <module>service</module>
         <module>server</module>
+        <module>ui</module>
     </modules>
 </project>
