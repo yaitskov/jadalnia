@@ -120,7 +120,6 @@
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
-            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>javax.el</groupId>
@@ -349,7 +348,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <version>2.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
