@@ -173,5 +173,31 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+          <id>enforce</id>
+          <build>
+            <plugins>
+              <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M2</version>
+                <executions>
+                  <execution>
+                    <id>pom-enforcer</id>
+                    <phase>compile</phase>
+                    <goals>
+                      <goal>enforce</goal>
+                    </goals>
+                    <configuration>
+                      <rules>
+                        <requireUpperBoundDeps/>
+                        <banTransitiveDependencies/>
+                      </rules>
+                    </configuration>
+                  </execution>
+                </executions>
+              </plugin>
+            </plugins>
+          </build>
+        </profile>
     </profiles>
 </project>
