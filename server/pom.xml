@@ -19,6 +19,7 @@
         <jersey.version>2.22.2</jersey.version>
         <restassured.version>3.0.1</restassured.version>
         <http.port>8280</http.port>
+        <jadalnia.http.port>8280</jadalnia.http.port>
         <debug.port>5008</debug.port>
         <jacoco.version>0.7.6.201602180812</jacoco.version>
         <sandbox.env.prop.file>docker-env.properties</sandbox.env.prop.file>
@@ -430,4 +431,31 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>run-jadalnia</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>run-after-compile</id>
+                                <phase>compile</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <mainClass>org.dan.jadalnia.StartJadalniaKt</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

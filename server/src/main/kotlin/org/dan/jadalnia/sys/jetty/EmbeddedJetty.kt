@@ -43,7 +43,7 @@ object EmbeddedJetty {
     contextHandler.setInitParameter("contextConfigLocation", "")
     jettyServer.handler = contextHandler
 
-    configure(contextHandler) { a, container ->
+    configure(contextHandler) { _, container ->
       for (listener in asList<Class<out WsListener>>(
           CustomerWsListener::class.java,
           VolunteerWsListener::class.java)) {
