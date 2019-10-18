@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.sys.ctx.jackson.ObjectMapperProvider;
+import org.dan.jadalnia.sys.jetty.EmbeddedJetty;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -18,7 +19,6 @@ import javax.ws.rs.ext.ContextResolver;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
-import static org.dan.jadalnia.test.ws.EmbeddedJetty.EMBEDDED_JETTY;
 import static org.springframework.util.SocketUtils.findAvailableTcpPort;
 
 @Slf4j
@@ -39,7 +39,7 @@ public abstract class WsIntegrationTest {
 
     @Before
     public void setUp() {
-        EMBEDDED_JETTY.ensureServerRunningOn(getWsPort());
+        EmbeddedJetty.INSTANCE.ensureServerRunningOn(getWsPort());
         startWsClient();
         initHttpClient();
     }
