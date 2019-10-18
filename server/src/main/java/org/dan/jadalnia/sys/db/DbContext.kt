@@ -9,15 +9,11 @@ import org.jooq.impl.DataSourceConnectionProvider
 import org.jooq.impl.DefaultConfiguration
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
-import org.springframework.transaction.annotation.EnableTransactionManagement
 import javax.inject.Named
 import javax.sql.DataSource
 
-@EnableTransactionManagement
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 class DbContext {
     companion object {
         const val DSL_CONTEXT = "dslContext"
