@@ -1,6 +1,5 @@
 package org.dan.jadalnia.sys
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider
 import org.dan.jadalnia.app.festival.FestivalResource
 import org.dan.jadalnia.app.order.OrderResource
 import org.dan.jadalnia.app.token.TokenResource
@@ -19,7 +18,10 @@ import org.dan.jadalnia.sys.error.JsonMappingExceptionMapper
 import org.dan.jadalnia.sys.error.unwrap.UncheckedExecutionExceptionMapper
 import org.dan.jadalnia.sys.error.unwrap.UndeclaredThrowableExecutionExceptionMapper
 import org.dan.jadalnia.sys.error.UnrecognizedPropertyExceptionMapper
-import org.glassfish.jersey.filter.LoggingFilter
+import org.glassfish.jersey.jackson.JacksonFeature
+
+import org.glassfish.jersey.logging.LoggingFeature
+
 import org.glassfish.jersey.server.ResourceConfig
 
 import javax.ws.rs.ApplicationPath
@@ -32,9 +34,9 @@ import org.glassfish.jersey.server.ServerProperties.BV_SEND_ERROR_IN_RESPONSE
 class JerseyConfig : ResourceConfig() {
     init {
         property(BV_SEND_ERROR_IN_RESPONSE, true)
-        register(LoggingFilter())
+        register(LoggingFeature())
+        register(JacksonFeature())
         register(ObjectMapperContextResolver::class.java)
-        register(JacksonJaxbJsonProvider::class.java)
         register(JadExMapper())
         register(JerseyExceptionMapper()) // just class get exception
         register(JerseyValidationExceptionMapper())

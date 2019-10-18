@@ -6,12 +6,8 @@ import org.dan.jadalnia.app.festival.menu.MenuItem;
 import org.dan.jadalnia.app.festival.pojo.Fid;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.mock.MyRest;
-import org.dan.jadalnia.sys.ctx.TestCtx;
-import org.dan.jadalnia.test.AbstractSpringJerseyTest;
-import org.dan.jadalnia.test.JerseySpringTest;
+import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.test.context.ContextConfiguration;
 
 import javax.ws.rs.core.GenericType;
 import java.util.List;
@@ -26,9 +22,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-@Category(JerseySpringTest.class)
-@ContextConfiguration(classes = TestCtx.class)
-public class SetMenuTest extends AbstractSpringJerseyTest {
+public class SetMenuTest extends WsIntegrationTest {
     public static final DishName FRYTKI = new DishName("Frytki");
 
     public static int setMenu(MyRest myRest, UserSession session, List<MenuItem> items) {

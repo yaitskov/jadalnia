@@ -1,6 +1,5 @@
 package org.dan.jadalnia.app.ws
 
-import org.eclipse.jetty.websocket.jsr356.JsrSession
 import org.eclipse.jetty.websocket.servlet.ServletUpgradeRequest
 
 import javax.websocket.Session
@@ -12,6 +11,7 @@ import java.util.concurrent.CompletableFuture
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import java.util.Optional.ofNullable
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
+import org.eclipse.jetty.websocket.common.WebSocketSession
 
 class WsSession(
         val session: Session,
@@ -20,7 +20,7 @@ class WsSession(
     companion object {
         @JvmStatic
         fun wrap(session: Session): WsSession {
-            val jsrSession = session as JsrSession
+            val jsrSession = session as WebSocketSession
             return WsSession(
                     session, jsrSession.upgradeRequest as ServletUpgradeRequest)
         }

@@ -76,7 +76,7 @@ class OrderDao : AsyncDao() {
           .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
           .execute()
     }
-        .thenApply { updated ->
+        .thenApply {
           log.info("Order {}:{} is executing by ({})", fid, label, kelnerUid)
         }
   }
