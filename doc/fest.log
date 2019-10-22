@@ -1,0 +1,20 @@
+update menu item
+disable menu item
+
+new fest flow:
+    create festival
+    fill menu
+
+    festival control panel (
+        fest status form
+        fest menu form
+        invite links (for volunteers and customers)
+        queue stats (number of ready to pick up orders,
+                     unpaid orders (count and cost), paid queue length, estimated wait time,
+                     link to table average waiting time for every position)
+        sales stat ()
+        volunteer control  (list of volunteers with / performance, expel, move between cashier/kelner)
+        broadcasting message (permanent/one time, to customer, to volunteers)
+        - manual queue control
+        - ready to peek up but abandandond orders (recycle/reassign to customer)
+    )

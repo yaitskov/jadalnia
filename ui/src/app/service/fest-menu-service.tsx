@@ -22,4 +22,18 @@ export class FestMenuSr {
       menuItems => this.$restSr.postJ<number>("/api/festival/menu", [...menuItems, item])
         .tn(updated => updated > 0));
   }
+
+  updateItemToCurrentMenu(fid: Fid, oldName: string, item: FestMenuItemFull): Thenable<boolean> {
+    return this.list(fid).tn(
+      menuItems => {
+        let idx = menuItems.findIndex(oldItem => oldItem.name == oldName);
+        if (idx < 0) {
+          throw Error("item removed/renamed. reload menu");
+        }
+        menuItems[idx] = item;
+        return this.$restSr.postJ<number>("/api/festival/menu", menuItems)
+          .tn(updated => updated > 0);
+      }
+    )
+  }
 }

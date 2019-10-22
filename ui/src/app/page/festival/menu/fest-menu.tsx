@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import { Link } from 'preact-router';
 import { Container, FwdContainer } from 'injection/inject-1k';
 import { regBundleCtx } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -44,7 +45,11 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
             <li class={bulma.listItem}>menu is empty</li>
           </If>
           {this.st.items.el([])
-            .map(i => <li class={bulma.listItem}>{i.name} / {i.price}</li>)}
+            .map(i => <li class={bulma.listItem}>
+              <Link href={`/festival/menu/item/edit/${this.props.fid}/${i.name}`}>
+                {i.name} / {i.price}
+              </Link>
+            </li>)}
         </ul>
       </section>
       <AddMenuItemBtnI fid={this.props.fid} />

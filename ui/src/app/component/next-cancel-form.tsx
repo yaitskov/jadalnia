@@ -25,7 +25,6 @@ export class NextCancelForm<P>
   constructor(props) {
     super(props);
     this.st = {at: this.at()};
-
   }
 
   render() {
