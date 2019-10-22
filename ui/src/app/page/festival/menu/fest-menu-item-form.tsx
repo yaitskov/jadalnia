@@ -9,6 +9,7 @@ import {Thenable} from "async/abortable-promise";
 
 export interface FestMenuItemFormP {
   menuItem: FestMenuItemFull;
+  t$submitLabel: string;
   onSubmit: (fields: FestMenuItemFull) => Thenable<any>;
 }
 
@@ -22,7 +23,7 @@ export class FestMenuItemForm extends TransCom<FestMenuItemFormP, TransComS> {
     class NextCancelFormT extends NextCancelForm<FestMenuItemFull> { }
     const [TxtFieldI, NextCancelFormTI] = this.c2(TxtField, NextCancelFormT);
 
-    return <NextCancelFormTI t$next="Define menu"
+    return <NextCancelFormTI t$next={this.props.t$submitLabel}
                              origin={this.props.menuItem}
                              next={this.props.onSubmit}>
       <div class={bulma.field}>

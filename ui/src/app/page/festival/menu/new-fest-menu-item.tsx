@@ -48,6 +48,7 @@ class NewFestMenuItem extends TransCom<{fid: Fid}, FestMenuItemS> {
       <TitleStdMainMenuI t$title="New menu item"/>
       <SecCon>
         <FestMenuItemFormI menuItem={this.st.menuItem.elf(emptyFestMenuItem)}
+                           t$submitLabel="Add new item"
                            onSubmit={item => this.addItem(item)} />
       </SecCon>
     </div>;

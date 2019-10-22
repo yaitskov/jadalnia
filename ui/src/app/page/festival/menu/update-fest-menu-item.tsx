@@ -54,6 +54,7 @@ class UpdateFestMenuItem extends TransCom<{fid: Fid, name: string}, FestMenuItem
         {
           this.st.menuItem.ifVE(
             item => <FestMenuItemFormI menuItem={item}
+                                       t$submitLabel="Update"
                                        onSubmit={item => this.updateMenu(item)} />,
             () => this.st.items.ifVE(
               items => <div>item has been removed</div>,
