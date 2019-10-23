@@ -11,6 +11,7 @@ import { CountryFlag } from 'app/component/country-flag';
 import bulma from 'bulma/bulma.sass';
 
 import logo from 'app/icons/logo.png';
+import { jne } from 'collection/join-non-empty';
 
 export interface TitleMainMenuP {
   t$title: string;
@@ -61,7 +62,7 @@ export class TitleMainMenu extends InjSubCom<TitleMainMenuP, TitleMainMenuS> {
 
       <div id="mainMenuAnchor" class={bulma.navbarMenu + ' ' + active}>
         <div class={bulma.navbarStart}>
-          <div class={bulma.navbarItem + ' ' + bulma.hasDropdown + ' ' + bulma.isHoverable}>
+          <div class={jne(bulma.navbarItem, bulma.hasDropdown, bulma.isHoverable)}>
             <a class={bulma.navbarLink}>
               <TI m="Menu" />
             </a>

@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { TitleMainMenu } from 'app/component/title-main-menu';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
-
+import { Admin } from "app/auth/user-auth";
 import bulma from 'bulma/bulma.sass';
 
 export interface TitleStdMainMenuP {
@@ -18,17 +18,16 @@ export class TitleStdMainMenu extends TransCom<TitleStdMainMenuP, TransComS> {
     this.st = {at: this.at()};
   }
 
-  render() {
+  render(p) {
     const TitleMainMenuI = this.c(TitleMainMenu);
-    return <TitleMainMenuI
-      t$title={this.props.t$title}
-      menuItems={
-        [
-          <NavbarLinkItem path="/draft" t$label="Draft to coming tournaments" />,
-          <NavbarLinkItem path="/watch" t$label="Watch ongoing tournaments" />,
-          <hr class={bulma.navbarDivider}/>
-        ]
-      } />;
+    let items = [<hr class={bulma.navbarDivider}/>];
+    items.push(<hr class={bulma.navbarDivider}/>);
+    if (this.$userAuth.userType() == Admin) {
+       items.unshift(
+         <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
+                         t$label="Fest control" />,)
+     }
+    return <TitleMainMenuI t$title={this.props.t$title} menuItems={items} />;
   }
 
   at(): string[] { return []; }
