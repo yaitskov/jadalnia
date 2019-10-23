@@ -24,16 +24,13 @@ class NewInvites extends TransCom<{fid: Fid}, TransComS> {
           <TI m="Share invite links with volunteers."/>
         </p>
         <p>
-          <TI m="You could get links anytime later." />
-        </p>
-        <p>
           <Link href={`/festival/invite/cashier/${p.fid}`}>
-            <TI m="volunteer is cashier"/>
+            <TI m="link for cashier"/>
           </Link>
         </p>
         <p>
           <Link href={`/festival/invite/waiter/${p.fid}`}>
-            <TI m="volunteer is waiter"/>
+            <TI m="link for waiter"/>
           </Link>
         </p>
       </section>
