@@ -12,9 +12,11 @@ import {AddMenuItemBtn} from "app/page/festival/menu/add-menu-item-btn";
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {nic, Opt, opt} from 'collection/optional';
 import bulma from "app/style/my-bulma.sass";
+import {RestErrCo} from "../../../../component/err/error";
 
 interface FestMenuS extends TransComS {
-  items: Opt<MenuItemView[]>
+  items: Opt<MenuItemView[]>,
+  e?: Error
 }
 
 class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
@@ -28,15 +30,17 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
 
   wMnt() {
     this.$festMenuSr.list(this.props.fid).tn(
-      lst => this.ust(st => ({...st, items: opt(lst)})));
+      lst => this.ust(st => ({...st, items: opt(lst)})))
+      .ctch(e => this.ust(st => ({...st, e: e})));
   }
 
-  render() {
+  render(p, st) {
     const [AddMenuItemBtnI, TitleStdMainMenuI] = this.c2(AddMenuItemBtn, TitleStdMainMenu);
     return <div>
       <TitleStdMainMenuI t$title="Festival Menu"/>
       <AddMenuItemBtnI fid={this.props.fid} />
-      <section>
+      <RestErrCo e={st.e} />
+      {st.e || <section>
         <ul class={bulma.list}>
           <If f={this.st.items.empty}>
             <li class={bulma.listItem}>loading</li>
@@ -52,6 +56,7 @@ class FestMenu extends TransCom<{fid: Fid}, FestMenuS> {
             </li>)}
         </ul>
       </section>
+      }
       <AddMenuItemBtnI fid={this.props.fid} />
     </div>;
   }
