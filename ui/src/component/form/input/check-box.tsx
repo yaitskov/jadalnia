@@ -19,18 +19,12 @@ export class CheckBox extends InjSubCom<CheckBoxP, CheckBoxS> {
     const InputOkI = this.c(InputOk);
     return <InputOkI a={p.a} inputFactory={params =>
         <label>
-          {params.val && <input class={bulma.checkbox} type="checkbox" checked onChange={
+          <input class={bulma.checkbox} type="checkbox" checked={params.val as any} onChange={
             (e) => {
-              params.onChng({preventDefault: () => {}, target: {value: false}});
+              params.onChng({preventDefault: () => {},
+                target: {value: (e.target as any).checked}});
             }
           }/>
-          }
-          {params.val || <input class={bulma.checkbox} type="checkbox" onChange={
-            (e) => {
-              params.onChng({preventDefault: () => {}, target: {value: true}});
-            }
-          }/>
-          }
           {params.val ? p.t$ylbl : p.t$nlbl}
         </label>
       }/>;
