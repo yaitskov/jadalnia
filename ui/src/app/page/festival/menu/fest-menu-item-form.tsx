@@ -31,7 +31,7 @@ export class FestMenuItemForm extends TransCom<FestMenuItemFormP, TransComS> {
         <TxtFieldI t$lbl="Dish" name="name" mit="!e rng:3:120" />
         <TxtFieldI t$lbl="Price" name="price" mit="!e r:^[1-9][0-9]*$"/>
         <TxtFieldI t$lbl="Description" name="description" mit="rng:3:2120" />
-        <CheckFieldI a="disabled" t$ylbl="disabled" t$nlbl="enabled" />
+        <CheckFieldI a="disabled" t$ylbl="disabled" t$nlbl="disable" />
       </div>
     </NextCancelFormTI>;
   }
