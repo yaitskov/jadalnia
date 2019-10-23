@@ -3,7 +3,7 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import { NextCancelForm } from 'app/component/next-cancel-form';
 import { FestMenuItemFull } from 'app/service/fest-menu-types';
 import { TxtField } from "app/component/field/txt-field";
-
+import { CheckField } from "app/component/field/check-field";
 import bulma from 'app/style/my-bulma.sass';
 import {Thenable} from "async/abortable-promise";
 
@@ -21,7 +21,8 @@ export class FestMenuItemForm extends TransCom<FestMenuItemFormP, TransComS> {
 
   render() {
     class NextCancelFormT extends NextCancelForm<FestMenuItemFull> { }
-    const [TxtFieldI, NextCancelFormTI] = this.c2(TxtField, NextCancelFormT);
+    const [TxtFieldI, CheckFieldI, NextCancelFormTI]
+      = this.c3(TxtField, CheckField, NextCancelFormT);
 
     return <NextCancelFormTI t$next={this.props.t$submitLabel}
                              origin={this.props.menuItem}
@@ -30,6 +31,7 @@ export class FestMenuItemForm extends TransCom<FestMenuItemFormP, TransComS> {
         <TxtFieldI t$lbl="Dish" name="name" mit="!e rng:3:120" />
         <TxtFieldI t$lbl="Price" name="price" mit="!e r:^[1-9][0-9]*$"/>
         <TxtFieldI t$lbl="Description" name="description" mit="rng:3:2120" />
+        <CheckFieldI a="disabled" t$ylbl="disabled" t$nlbl="enabled" />
       </div>
     </NextCancelFormTI>;
   }

@@ -6,6 +6,7 @@ import { InputOkP, InputIf } from 'component/form/validation/input-if';
 import { Invalid } from 'component/form/validation/invalid';
 
 import bulma from 'bulma/bulma.sass';
+import { opt } from 'collection/optional';
 
 interface InputOkS {
   val: string;
@@ -62,10 +63,17 @@ export class InputOk extends MyCo<InputOkP, InputOkS> implements InputIf {
 
   render(p, st) {
     return <div class={bulma.control}>
-      <input class={bulma.input} value={st.val}
-             onBlur={this.onBlur}
-             onChange={this.onChng}
-             onKeyUp={this.onKeyUp} />
+      {opt(p.inputFactory).ifVE(
+        inpFactory => inpFactory(
+          {onBlur: this.onBlur,
+            onChng: this.onChng,
+            onKeyUp: this.onKeyUp,
+            val: st.val}),
+        () => <input class={bulma.input} value={st.val}
+                     onBlur={this.onBlur}
+                     onChange={this.onChng}
+                     onKeyUp={this.onKeyUp}/>
+      )}
     </div>;
   }
 

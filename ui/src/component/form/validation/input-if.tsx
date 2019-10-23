@@ -1,11 +1,19 @@
 import { Invalid } from 'component/form/validation/invalid';
 
-type FieldName = string;
+export type FieldName = string;
+
+export interface InputP {
+  val: string;
+  onChng: (e: any) => void;
+  onKeyUp: (e: any) => void;
+  onBlur: (e: any) => void;
+}
 
 export interface InputOkP {
   style?: string;
   cls?: string;
   a: FieldName;
+  inputFactory?: (params: InputP) => any;
 }
 
 export interface ValiFieldLi {
