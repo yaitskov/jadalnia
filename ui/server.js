@@ -1,9 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const https = require('https');
 const proxy = require('express-http-proxy');
 const expressStaticGzip = require('express-static-gzip');
 
 const app = express();
+
+https.createServer({
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert')
+  }, app)
+  .listen(8443, function () {
+    console.log('Example app listening on port 3000! Go to https://localhost:8443/')
+  });
 
 //app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
