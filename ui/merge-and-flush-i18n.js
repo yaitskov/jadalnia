@@ -77,7 +77,9 @@ class MergeAndFlushI18nPlugin {
 
   checkStaticRootsAndBundleNames(rootFiles) {
     const dynamicRoots = this.findDynamicRootFiles();
-    const staticRootFiles = [...rootFiles].filter(file => !dynamicRoots.has(file));
+    const staticRootFiles = [...rootFiles]
+      .filter(file => !dynamicRoots.has(file))
+      .filter(file => !file.startsWith("worker/")); // skip service workers
 
     if (staticRootFiles.length !== 1) {
       throw new Error(
