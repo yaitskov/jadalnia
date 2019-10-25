@@ -12,6 +12,7 @@ import { RestErrCo } from "component/err/error";
 
 import bulma from 'app/style/my-bulma.sass';
 import { SecCon } from 'app/component/section-container';
+import {BackBtn} from "component/form/back-button";
 
 export interface FestStateCtrlS extends TransComS {
   state?: FestState;
@@ -78,6 +79,7 @@ class FestStateCtrl extends TransCom<{fid: Fid}, FestStateCtrlS> {
                     onClick={this.closeFest}>
               <TI m='Close'/>
             </button>
+            <BackBtn />
           </div>
         </div>
         }
@@ -88,6 +90,7 @@ class FestStateCtrl extends TransCom<{fid: Fid}, FestStateCtrlS> {
                     onClick={this.reopenFest}>
               <TI m='Reopen'/>
             </button>
+            <BackBtn />
           </div>
         </div>
         }
@@ -100,6 +103,7 @@ class FestStateCtrl extends TransCom<{fid: Fid}, FestStateCtrlS> {
                     onClick={this.openFest}>
               <TI m="Open"/>
             </button>
+            <BackBtn />
           </div>
         </div>
         }

@@ -1,14 +1,12 @@
 import { h } from 'preact';
 import { TransCom, TransComS } from 'i18n/trans-component';
-import { T } from 'i18n/translate-tag';
 import { Sform } from 'component/form/sform';
 import { Submit } from 'component/form/submit';
 
 import bulma from 'app/style/my-bulma.sass';
 import {Thenable} from "async/abortable-promise";
-import {goBack} from "util/routing";
-import { jne } from 'collection/join-non-empty';
 import { RestErrCo } from 'component/err/error';
+import {BackBtn} from "component/form/back-button";
 
 export interface NextCancelFormP<P> {
   origin: P;
@@ -29,7 +27,7 @@ export class NextCancelForm<P>
 
   render() {
     class SFormT extends Sform<P> {}
-    const [TI, SformTI, SubmitI] = this.c3(T, SFormT, Submit);
+    const [SformTI, SubmitI] = this.c2(SFormT, Submit);
 
     return <SformTI data={this.props.origin}
                     onSend={(d) => this.props.next(d)
@@ -48,9 +46,7 @@ export class NextCancelForm<P>
       <div class={bulma.control}>
         <div class={bulma.buttons}>
           <SubmitI css={bulma.isPrimary} t$text={this.props.t$next} />
-          <button class={jne(bulma.button, bulma.isDanger)} onClick={goBack}>
-            <TI m="Cancel"/>
-          </button>
+          <BackBtn t$lbl="Cancel" classes={bulma.isDanger} />
         </div>
       </div>
     </SformTI>;
