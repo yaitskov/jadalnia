@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { InjSubCom } from 'injection/inject-sub-components';
 import { Container } from 'injection/inject-1k';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import { LocalStorage } from 'app/persistence/local-storage';
 import { NewTournament, TennisTournamentRules } from 'app/page/tournament/tournament-types';
@@ -30,6 +30,7 @@ class NewTennisRules extends InjSubCom<{}, {}> {
   }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<NewTennisRules> {
-  return regBundleCtx(bundleName, mainContainer, NewTennisRules, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<NewTennisRules> {
+  return regBundle(bundleName, mainContainer, NewTennisRules);
 }

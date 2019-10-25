@@ -35,7 +35,7 @@ app
     res.send('<html><body><b>hello world</b></body></html>');
   })
   .use('/translation', express.static('i18n-dicts'))
-  .use('/api', proxy('localhost:8280'))
+  .use('/api', proxy('localhost:8280', {'parseReqBody': 0}))
   .use('/',  expressStaticGzip(`${__dirname}/dist`, {
     enableBrotli: true,
     orderPreference: ['br', 'gzip']

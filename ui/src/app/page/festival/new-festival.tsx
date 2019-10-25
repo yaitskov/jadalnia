@@ -3,7 +3,7 @@ import { time2Str } from 'util/my-time';
 import { SignUpSr } from 'app/auth/sign-up-service';
 import { route } from 'preact-router';
 import { Container } from 'injection/inject-1k';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import { T } from 'i18n/translate-tag';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
@@ -14,7 +14,7 @@ import { LocalStorage } from 'app/persistence/local-storage';
 import { Opt, nic, opt } from 'collection/optional';
 import { BasicFestInfo, newBasicFestInfo } from 'app/page/festival/basic-festival-info';
 import { NewFestival, Fid } from 'app/page/festival/festival-types';
-import {Thenable} from "../../../async/abortable-promise";
+import { Thenable } from "async/abortable-promise";
 
 export interface NewFestS extends TransComS {
   fest: Opt<NewFestival>;
@@ -68,6 +68,7 @@ class NewFest extends TransCom<{}, NewFestS> {
 }
 
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<NewFest> {
-  return regBundleCtx(bundleName, mainContainer, NewFest, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<NewFest> {
+  return regBundle(bundleName, mainContainer, NewFest);
 }

@@ -1,6 +1,6 @@
 import { h } from 'preact';
 import { Container } from 'injection/inject-1k';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import { T } from 'i18n/translate-tag';
 import { LanguageCode, LANG_CODES } from 'i18n/i18n-translator';
@@ -53,6 +53,7 @@ class PickLanguage extends TransCom<{}, TransComS> {
   at(): string[] { return []; }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<PickLanguage> {
-  return regBundleCtx(bundleName, mainContainer, PickLanguage, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<PickLanguage> {
+  return regBundle(bundleName, mainContainer, PickLanguage);
 }

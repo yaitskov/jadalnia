@@ -2,10 +2,10 @@ import { h } from 'preact';
 import { postJ } from 'async/abortable-fetch';
 import { Thenable } from 'async/abortable-promise';
 import { Instantiable } from 'collection/typed-object';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Container } from 'injection/inject-1k';
 import { MainMenu } from 'app/main-menu';
-import { ToDoForm, ToDoFormP, ToDo } from 'app/todo-form';
+import { ToDoForm, ToDo } from 'app/todo-form';
 import { InjSubCom } from 'injection/inject-sub-components';
 import { ObList } from 'collection/observable-list';
 import { T } from 'i18n/translate-tag';
@@ -48,6 +48,7 @@ export class TodoGroup extends InjSubCom<{}, TodoGroupS> {
   }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<TodoGroup> {
-  return regBundleCtx(bundleName, mainContainer, TodoGroup, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<TodoGroup> {
+  return regBundle(bundleName, mainContainer, TodoGroup);
 }

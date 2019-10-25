@@ -1,7 +1,7 @@
 import { h } from 'preact';
 import { jne } from 'collection/join-non-empty';
 import { Link } from 'preact-router';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Container } from 'injection/inject-1k';
 import { Tobj, Instantiable } from 'collection/typed-object';
 import { TransCom, TransComS } from 'i18n/trans-component';
@@ -13,9 +13,6 @@ import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
 
 import bulma from 'app/style/my-bulma.sass';
-
-export interface LandingPageS extends TransComS {
-}
 
 type TileColor = 'red' | 'yellow' | 'green' | 'blue' | 'turquoise';
 
@@ -139,5 +136,5 @@ export class LandingPage extends TransCom<{}, TransComS> {
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
   : Instantiable<LandingPage> {
-  return regBundleCtx(bundleName, mainContainer, LandingPage, (o) => o);
+  return regBundle(bundleName, mainContainer, LandingPage);
 }

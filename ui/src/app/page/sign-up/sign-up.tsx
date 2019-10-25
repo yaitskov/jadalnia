@@ -3,7 +3,7 @@ import { T } from 'i18n/translate-tag';
 
 import { Container } from 'injection/inject-1k'
 import { Instantiable } from 'collection/typed-object';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 
 import { Thenable } from 'async/abortable-promise';
 import { SignUpForm, UserRegReq } from 'app/page/sign-up/sign-up-form';
@@ -58,6 +58,7 @@ export class SignUpCom extends TransCom<SignUpP, SignUpS> {
   at(): string[] { return []; }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<SignUpCom> {
-  return regBundleCtx(bundleName, mainContainer, SignUpCom, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<SignUpCom> {
+  return regBundle(bundleName, mainContainer, SignUpCom);
 }

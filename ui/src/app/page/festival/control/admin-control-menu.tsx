@@ -33,7 +33,7 @@ class AdminCtrlMenu extends TransCom<{}, TransComS> {
             </Link>
           </li>
           <li>
-            <Link href={`/admin/festival/status/${p.fid}`}>
+            <Link href={`/admin/festival/state/control/${p.fid}`}>
               <TI m="open/close festival" />
             </Link>
           </li>

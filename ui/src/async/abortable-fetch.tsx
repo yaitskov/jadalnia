@@ -6,8 +6,10 @@ const f = (req: string | Request): Thenable<Response> => {
   return new AbrPro<Response>(fetch(req, {signal: ctrl.signal}), ctrl);
 };
 
+export type PostPayload = {} | string;
+
 export const geT = (url: string): Thenable<Response> => f(url);
-export const postJ = (url: string, json: {}, headers: Tobj<string> = {}):
+export const postJ = (url: string, json: PostPayload, headers: Tobj<string> = {}):
   Thenable<Response> => f(
   new Request(url,
     {

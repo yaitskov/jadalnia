@@ -57,12 +57,12 @@ class FestivalResource @Inject constructor(
   }
 
   @POST
-  @Path(FESTIVAL_STATE)
+  @Path("$FESTIVAL_STATE/fid/{state}")
   @Consumes(APPLICATION_JSON)
   fun setState(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
-      state: FestivalState) {
+      @PathParam("state") state: FestivalState) {
     asynSync.sync(
         userSessions.get(session)
             .thenApply { user -> user.ensureAdmin().fid }
