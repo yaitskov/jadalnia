@@ -19,9 +19,12 @@ const visitorFactory = translationPlugin.makeVisitorFactory(
 const compressedFilesPattern = /\.(js|css|html|svg)$/;
 
 module.exports = {
-  entry: "./src/bootstrap.tsx",
+  entry: {
+    main: "./src/bootstrap.tsx",
+    sw: "./src/worker/worker-101.tsx"
+  },
   output: {
-    filename: "./bundle.js",
+    filename: "./[name].bundle.js",
     publicPath: "/"
   },
   mode: 'development',
@@ -39,6 +42,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'FoodFest',
       favicon: 'favicon.png',
+      chunks: ['main'],
       meta: {viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'}
     }),
     new MergeAndFlushI18nPlugin(state),

@@ -1,7 +1,7 @@
 
 
 export const loadServiceWorkers = () => window.addEventListener('load', () => {
-  navigator.serviceWorker.register('/worker-101.js')
+  navigator.serviceWorker.register('/sw.bundle.js')
     .then(registration => {
       console.info(`Service worker is registered ${registration}`)
     }, err => {
