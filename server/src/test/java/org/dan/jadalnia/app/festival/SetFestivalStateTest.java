@@ -19,7 +19,7 @@ import static org.junit.Assert.assertThat;
 
 public class SetFestivalStateTest extends WsIntegrationTest {
     public static boolean setState(MyRest myRest, UserSession session, FestivalState state) {
-        return myRest.post(FESTIVAL_STATE, session, state, Boolean.class);
+        return myRest.post(FESTIVAL_STATE + "/fid/" + state, session, state, Boolean.class);
     }
 
     public static FestivalState getState(MyRest myRest, Fid fid) {

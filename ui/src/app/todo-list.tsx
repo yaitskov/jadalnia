@@ -2,7 +2,7 @@ import { h } from 'preact';
 
 import { geT } from 'async/abortable-fetch';
 import { Instantiable } from 'collection/typed-object';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Container } from 'injection/inject-1k'
 import { InjSubCom } from 'injection/inject-sub-components';
 import { ToDo } from 'app/todo-form';
@@ -51,6 +51,7 @@ export class TodoList extends InjSubCom<{}, TodoListSt> {
   }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<TodoList> {
-  return regBundleCtx(bundleName, mainContainer, TodoList, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<TodoList> {
+  return regBundle(bundleName, mainContainer, TodoList);
 }

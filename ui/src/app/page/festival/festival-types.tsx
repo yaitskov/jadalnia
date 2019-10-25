@@ -7,3 +7,6 @@ export interface NewFestival {
 
 export type Fid = number;
 export type Uid = number;
+
+export type FestState = 'Announce' |  'Open' |  'Close';
+

@@ -1,4 +1,4 @@
-import { postJ, geT } from 'async/abortable-fetch';
+import { postJ, geT, PostPayload } from 'async/abortable-fetch';
 import { Thenable } from 'async/abortable-promise';
 import { UserAuth } from 'app/auth/user-auth';
 import { RestErr } from 'component/err/error-types';
@@ -35,7 +35,7 @@ export class RestSr {
   // @ts-ignore
   private $userAuth: UserAuth;
 
-  postJ<T>(url: string, jsonData: {}): Thenable<T> {
+  postJ<T>(url: string, jsonData: PostPayload): Thenable<T> {
     return postJ(url, jsonData, {session: this.$userAuth.mySession().el('')})
       .tn(handleRestResponse);
   }

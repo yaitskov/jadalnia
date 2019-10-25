@@ -2,14 +2,14 @@ import { h } from 'preact';
 import { T } from 'i18n/translate-tag';
 import { Container } from 'injection/inject-1k'
 import { Instantiable } from 'collection/typed-object';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { Footer } from 'app/component/footer';
 
 import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
-import {APP_NAME} from "app/app-const";
+import { APP_NAME } from "app/app-const";
 
 import bulma from 'bulma/bulma.sass';
 
@@ -73,6 +73,7 @@ export class Privacy extends TransCom<{}, TransComS> {
   at(): string[] { return []; }
 }
 
-export default function loadBundle(bundleName: string, mainContainer: Container): Instantiable<Privacy> {
-  return regBundleCtx(bundleName, mainContainer, Privacy, (o) => o);
+export default function loadBundle(bundleName: string, mainContainer: Container)
+  : Instantiable<Privacy> {
+  return regBundle(bundleName, mainContainer, Privacy);
 }

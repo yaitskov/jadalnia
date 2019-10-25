@@ -2,7 +2,7 @@ import { h } from 'preact';
 import { resolved } from 'async/abortable-promise';
 import { route } from 'preact-router';
 import { Container } from 'injection/inject-1k';
-import { regBundleCtx } from 'injection/bundle';
+import { regBundle } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import { T } from 'i18n/translate-tag';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
@@ -65,5 +65,5 @@ class NewTennisTour extends TransCom<{}, NewTennisTourS> {
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
   : Instantiable<NewTennisTour> {
-  return regBundleCtx(bundleName, mainContainer, NewTennisTour, (o) => o);
+  return regBundle(bundleName, mainContainer, NewTennisTour);
 }

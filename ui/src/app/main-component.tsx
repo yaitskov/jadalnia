@@ -31,6 +31,9 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewFestival = async () => await import('./page/festival/new-festival')
     .then(m => this.inj(m as AsyncModule, 'new-festival'));
 
+  FestStateCtrl = async() => await import ('./page/festival/control/festival-state-control')
+    .then(m => this.inj(m as AsyncModule, 'festival-state-control'));
+
   AdminCtrlMenu = async () => await import('./page/festival/control/admin-control-menu')
     .then(m => this.inj(m as AsyncModule, 'admin-control-menu'));
 
@@ -63,6 +66,7 @@ export class MainCom extends InjSubCom<{}, {}> {
   render() {
     return <Router>
       <AsyncRoute path='/' getComponent={this.LPG} />
+      <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/admin/festival/control/:fid' getComponent={this.AdminCtrlMenu} />
       <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
       <AsyncRoute path='/admin/festival/new/invites/:fid' getComponent={this.NewInvites} />
