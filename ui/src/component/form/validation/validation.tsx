@@ -217,8 +217,8 @@ const valFactories = {
   'r': (pattern) => new Match(new RegExp(pattern))
 };
 
-const chainSplit = /(?<!\\)[ ]/;
-const partSplit = /(?<!\\)[:]/;
+const chainSplit = /[ ]/;
+const partSplit = /[:]/;
 
 export class Validation {
   private _validators: Map<string, Validator> = new Map<string, Validator>();
