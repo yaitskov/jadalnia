@@ -3,3 +3,35 @@ https://jakearchibald.github.io/isserviceworkerready/resources.html
 offline course
 
 https://classroom.udacity.com/courses/ud899/lessons/6370369679/concepts/63794801080923
+
+
+Free SSL certificate provider
+https://letsencrypt.org/getting-started/
+
+https://developers.google.com/web/fundamentals/codelabs/push-notifications/
+
+https://github.com/web-push-libs/webpush-java/wiki/Usage-Example
+
+
+allow using service worker with self sign certificate
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --ignore-certificate-errors --unsafely-treat-insecure-origin-as-secure=https://foodfest.net:8443
+
+mkdir CA
+openssl genrsa -aes256 -out CA/rootCA.key 4096
+openssl req -x509 -new -nodes -key CA/rootCA.key -sha256 -days 1024 -out CA/rootCA.crt
+
+openssl req -new -nodes -keyout example.com.key -out domain.csr -days 3650 -subj "/C=US/L=Some/O=Acme, Inc./CN=example.com"
+openssl x509 -req -days 3650 -sha256 -in domain.csr -CA CA/rootCA.crt -CAkey CA/rootCA.key -CAcreateserial -out example.com.crt -extensions v3_ca -extfile <(
+cat <<-EOF
+[ v3_ca ]
+subjectAltName = DNS:example.com
+EOF
+)
+
+
+New-SelfSignedCertificate -CertStoreLocation Cert:\LocalMachine\My -Subject "fruity.local" -DnsName "fruity.local", "*.fruity.local" -FriendlyName "FruityCert" -NotAfter (Get-Date).AddYears(10)
+#notes:
+#    -subject "*.fruity.local" = Sets the string subject name to the wildcard *.fruity.local
+#    -DnsName "fruity.local", "*.fruity.local"
+#         ^ Sets the subject alternative name to fruity.local, *.fruity.local. (Required by Chrome v58 and later)
+#    -NotAfter (Get-Date).AddYears(10) = make the certificate last 10 years. Note: only works from Windows Server 2016 / Windows 10 onwards!!
