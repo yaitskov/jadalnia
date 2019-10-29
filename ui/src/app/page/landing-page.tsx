@@ -11,7 +11,7 @@ import { MyCo } from 'component/my-component';
 import { Footer } from 'app/component/footer';
 import { Par } from 'app/component/paragraph';
 import { SecCon } from 'app/component/section-container';
-
+import { FF } from 'app/component/logo-shortcut';
 import bulma from 'app/style/my-bulma.sass';
 
 type TileColor = 'red' | 'yellow' | 'green' | 'blue' | 'turquoise';
@@ -49,12 +49,6 @@ class TileLine extends MyCo<{}, {}> {
   render() {
     // @ts-ignore
     return <div class={jne(bulma.tile, bulma.isAncestor)}>{this.props.children}</div>;
-  }
-}
-
-class FF extends MyCo<{}, {}> {
-  render() {
-    return <span>FoodFest</span>;
   }
 }
 

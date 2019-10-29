@@ -25,6 +25,10 @@ export class MainCom extends InjSubCom<{}, {}> {
   Privacy = async () => await import('./page/privacy')
     .then(m => this.inj(m as AsyncModule, 'privacy'));
 
+  AdminNotificationPermitRequest = async () =>
+    await import('./page/festival/notification/admin-notification-permit-request')
+      .then(m => this.inj(m as AsyncModule, 'admin-notification-permit-request'));
+
   Lang = async () => await import('./page/pick-language')
     .then(m => this.inj(m as AsyncModule, 'pick-language'));
 
@@ -68,6 +72,7 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/' getComponent={this.LPG} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/admin/festival/control/:fid' getComponent={this.AdminCtrlMenu} />
+      <AsyncRoute path='/festival/new/notification/:fid' getComponent={this.AdminNotificationPermitRequest} />
       <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
       <AsyncRoute path='/admin/festival/new/invites/:fid' getComponent={this.NewInvites} />
       <AsyncRoute path='/festival/menu/item/edit/:fid/:name'

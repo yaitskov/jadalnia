@@ -49,7 +49,7 @@ class NewFest extends TransCom<{}, NewFestS> {
       .tn((fid: Fid) => {
         this.st.fest.ifV(v => this.$locStore.jStore<NewFestival>(
           'newFestival', {...v, basic: info}));
-        return route(`/festival/new/menu/${fid}`);
+        return route(`/festival/new/notification/${fid}`);
       });
   }
 

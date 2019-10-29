@@ -47,6 +47,14 @@ export function resolved<T>(v: T): Thenable<T> {
   return new AbrPro<T>(Promise.resolve(v), {abort: () => {}});
 }
 
+export function ofPromise<T>(p: Promise<T>): Thenable<T> {
+  return new AbrPro(p, {abort: () => {}});
+}
+
+export function boom<T>(e: Error): Thenable<T> {
+  return ofPromise(Promise.reject(e));
+}
+
 export function tJoin<T>(thenables: Thenable<T>[]): Thenable<T[]> {
   return new AbrPro<T[]>(
     Promise.all(thenables.map(t => t.p)),
