@@ -17,6 +17,7 @@
     "babel-loader": "^8.0.5",
     "body-parser": "^1.19.0",
     "bulma": "^0.7.5",
+    "clipboard-copy": "^3.1.0",
     "date-fns": "^2.0.0-alpha.34",
     "flag-icon-css": "^3.3.0",
     "flatpickr": "^4.6.1",
