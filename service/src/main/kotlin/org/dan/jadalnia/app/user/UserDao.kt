@@ -55,4 +55,15 @@ class UserDao : AsyncDao() {
           }
     }
   }
+
+  fun listByType(fid: Fid, userType: UserType) = execQuery {
+    jooq -> jooq
+      .select(USERS.UID, USERS.NAME)
+      .from(USERS)
+      .where(USERS.FESTIVAL_ID.eq(fid), USERS.TYPE.eq(userType))
+      .fetch().map { r -> UserLink(
+          uid = r.get(USERS.UID),
+          name = r.get(USERS.NAME))
+      }
+  }
 }

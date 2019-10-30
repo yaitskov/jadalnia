@@ -1,4 +1,4 @@
-import { UserAuth } from 'app/auth/user-auth';
+import {Admin, UserAuth} from 'app/auth/user-auth';
 import { UserRegReq } from 'app/page/sign-up/sign-up-form';
 import { postJ } from 'async/abortable-fetch';
 import { Thenable } from 'async/abortable-promise';
@@ -31,7 +31,7 @@ export class SignUpSr {
       .tn(r => {
         this.$userAuth.storeSession(
           `${r.session.uid}:${r.session.key}`,
-          r.fid, basicFestInfo.userName, optS(''), 'admin');
+          r.fid, basicFestInfo.userName, optS(''), Admin);
         return r.fid;
       });
   }

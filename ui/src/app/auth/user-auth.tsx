@@ -1,18 +1,17 @@
 import { LocalStorage } from 'app/persistence/local-storage';
-import { Opt, nic } from 'collection/optional';
+import { Opt } from 'collection/optional';
 import { route } from 'preact-router';
 import { Fid } from 'app/page/festival/festival-types';
+import {UserType} from "app/service/user-types";
 
 export const MySession = 'mySession';
-export const Admin = 'admin';
+export const Admin = 'Admin';
 export const AdminOfTournaments = 'adminOfTournaments';
-export const User = 'User';
+export const User = 'customer' as UserType;
 export const MyType = 'MyType';
 export const MyEmail = 'myEmail';
 export const MyName = 'myName';
 export const MyFid = 'myFid';
-
-export type UserType = string;
 
 export type Phone = Opt<string>;
 export type Email = Opt<string>;
@@ -39,7 +38,7 @@ export class UserAuth {
   }
 
   public userType(): UserType {
-    return this.$locStore.get(MyType).el(User);
+    return this.$locStore.get(MyType).map(x => x as UserType).el(User);
   }
 
   public logout(): void {

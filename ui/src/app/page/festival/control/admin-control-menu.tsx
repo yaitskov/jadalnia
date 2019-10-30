@@ -23,7 +23,7 @@ class AdminCtrlMenu extends TransCom<{}, TransComS> {
       <SecCon>
         <ul>
           <li>
-            <Link href={`/admin/festival/volunteers/${p.fid}`}>
+            <Link href={`/admin/festival/volunteers/control/${p.fid}`}>
               <TI m="volunteers" />
             </Link>
           </li>

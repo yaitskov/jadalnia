@@ -65,12 +65,27 @@ export class MainCom extends InjSubCom<{}, {}> {
   NewTodo = async () => await import('./new-todo')
     .then(m => this.inj(m as AsyncModule, 'new-todo'));
 
+  VolunteerCtrl = async() => await import('app/page/festival/volunteer/volunteers-control')
+    .then(m => this.inj(m as AsyncModule, 'volunteers-control'));
+
+  WaitersCtrl = async() => await import('app/page/festival/volunteer/waiters-control')
+    .then(m => this.inj(m as AsyncModule, 'waiters-control'));
+
+  CashiersCtrl = async() => await import('app/page/festival/volunteer/cashiers-control')
+    .then(m => this.inj(m as AsyncModule, 'cashiers-control'));
+
+  InviteLinks = async() => await import('app/page/festival/invite/invite-links')
+    .then(m => this.inj(m as AsyncModule, 'invite-links'));
   // <Route path='/' component={this.c(Terms)} />
 
   render() {
     return <Router>
       <AsyncRoute path='/' getComponent={this.LPG} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
+      <AsyncRoute path='/admin/festival/volunteers/control/:fid' getComponent={this.VolunteerCtrl} />
+      <AsyncRoute path='/admin/festival/waiters/:fid' getComponent={this.WaitersCtrl} />
+      <AsyncRoute path='/admin/festival/cashiers/:fid' getComponent={this.CashiersCtrl} />
+      <AsyncRoute path='/admin/festival/invite-links/:fid' getComponent={this.InviteLinks} />
       <AsyncRoute path='/admin/festival/control/:fid' getComponent={this.AdminCtrlMenu} />
       <AsyncRoute path='/festival/new/notification/:fid' getComponent={this.AdminNotificationPermitRequest} />
       <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
