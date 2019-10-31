@@ -22,6 +22,6 @@ export class RestErrCo extends MyCo<RestErrP, {}> {
         <pre class={bulma.hasTextDanger}>{e.message}</pre>
       </div>;
     }
-    return [];
+    return false;
   }
 }

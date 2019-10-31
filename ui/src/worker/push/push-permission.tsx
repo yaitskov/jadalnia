@@ -60,7 +60,7 @@ export class PushPermission extends TransCom<PushPermissionP, PushPermissionS> {
     const [TI, TitleStdMainMenuI] = this.c2(T, TitleStdMainMenu);
     return <div>
       <TitleStdMainMenuI t$title="Allow notification"/>
-      <SecCon>
+      <SecCon css={bulma.content}>
         <p>
           <FF/> would like to use the browser notifications feature for user better experience.
         </p>
@@ -75,12 +75,12 @@ export class PushPermission extends TransCom<PushPermissionP, PushPermissionS> {
 
         {st.supported === undefined && <p>Checking for notification support...</p>}
         {st.supported === false && <p>Your browser doesn't support notifications.</p>}
-        {st.supported && !st.pushAllowed && <p>
+        {!!st.supported && !st.pushAllowed && <p>
           Click the button below and the browser will ask
           you to enable required permissions.
         </p>}
-        {st.gettingPerms && <p>Getting permissions...</p>}
-        {st.allowed && <p>Notifications are enabled, thanks.</p>}
+        {!!st.gettingPerms && <p>Getting permissions...</p>}
+        {!!st.allowed && <p>Notifications are enabled, thanks.</p>}
 
         <RestErrCo e={st.e}/>
 
