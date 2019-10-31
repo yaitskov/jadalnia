@@ -19,11 +19,13 @@
     "bulma": "^0.7.5",
     "clipboard-copy": "^3.1.0",
     "date-fns": "^2.0.0-alpha.34",
+    "desvg-loader": "^0.1.0",
     "flag-icon-css": "^3.3.0",
     "flatpickr": "^4.6.1",
     "linkstate": "^1.1.1",
     "preact": "^8.4.2",
     "preact-flatpickr": "^1.0.3",
+    "svg-loader": "0.0.2",
     "webpack": "^4.28.1"
   },
   "devDependencies": {

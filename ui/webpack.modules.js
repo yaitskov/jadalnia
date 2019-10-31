@@ -65,6 +65,13 @@ function makeModule(extraBabelPlugins) {
           loader: 'file-loader',
           options: {}
         }
+      },
+      {
+        test: /\.svgc$/,  // svg preact component
+        use: [
+          'desvg-loader/preact',
+          'svg-loader'
+        ]
       }
     ]
   };

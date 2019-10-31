@@ -3,6 +3,9 @@ import {Link} from "preact-router";
 import {MyCo} from "component/my-component";
 import copy from 'clipboard-copy';
 import {siteUrl, isAbsUrl} from "util/routing";
+import { CopyCo }  from 'component/icons/copy/copy-co';
+import bulma from 'app/style/my-bulma.sass';
+import { jne } from 'collection/join-non-empty';
 
 export interface CpClickLnkP {
   url: string;
@@ -32,9 +35,10 @@ export class CpClickLnk extends MyCo<CpClickLnkP, {absUrl: string}> {
   render(p, st) {
     return <Link href={st.absUrl}
                  title="click to copy"
-                 class={p.classes || ''}
+                 class={p.classes || jne(bulma.button, bulma.isText, bulma.isSuccess)}
                  onClick={this.onClick}>
       { p.t$lbl }
+      <CopyCo />
     </Link>;
   }
 }

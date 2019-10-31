@@ -1580,6 +1580,8 @@ interface CssExports {
   'select': string;
   'spinAround': string;
   'subtitle': string;
+  'svg-icon': string;
+  'svgIcon': string;
   'table': string;
   'table-container': string;
   'tableContainer': string;
