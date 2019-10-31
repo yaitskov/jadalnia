@@ -1,5 +1,6 @@
 const fPath = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const MergeAndFlushI18nPlugin = require('./merge-and-flush-i18n');
 const BrotliPlugin = require('brotli-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
@@ -43,8 +44,10 @@ module.exports = {
       title: 'FoodFest',
       favicon: 'favicon.png',
       chunks: ['main'],
+      template: "index.html",
       meta: {viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'}
     }),
+    new CopyPlugin(["manifest.json"]),
     new MergeAndFlushI18nPlugin(state),
     new CompressionPlugin({
       filename: '[path].gz[query]',

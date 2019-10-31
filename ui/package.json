@@ -49,6 +49,7 @@
     "@types/jasmine": "^3.3.12",
     "brotli-webpack-plugin": "^1.1.0",
     "compression-webpack-plugin": "^2.0.0",
+    "copy-webpack-plugin": "^5.0.4",
     "css-loader": "^2.1.1",
     "css-modules-typescript-loader": "^2.0.3",
     "express": "^4.16.4",
