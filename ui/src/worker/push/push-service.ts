@@ -13,7 +13,9 @@ function subscribe() {
   navigator.serviceWorker.ready.then(serviceWorkerRegistration => {
     console.log('sw ready for making subscribe');
     serviceWorkerRegistration.pushManager
-      .subscribe({userVisibleOnly: true})
+      .subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: "BA5wU2icgNXzmjTG5f_ba0tliY9OezaKETqplE7uoe16sF258jTIDJFkHeLLoCpwNsKiNMoFNEK2Z5Yc-zKyTFY"})
       .then(
         subscription => {
           console.log(`have subscription ${subscription}`);
