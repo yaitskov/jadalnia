@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
     PropertiesContext::class,
     AuthCtx::class,
     WsCtx::class,
+    WebPushCtx::class,
     BusinessCtx::class,
     TimeContext::class,
     ExecutorCtx::class,

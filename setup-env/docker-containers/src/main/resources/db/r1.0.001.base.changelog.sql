@@ -23,6 +23,15 @@ create table users(
     foreign key (festival_id) references festival(fid)
 );
 
+create table web_push(
+    uid int(11) not null primary key,
+    expires_at timestamp(3) not null,
+    created timestamp(3) default current_timestamp(3),
+    url varchar(300) not null,
+    p256dh varchar(60) not null,
+    auth varchar(60) not null,
+    foreign key (uid) references users(uid));
+
 create table token(
     festival_id int(11) not null,
     tid int(11) not null,

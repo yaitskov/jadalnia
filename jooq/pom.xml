@@ -160,6 +160,21 @@
                                     <expression>.*users\.created</expression>
                                     <types>.*</types>
                                 </forcedType>
+                                <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*web_push\.created</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*web_push\.expires_at</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Uid</name>
+                                    <expression>.*web_push\.uid</expression>
+                                    <types>.*</types>
+                                </forcedType>
 
                                 <forcedType>
                                     <name>Instant</name>
