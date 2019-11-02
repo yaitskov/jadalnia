@@ -1,10 +1,12 @@
 package org.dan.jadalnia.app.festival
 
+import com.github.jasync.sql.db.util.map
 import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.menu.MenuItem
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
+import org.dan.jadalnia.app.festival.pojo.FestivalVolunteerInfo
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.NewFestival
 import org.dan.jadalnia.app.user.UserInfo
@@ -43,6 +45,7 @@ class FestivalResource @Inject constructor(
     const val FESTIVAL_MENU = FESTIVAL + "menu"
     const val FESTIVAL_STATE = FESTIVAL + "state"
     const val FESTIVAL_CREATE = FESTIVAL + "create"
+    const val FESTIVAL_VOLUNTEER_INFO = FESTIVAL + "volunteer-info"
     const val INVALIDATE_CACHE = FESTIVAL + "invalidate/cache"
     val log = LoggerFactory.getLogger(FestivalResource::class.java)
   }
@@ -72,6 +75,20 @@ class FestivalResource @Inject constructor(
             },
         response)
   }
+
+  @GET
+  @Path("$FESTIVAL_VOLUNTEER_INFO/{fid}")
+  fun getInfoForVolunteer(
+      @Suspended response: AsyncResponse,
+      @PathParam("fid") fid: Fid) = asynSync.sync(festivalCache.get(fid)
+      .thenApply { fest ->
+        val info = fest.info.get()
+        FestivalVolunteerInfo(
+            name = info.name,
+            state = info.state,
+            opensAt = info.opensAt)
+      },
+      response)
 
   @GET
   @Path("$FESTIVAL_STATE/{fid}")
