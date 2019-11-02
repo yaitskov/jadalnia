@@ -8,7 +8,7 @@ import { Tobj, deepEq } from 'collection/typed-object';
 export type TP = EvalParams;
 
 export interface TS {
-  msg: string;
+  msg: any;
 }
 
 export class T extends MyCo<TP, TS> {
