@@ -10,7 +10,7 @@ import bulma from "app/style/my-bulma.sass";
 import { T } from 'i18n/translate-tag';
 import {VolunteerSr, UserInfo} from "app/service/volunteer-service";
 import {Kasier} from "app/service/user-types";
-import {RestErrCo} from "../../../../component/err/error";
+import {RestErrCo} from "component/err/error";
 
 export interface CashiersControlS extends TransComS {
   users?: UserInfo[];
