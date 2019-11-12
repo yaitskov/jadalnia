@@ -6,11 +6,16 @@ import { FullNameField } from 'app/page/sign-up/full-name-field';
 import { EmailField } from 'app/page/sign-up/email-field';
 import { PhoneField } from 'app/page/sign-up/phone-field';
 import { Thenable } from 'async/abortable-promise';
+import {Fid} from "app/page/festival/festival-types";
+import {UserType} from "app/service/user-types";
+
+export type UsrSessionKey = string;
 
 export interface UserRegReq {
-  fullName: string;
-  email: string;
-  phone: string;
+  name: string;
+  festivalId: Fid;
+  userType: UserType;
+  session: UsrSessionKey;
 }
 
 export interface SignUpFormP {

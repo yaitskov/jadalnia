@@ -14,6 +14,7 @@ import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
 import org.dan.jadalnia.sys.async.AsynSync
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
 
 import javax.inject.Inject
 import javax.inject.Named
@@ -45,6 +46,8 @@ class OrderResource @Inject constructor(
     const val ORDER_PAID = ORDER + "paid"
     const val GET_ORDER = ORDER + "get"
     const val MY_ORDERS = ORDER + "listMine"
+    const val COUNT_ORDERS_READY_FOR_EXEC = ORDER + "count-ready-for-exec"
+    const val EXECUTING_ORDER = ORDER + "executing"
     const val TRY_ORDER = ORDER + "try"
     const val ORDER_READY = ORDER + "ready"
     const val PICKUP_ORDER = ORDER + "pickup"
@@ -111,6 +114,20 @@ class OrderResource @Inject constructor(
         response)
   }
 
+  @GET
+  @Path(EXECUTING_ORDER)
+  fun getKelnerExecutingOrder(@Suspended response: AsyncResponse,
+                              @HeaderParam(SESSION) session: UserSession) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              orderService.kelnerTakenOrderId(festival, session.uid)
+            },
+        response)
+  }
+
   @POST
   @Path(TRY_ORDER)
   fun tryToExecOrder(
@@ -123,6 +140,18 @@ class OrderResource @Inject constructor(
             .thenCompose { festival ->
               orderService.tryToExecOrder(festival, session.uid)
             },
+        response)
+  }
+
+  @GET
+  @Path(COUNT_ORDERS_READY_FOR_EXEC)
+  fun countOrdersReadyForExec(@Suspended response: AsyncResponse,
+                              @HeaderParam(SESSION) session: UserSession) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose(orderService::countReadyForExec),
         response)
   }
 

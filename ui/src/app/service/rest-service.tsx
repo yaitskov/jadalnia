@@ -11,7 +11,9 @@ const nonJsonBody = (response, ex: Error): any => {
 };
 
 const structuredError = (jsonResp) => {
-  if (jsonResp['@type'] == 'Error') {
+  if (jsonResp === null || ['number', 'boolean'].indexOf(typeof jsonResp) > -1) {
+    return jsonResp;
+  } else if (jsonResp['@type'] == 'Error') {
     throw new RestErr(jsonResp.id, 'raw', jsonResp.message, {});
   } else if (jsonResp['@type'] == 'TemplateError') {
     throw new RestErr(jsonResp.id, 'tpl', jsonResp.message, jsonResp.params);
@@ -42,5 +44,14 @@ export class RestSr {
 
   geT<T>(url: string): Thenable<T> {
     return geT(url).tn(handleRestResponse)
+  }
+
+  getS<T>(url: string): Thenable<T> {
+    return geT(
+      new Request(
+        url,
+        {method: 'GET',
+         headers: {session: this.$userAuth.mySession().el('')}}))
+      .tn(handleRestResponse)
   }
 }

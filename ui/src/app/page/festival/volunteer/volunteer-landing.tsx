@@ -57,7 +57,10 @@ export class VolunteerLanding extends TransCom<VolunteerLandingP, VolunteerLandi
             <TI m="Here you can register as a utype, but there are could be other duties, so contact manager for more info."
                 utype={<UsrLblI userType={p.userType}/>}/>
           </p>
-          <p><TI m="Festival start is at" at={st.fest.opensAt}/></p>
+          <p>
+            <TI m="Festival start is at" at={st.fest.opensAt}/>
+            <TI m="your time zone"/>
+          </p>
 
           <div class={bulma.buttons}>
             <Link class={bulma.button} href={p.nextPage}>

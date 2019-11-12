@@ -105,6 +105,9 @@ class OrderService @Inject constructor(
 
   private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
 
+  fun kelnerTakenOrderId(festival: Festival, kelnerUid: Uid)
+      = completedFuture(Optional.ofNullable(festival.busyKelners[kelnerUid]))
+
   fun tryToExecOrder(festival: Festival, kelnerUid: Uid)
       : CompletableFuture<Optional<OrderLabel>> {
     val opLog = OpLog()
@@ -299,4 +302,6 @@ class OrderService @Inject constructor(
       : CompletableFuture<List<OrderItemView>> {
     return orderDao.findOrdersForCustomer(fid, customerUid)
   }
+
+  fun countReadyForExec(fest: Festival) = completedFuture(fest.readyToExecOrders.count())
 }

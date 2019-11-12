@@ -8,7 +8,7 @@ const f = (req: string | Request): Thenable<Response> => {
 
 export type PostPayload = {} | string;
 
-export const geT = (url: string): Thenable<Response> => f(url);
+export const geT = (url: string | Request): Thenable<Response> => f(url);
 export const postJ = (url: string, json: PostPayload, headers: Tobj<string> = {}):
   Thenable<Response> => f(
   new Request(url,

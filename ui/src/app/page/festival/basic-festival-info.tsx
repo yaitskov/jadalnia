@@ -1,4 +1,4 @@
-import { time2Str, localDateYmd } from 'util/my-time';
+import { localDateYmd } from 'util/my-time';
 import { uuidV4 } from 'util/crypto';
 
 export interface BasicFestInfo {
