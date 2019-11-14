@@ -1,5 +1,6 @@
 import { h } from 'preact';
 import { Link } from 'preact-router';
+
 import { Container, FwdContainer } from 'injection/inject-1k';
 import { regBundleCtx } from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -11,8 +12,9 @@ import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import {AddMenuItemBtn} from "app/page/festival/menu/add-menu-item-btn";
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {nic, Opt, opt} from 'collection/optional';
+import {RestErrCo} from "component/err/error";
+
 import bulma from "app/style/my-bulma.sass";
-import {RestErrCo} from "../../../../component/err/error";
 
 interface FestMenuS extends TransComS {
   items: Opt<MenuItemView[]>,

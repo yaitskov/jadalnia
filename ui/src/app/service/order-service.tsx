@@ -1,6 +1,5 @@
 import { Thenable } from 'async/abortable-promise';
 import { OrderLabel } from 'app/types/order';
-import { Fid, FestState, FestInfo } from 'app/page/festival/festival-types';
 import { RestSr } from "app/service/rest-service";
 import {KelnerOrderView, OrderItem } from 'app/types/order';
 
@@ -26,5 +25,9 @@ export class OrderSr {
 
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
     return this.$restSr.postJ('/api/order/ready', orderLabel);
+  }
+
+  customerPutOrder(items: OrderItem[]): Thenable<OrderLabel> {
+    return this.$restSr.postJ('/api/order/put', items);
   }
 }

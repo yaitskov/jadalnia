@@ -24,7 +24,7 @@ export class InviteLinksCom extends TransCom<{fid: Fid}, TransComS> {
         <CpClickLnk url={`/festival/invite/waiter/${p.fid}`} t$lbl="link for waiter"/>
       </p>
       <p>
-        <CpClickLnk url={`/festival/invite/visitor/${p.fid}`} t$lbl="link for visitor"/>
+        <CpClickLnk url={`/festival/invite/customer/${p.fid}`} t$lbl="link for visitor"/>
       </p>
     </div>;
   }

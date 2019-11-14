@@ -11,8 +11,8 @@ export class Loading extends InjSubCom<LoadingP, {}> {
   render(p) {
     const TI = this.c(T);
     return <span class={p.classes || ''}>
-      <TI m="Loading..." />
-      { p.t$lbl || false }
+      { !!p.t$lbl && p.t$lbl }
+      { !p.t$lbl && <TI m="Loading..." />}
     </span>;
   }
 }
