@@ -86,8 +86,17 @@ export class MainCom extends InjSubCom<{}, {}> {
   CustomerLanding = async() => await import('app/page/festival/customer/customer-landing')
     .then(m => this.inj(m as AsyncModule, 'customer-landing'));
 
+  CustomerOrders = async() => await import('app/page/festival/customer/customer-orders')
+    .then(m => this.inj(m as AsyncModule, 'customer-orders'));
+
+  VisitorOrderCtrl = async() => await import('app/page/festival/customer/customer-order-control')
+    .then(m => this.inj(m as AsyncModule, 'customer-order-control'));
+
   CustomerMenu = async() => await import('app/page/festival/customer/customer-menu')
     .then(m => this.inj(m as AsyncModule, 'customer-menu'));
+
+  CustomerAutoPay = async() => await import('app/page/festival/customer/customer-autopay')
+    .then(m => this.inj(m as AsyncModule, 'customer-autopay'));
 
   CashiersCtrl = async() => await import('app/page/festival/volunteer/cashiers-control')
     .then(m => this.inj(m as AsyncModule, 'cashiers-control'));
@@ -104,6 +113,9 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/festival/invite/cashier/:fid' getComponent={this.CashierLanding} />
       <AsyncRoute path='/festival/registration/kelner/:fid' getComponent={this.WaiterReg} />
+      <AsyncRoute path='/festival/visitor/order/orders/:fid' getComponent={this.CustomerOrders} />
+      <AsyncRoute path='/festival/visitor/order/control/:fid/:order' getComponent={this.VisitorOrderCtrl} />
+      <AsyncRoute path='/festival/visitor/order/autopay/:fid/:order' getComponent={this.CustomerAutoPay} />
       <AsyncRoute path='/festival/visitor/menu/:fid' getComponent={this.CustomerMenu} />
       <AsyncRoute path='/festival/invite/customer/:fid' getComponent={this.CustomerLanding} />
       <AsyncRoute path='/festival/invite/waiter/:fid' getComponent={this.WaiterLanding} />

@@ -6,7 +6,7 @@ import {Fid} from 'app/page/festival/festival-types';
 import {FestSr} from "app/service/fest-service";
 import {InjSubCom} from "injection/inject-sub-components";
 import {VolunteerLanding} from "app/page/festival/volunteer/volunteer-landing";
-import {Kasier, Kelner} from "../../../service/user-types";
+import {Kasier} from "app/service/user-types";
 
 class CashierLanding extends InjSubCom<{fid: Fid}, {}> {
   render(p, st) {
@@ -14,7 +14,6 @@ class CashierLanding extends InjSubCom<{fid: Fid}, {}> {
     return <VolunteerLandingI fid={p.fid} userType={Kasier} nextPage={`/festival/registration/kasier/${p.fid}`}/>;
   }
 }
-
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
   : Instantiable<CashierLanding> {

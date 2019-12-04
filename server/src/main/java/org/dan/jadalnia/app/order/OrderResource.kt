@@ -14,7 +14,6 @@ import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
 import org.dan.jadalnia.sys.async.AsynSync
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
-import java.util.concurrent.CompletableFuture
 
 import javax.inject.Inject
 import javax.inject.Named
@@ -115,6 +114,33 @@ class OrderResource @Inject constructor(
   }
 
   @GET
+  @Path(ORDER + "customerInfo/{label}")
+  fun showOrderToVisitor(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label")
+      label: OrderLabel) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose { fid -> orderService.showOrderToVisitor(fid, label) },
+        response)
+  }
+
+  @GET
+  @Path(ORDER + "progress/{fid}/{label}")
+  fun showOrderProgressToVisitor(
+      @Suspended response: AsyncResponse,
+      @PathParam("fid")
+      fid: Fid,
+      @PathParam("label")
+      label: OrderLabel) {
+    asynSync.sync(
+        orderService.showOrderProgressToVisitor(fid, label),
+        response)
+  }
+
+  @GET
   @Path(EXECUTING_ORDER)
   fun getKelnerExecutingOrder(@Suspended response: AsyncResponse,
                               @HeaderParam(SESSION) session: UserSession) {
@@ -189,11 +215,11 @@ class OrderResource @Inject constructor(
   }
 
   @POST
-  @Path(PAY_ORDER)
+  @Path(PAY_ORDER + "/{label}")
   fun customerPaysForOrder(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
-      orderLabel: OrderLabel) {
+      @PathParam("label") orderLabel: OrderLabel) {
     log.info("Customer {} try to pay order {}", session.uid, orderLabel)
     asynSync.sync(
         userSessions.get(session)

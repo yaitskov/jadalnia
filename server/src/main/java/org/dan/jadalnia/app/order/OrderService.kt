@@ -1,5 +1,6 @@
 package org.dan.jadalnia.app.order
 
+import io.netty.util.concurrent.CompleteFuture
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
@@ -51,6 +52,11 @@ class OrderService @Inject constructor(
 
   companion object {
     val log = LoggerFactory.getLogger(OrderService::class.java)
+  }
+
+  fun showOrderProgressToVisitor(fid: Fid, label: OrderLabel)
+      : CompletableFuture<OrderProgress> {
+    return
   }
 
   fun putNewOrder(
@@ -151,6 +157,10 @@ class OrderService @Inject constructor(
   fun showOrderToKelner(fid: Fid, label: OrderLabel) = orderCacheByLabel
       .get(Pair(fid, label))
       .thenApply { order -> KelnerOrderView(order.items) }
+
+  fun showOrderToVisitor(fid: Fid, label: OrderLabel) = orderCacheByLabel
+      .get(Pair(fid, label))
+      .thenApply { order -> VisitorOrderView(order.label, order.cost, order.state.get()) }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
       : CompletableFuture<Void> {

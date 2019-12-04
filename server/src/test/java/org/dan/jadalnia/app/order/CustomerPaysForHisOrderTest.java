@@ -38,8 +38,8 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
             MyRest myRest, UserSession session,
             OrderLabel orderLabel) {
         return myRest.post(
-                OrderResource.PAY_ORDER, session,
-                orderLabel, PaymentAttemptOutcome.class);
+                OrderResource.PAY_ORDER + "/" + orderLabel, session,
+                "", PaymentAttemptOutcome.class);
     }
 
     @Test

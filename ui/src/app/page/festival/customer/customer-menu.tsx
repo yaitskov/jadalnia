@@ -38,7 +38,7 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
   // @ts-ignore
   private $festMenuSr: MenuService;
   // @ts-ignore
-  private $customerSr: TokenSr;
+  private $tokenSr: TokenSr;
   // @ts-ignore
   private $orderSr: OrderSr;
 
@@ -46,6 +46,7 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
     super(props);
     this.st = {at: this.at(), mealSelections: [], puttingOrder: false};
     this.putOrder = this.putOrder.bind(this);
+    this.toggleItem = this.toggleItem.bind(this);
   }
 
   putOrder(): Thenable<any> {
@@ -68,21 +69,27 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
     this.$festMenuSr.list(this.pr.fid).tn(
       lst => this.ust(st => ({...st, mealSelections: new Int32Array(lst.length),  menu: lst})))
       .ctch(e => this.ust(st => ({...st, e: e})));
-    this.$customerSr.getBalance().tn(balanceView => balanceView.effectiveTokens)
+    this.$tokenSr.getBalance().tn(balanceView => balanceView.effectiveTokens)
       .tn(balance => this.ust(st => ({...st, currentBalance: balance})))
       .ctch(e => this.ust(st => ({...st, e: e})));
   }
 
   toggleItem(i: number) {
-    this.st.mealSelections[i] = this.st.mealSelections[i] ? 0 : 1;
+    let newSelections = [...this.st.mealSelections];
+    newSelections[i] =  newSelections[i] ? 0 : 1;
+    this.ust(st => ({...st, mealSelections: newSelections}));
   }
 
   addItem(i: number) {
-    this.st.mealSelections[i] += this.st.mealSelections[i];
+    let newSelections = [...this.st.mealSelections];
+    newSelections[i] += 1;
+    this.ust(st => ({...st, mealSelections: newSelections}));
   }
 
   removeItem(i: number) {
-    this.st.mealSelections[i] = Math.max(0, this.st.mealSelections[i] - 1);
+    let newSelections = [...this.st.mealSelections];
+    newSelections[i] = Math.max(0, newSelections[i] - 1);
+    this.ust(st => ({...st, mealSelections: newSelections}));
   }
 
   sumMeals(): number {
@@ -98,7 +105,7 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
         {!st.menu && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
         {!!st.menu && <ul class={bulma.list}>
-          {st.menu.length || <li>menu is empty</li>}
+          {!!st.menu.length || <li>menu is empty</li>}
           {st.menu.map((item: MenuItemView, i: number) => <li>
             <p class={st.mealSelections[i] ? bulma.isPrimary : ''}
                onClick={() => this.toggleItem(i)}>{item.name} / {item.price}</p>
@@ -133,5 +140,9 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
 export default function loadBundle(bundleName: string, mainContainer: Container)
   : Instantiable<CustomerMenu> {
   return regBundleCtx(bundleName, mainContainer, CustomerMenu,
-      o => o.bind([['festMenuSr', FestMenuSr]]) as FwdContainer);
+      o => o.bind([
+        ['festMenuSr', FestMenuSr],
+        ['orderSr', OrderSr],
+        ['tokenSr', TokenSr],
+      ]) as FwdContainer);
 }

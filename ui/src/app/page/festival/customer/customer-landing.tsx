@@ -16,10 +16,9 @@ import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
 import {UserTypeLbl} from "app/page/festival/volunteer/user-type-lbl";
 import {Customer} from "app/service/user-types";
-// import { FestMenuSr } from 'app/service/fest-menu-service';
-// import { MenuItemView } from 'app/service/fest-menu-types';
 
 import bulma from 'app/style/my-bulma.sass';
+import {time2Str} from 'util/my-time';
 import {Thenable} from "async/abortable-promise";
 import {uuidV4} from "util/crypto";
 import {UserRegReq} from "app/page/sign-up/sign-up-form";
@@ -30,23 +29,14 @@ export interface CustomerLandingP {
 
 export interface CustomerLandingS extends TransComS {
   fest?: FestInfo;
-//  menu?: MenuItemView[];
   e?: Error;
 }
 
-/**
- {!st.menu && !st.e && <LoadingI/> }
- {!!st.menu && <ul class={bulma.list}>
-            {st.menu.length || <li>menu is empty</li>}
-            {st.menu.map
-          </ul>}
- */
 class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
   // @ts-ignore
   private $festSr: FestSr;
   // @ts-ignore
   private $signUp: SignUpSr;
-//  private $festMenuSr: MenuService;
 
   constructor(props) {
     super(props);
@@ -65,7 +55,7 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
       session: uuidV4(),
       festivalId: this.pr.fid,
       userType: Customer,
-      name: 'visitor ' + new Date()
+      name: `visitor ${time2Str(new Date())}`
     });
   }
 
@@ -73,9 +63,6 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
     this.$festSr.getInfo(this.props.fid)
       .tn(fInfo => this.ust(st => ({...st, fest: fInfo, e: null})))
       .ctch(e => this.ust(st => ({...st, e: e})))
-  //  this.$festMenuSr.list(this.props.fid).tn(
-  //    lst => this.ust(st => ({...st, menu: opt(lst)})))
-  //    .ctch(e => this.ust(st => ({...st, e: e})));
   }
 
   render(p, st) {
