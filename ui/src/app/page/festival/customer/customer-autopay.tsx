@@ -63,11 +63,11 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
       this.c4(T, TitleStdMainMenu, Loading, OrderProgressView);
     let orderOrdersMenu = <div class={bulma.buttons}>
       <Link class={jne(bulma.button, bulma.isPrimary)}
-            href={`/festival/visitor/order/control/${p.fid}`}>
+            href={`/festival/visitor/order/control/${p.fid}/${p.order}`}>
         <TI m="order page"/>
       </Link>
       <Link class={jne(bulma.button, bulma.isWarning)}
-            href={`/festival/visitor/orders/${p.fid}/${p.order}`}>
+            href={`/festival/visitor/orders/${p.fid}`}>
         <TI m="my orders"/>
       </Link>
       <Link class={jne(bulma.button, bulma.isSuccess)}

@@ -113,7 +113,7 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/festival/invite/cashier/:fid' getComponent={this.CashierLanding} />
       <AsyncRoute path='/festival/registration/kelner/:fid' getComponent={this.WaiterReg} />
-      <AsyncRoute path='/festival/visitor/order/orders/:fid' getComponent={this.CustomerOrders} />
+      <AsyncRoute path='/festival/visitor/orders/:fid' getComponent={this.CustomerOrders} />
       <AsyncRoute path='/festival/visitor/order/control/:fid/:order' getComponent={this.VisitorOrderCtrl} />
       <AsyncRoute path='/festival/visitor/order/autopay/:fid/:order' getComponent={this.CustomerAutoPay} />
       <AsyncRoute path='/festival/visitor/menu/:fid' getComponent={this.CustomerMenu} />
