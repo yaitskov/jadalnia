@@ -4,9 +4,11 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
 import { Admin, UserAuth } from "app/auth/user-auth";
 import bulma from 'bulma/bulma.sass';
+import {SuperElement} from "../component/types";
 
 export interface TitleStdMainMenuP {
   t$title: string;
+  extraItems?: SuperElement[];
 }
 
 export class TitleStdMainMenu extends TransCom<TitleStdMainMenuP, TransComS> {
@@ -18,11 +20,13 @@ export class TitleStdMainMenu extends TransCom<TitleStdMainMenuP, TransComS> {
     this.st = {at: this.at()};
   }
 
-  render() {
+  render(p) {
     const TitleMainMenuI = this.c(TitleMainMenu);
-    let items = [<hr class={bulma.navbarDivider}/>];
-    items.push(<hr class={bulma.navbarDivider}/>);
+    let items = [...(p.extraItems || [])];
     if (this.$userAuth.userType() == Admin) {
+      if (items.length > 0) {
+        items.push(<hr class={bulma.navbarDivider}/>);
+      }
       this.$userAuth.myFid().ifV(fid => items.unshift(
         <NavbarLinkItem path={`/admin/festival/control/${fid}`}
                         t$label="Fest control" />))

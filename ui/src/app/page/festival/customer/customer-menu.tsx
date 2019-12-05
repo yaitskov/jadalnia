@@ -21,6 +21,7 @@ import { OrderItem } from 'app/types/order';
 import {TokenSr} from "app/service/token-service";
 
 import bulma from 'app/style/my-bulma.sass';
+import { NavbarLinkItem } from 'app/component/navbar-link-item';
 
 export interface CustomerMenuP {
   fid: Fid;
@@ -100,7 +101,11 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
   render(p, st) {
     const [TI, TitleStdMainMenuI, LoadingI] = this.c3(T, TitleStdMainMenu, Loading);
     return <div>
-      <TitleStdMainMenuI t$title="Choose meals"/>
+      <TitleStdMainMenuI t$title="Choose meals"
+                         extraItems={[
+                           <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
+                                           t$label="my orders" />
+                         ]}/>
       <SecCon css={bulma.content}>
         {!st.menu && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />

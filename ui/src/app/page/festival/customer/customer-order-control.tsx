@@ -14,6 +14,7 @@ import {OrderInfoCustomerView, OrderLabel} from 'app/types/order';
 import {OrderProgressView} from "app/page/festival/customer/order-progress-view";
 
 import bulma from 'app/style/my-bulma.sass';
+import { NavbarLinkItem } from 'app/component/navbar-link-item';
 
 export interface CustomerOrderControlP {
   fid: Fid;
@@ -44,7 +45,13 @@ class CustomerOrderControl extends TransCom<CustomerOrderControlP, CustomerOrder
       this.c3(T, TitleStdMainMenu, OrderProgressView);
 
     return <div>
-      <TitleStdMainMenuI t$title="Order control"/>
+      <TitleStdMainMenuI t$title="Order control"
+                         extraItems={[
+                           <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
+                                           t$label="my orders" />,
+                           <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}
+                                           t$label="meal menu" />,
+                         ]}/>
       <SecCon css={bulma.content}>
         <p>
           <TI m="Your order number is o" o={p.order}/>
