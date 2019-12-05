@@ -18,6 +18,7 @@ import {TokenBalanceView, TokenSr} from "app/service/token-service";
 
 import bulma from 'app/style/my-bulma.sass';
 import {OrderProgressView} from "app/page/festival/customer/order-progress-view";
+import {jne} from "collection/join-non-empty";
 
 export interface CustomerAutopayP {
   fid: Fid;
@@ -61,13 +62,16 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
     const [TI, TitleStdMainMenuI, LoadingI, OrderProgressViewI] =
       this.c4(T, TitleStdMainMenu, Loading, OrderProgressView);
     let orderOrdersMenu = <div class={bulma.buttons}>
-      <Link href={`/festival/visitor/order/control/${p.fid}`}>
+      <Link class={jne(bulma.button, bulma.isPrimary)}
+            href={`/festival/visitor/order/control/${p.fid}`}>
         <TI m="order page"/>
       </Link>
-      <Link href={`/festival/visitor/orders/${p.fid}/${p.order}`}>
+      <Link class={jne(bulma.button, bulma.isWarning)}
+            href={`/festival/visitor/orders/${p.fid}/${p.order}`}>
         <TI m="my orders"/>
       </Link>
-      <Link href={`/festival/visitor/menu/${p.fid}`}>
+      <Link class={jne(bulma.button, bulma.isSuccess)}
+            href={`/festival/visitor/menu/${p.fid}`}>
         <TI m="back to menu"/>
       </Link>
     </div>;

@@ -1,6 +1,6 @@
 package org.dan.jadalnia.app.order
 
-import io.netty.util.concurrent.CompleteFuture
+import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
@@ -48,6 +48,8 @@ class OrderService @Inject constructor(
     val costEstimator: CostEstimator,
     @Named("tokenBalanceCache")
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
+    @Named(FESTIVAL_CACHE)
+    val festivalCache: AsyncCache<Fid, Festival>,
     val labelService: LabelService) {
 
   companion object {
@@ -56,8 +58,32 @@ class OrderService @Inject constructor(
 
   fun showOrderProgressToVisitor(fid: Fid, label: OrderLabel)
       : CompletableFuture<OrderProgress> {
-    return
+    return orderCacheByLabel.get(Pair(fid, label))
+        .thenCompose { orderMem ->
+          festivalCache.get(fid).thenCompose { festival ->
+            val ordersAhead = countOrdersAhead(festival, label)
+            completedFuture(
+                OrderProgress(
+                    ordersAhead = ordersAhead,
+                    etaSeconds = orderEtaInSec(ordersAhead),
+                    state = orderMem.state.get()
+                ))
+          }
+        }
   }
+
+  fun countOrdersAhead(festival: Festival, stopOrder: OrderLabel): Int {
+    var counter = 0
+    for (label in festival.readyToExecOrders) {
+      if (stopOrder == label) {
+        return counter
+      }
+      counter += 1
+    }
+    return -1
+  }
+
+  private fun orderEtaInSec(ordersAhead: Int) = ordersAhead * 60
 
   fun putNewOrder(
       festival: Festival,
