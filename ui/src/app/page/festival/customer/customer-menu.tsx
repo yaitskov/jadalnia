@@ -116,12 +116,17 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
             </div>}
           </li>)}
         </ul>}
-        <p><TI m="Total:"/></p>
-        { !!st.menu && st.currentBalance !== U && <div>
+        { !!st.menu && this.sumMeals() == 0 && <div>
+          <p>
+            <TI m="Choose a meal from the list above to make an order."/>
+          </p>
+        </div>}
+        { !!st.menu && this.sumMeals() > 0 && st.currentBalance !== U && <div>
+          <p><TI m="Total:"/></p>
           <p><TI m="Current balance" v={st.currentBalance}/></p>
           <p><TI m="Order cost" v={this.sumMeals()}/></p>
           <p><TI m="Quote to pay" v={Math.max(0, this.sumMeals() - st.currentBalance)}/></p>
-          { this.sumMeals() > 0  && !st.puttingOrder && <div class={bulma.buttons} >
+          { !st.puttingOrder && <div class={bulma.buttons} >
             <button onClick={this.putOrder}
                     class={jne(bulma.button, bulma.isPrimary, bulma.isCenter )}>
               <TI m="put order" />
