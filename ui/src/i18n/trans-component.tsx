@@ -10,7 +10,8 @@ export abstract class TransCom<P, S extends TransComS> extends InjSubCom<P, S> {
   // @ts-ignore
   protected $i18Trans: I18Trans;
 
-  protected wMnt() {
+  componentWillMount() {
+    super.componentWillMount();
     this.bulkTrans();
   }
 

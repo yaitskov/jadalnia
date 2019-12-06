@@ -2,7 +2,7 @@ import { geT } from 'async/abortable-fetch';
 import { Thenable } from 'async/abortable-promise';
 import { ObVar } from 'collection/observable-variable';
 
-import { Tobj, emptyM } from 'collection/typed-object';
+import { Tobj } from 'collection/typed-object';
 import { AtomicAsync } from 'async/atomic-async';
 
 type TransPhrase = string;
