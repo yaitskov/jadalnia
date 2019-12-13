@@ -9,7 +9,7 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import bulma from "app/style/my-bulma.sass";
 import { T } from 'i18n/translate-tag';
 import { jne } from 'collection/join-non-empty';
-import {InviteLinksCom} from "./invite-links-com";
+import {InviteLinksCom} from "app/page/festival/invite/invite-links-com";
 
 class NewInvites extends TransCom<{fid: Fid}, TransComS> {
   constructor(props) {

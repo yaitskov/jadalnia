@@ -5,6 +5,7 @@ import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.ws.WsBroadcast
+import org.dan.jadalnia.sys.error.JadEx
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
 import org.dan.jadalnia.util.Futures
@@ -114,5 +115,11 @@ class TokenService @Inject constructor(
               pendingTokens = balance.pending.get(),
               effectiveTokens = balance.effective.get())
         }
+  }
+
+  fun showVisitorTokenRequest(fid: Fid, tokenReqId: TokenId): CompletableFuture<TokenRequestVisitorView> {
+    return tokenDao.getToken(fid, tokenReqId).thenApply {
+      viewO -> viewO.orElseThrow { JadEx.notFound("token request not found")}
+    }
   }
 }

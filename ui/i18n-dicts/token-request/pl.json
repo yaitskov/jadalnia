@@ -1,0 +1,11 @@
+{"Token request": "Zapytanie o tokieny",
+  "my orders": "moje zamówienia",
+  "meal menu": "karta dań",
+  "Token request tri.":["Zapytanie o tokieny ", "tri", ". "],
+  "x tokens is requested.":["Zapytano o ", "x", " tokenów. "],
+  "Token request is approved.": "Zapytanie o tokeny uchwalione. ",
+  "Token request is not approved.": "Zapytania o tokeny nie uchwalione. ",
+  "Contact cashier pay for amount of requested tokens.": "Zwrócz się do kasiera aby uchwalić zapytanie o tokeny. ",
+  "check token request that approved": "sprawdzić stan zapytania o tokeny",
+  "Fest control":[],"Menu":[],"Sign up":[],"Log in":[],
+  "Loading...":"Ladowanie..."}

@@ -18,7 +18,8 @@ import {TokenBalanceView, TokenSr} from "app/service/token-service";
 
 import bulma from 'app/style/my-bulma.sass';
 import {OrderProgressView} from "app/page/festival/customer/order-progress-view";
-import {jne} from "collection/join-non-empty";
+import { NavbarLinkItem } from 'app/component/navbar-link-item';
+import {RechargeTokenForm} from "app/page/festival/customer/recharge-token-form";
 
 export interface CustomerAutopayP {
   fid: Fid;
@@ -59,25 +60,20 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
   }
 
   render(p, st) {
-    const [TI, TitleStdMainMenuI, LoadingI, OrderProgressViewI] =
-      this.c4(T, TitleStdMainMenu, Loading, OrderProgressView);
-    let orderOrdersMenu = <div class={bulma.buttons}>
-      <Link class={jne(bulma.button, bulma.isPrimary)}
-            href={`/festival/visitor/order/control/${p.fid}/${p.order}`}>
-        <TI m="order page"/>
-      </Link>
-      <Link class={jne(bulma.button, bulma.isWarning)}
-            href={`/festival/visitor/orders/${p.fid}`}>
-        <TI m="my orders"/>
-      </Link>
-      <Link class={jne(bulma.button, bulma.isSuccess)}
-            href={`/festival/visitor/menu/${p.fid}`}>
-        <TI m="back to menu"/>
-      </Link>
-    </div>;
+    const [TI, TitleStdMainMenuI] = this.c2(T, TitleStdMainMenu);
+    const [LoadingI, OrderProgressViewI, RechargeTokenFormI] =
+      this.c3(Loading, OrderProgressView, RechargeTokenForm);
 
     return <div>
-      <TitleStdMainMenuI t$title="Order payment"/>
+      <TitleStdMainMenuI t$title="Order payment"
+                         extraItems={[
+                           <NavbarLinkItem path={`/festival/visitor/order/control/${p.fid}/${p.order}`}
+                                           t$label="order page" />,
+                           <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
+                                           t$label="my orders" />,
+                           <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}
+                                           t$label="meal menu" />,
+                         ]}/>
       <SecCon css={bulma.content}>
         <p>
           <TI m="Your order number is o" o={p.order}/>
@@ -88,7 +84,6 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
             <TI m="Order was just paid."/>
           </p>
           <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
-          {orderOrdersMenu}
         </div>}
 
         {st.payResult === 'ALREADY_PAID' && <div>
@@ -96,7 +91,6 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
             <TI m="Order is already paid"/>
           </p>
           <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
-          {orderOrdersMenu}
         </div>}
         {st.payResult === 'FESTIVAL_OVER' && <div>
           <TI m="Order is not paid due festival is over."/>
@@ -107,7 +101,6 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
             <TI m="Retry later."/>
           </p>
           <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
-          {orderOrdersMenu}
         </div>}
         {st.payResult === 'CANCELLED' && <div>
           <p>
@@ -115,21 +108,12 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
             <TI m="Put similar order again if you want." />
           </p>
           <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
-          {orderOrdersMenu}
         </div>}
         {st.payResult === 'NOT_ENOUGH_FUNDS' && <div>
           <p>
             <TI m="Not enough tokens to pay order."/>
           </p>
-          <p>
-            <TI m="Approach cashier to increase the balance."/>
-          </p>
-          <p>
-            <TI m="Available balance is b tokens." b={st.balance}/>
-          </p>
-          { !!st.orderInfo && <p><TI m="Order cost is c tokens." c={st.orderInfo.price}/></p> }
-          <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
-          {orderOrdersMenu}
+          { !!st.orderInfo && <RechargeTokenFormI fid={p.fid} minQuote={st.orderInfo.price - st.balance} /> }
         </div>}
         <RestErrCo e={st.e} />
       </SecCon>

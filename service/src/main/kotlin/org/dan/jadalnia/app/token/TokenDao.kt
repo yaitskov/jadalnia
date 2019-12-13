@@ -6,6 +6,7 @@ import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.TOKEN
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 
@@ -115,5 +116,18 @@ class TokenDao: AsyncDao() {
             r.get(TOKEN.TID), r.get(TOKEN.AMOUNT))
         }
     }
+  }
+
+  fun getToken(fid: Fid, tokenReqId: TokenId): CompletableFuture<Optional<TokenRequestVisitorView>> {
+    return execQuery { jooq -> ofNullable(jooq
+        .select(TOKEN.KASIER_ID, TOKEN.AMOUNT)
+        .from(TOKEN)
+        .where(TOKEN.FESTIVAL_ID.eq(fid), TOKEN.TID.eq(tokenReqId))
+        .fetchOne())
+        .map { r -> TokenRequestVisitorView(
+            tokenRequestId = tokenReqId,
+            amount = r.get(TOKEN.AMOUNT),
+            approved = r.get(TOKEN.KASIER_ID) != null)
+        }}
   }
 }

@@ -13,7 +13,7 @@ import { FestMenuItemFull, emptyFestMenuItem } from 'app/service/fest-menu-types
 import {goBack} from "util/routing";
 import {FestMenuSr} from "app/service/fest-menu-service";
 import {Thenable} from "async/abortable-promise";
-import {Fid} from "../festival-types";
+import {Fid} from "app/page/festival/festival-types";
 
 export interface FestMenuItemS extends TransComS {
   menuItem: Opt<FestMenuItemFull>;

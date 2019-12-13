@@ -103,6 +103,9 @@ export class MainCom extends InjSubCom<{}, {}> {
 
   InviteLinks = async() => await import('app/page/festival/invite/invite-links')
     .then(m => this.inj(m as AsyncModule, 'invite-links'));
+
+  TokenRequest = async() => await import('app/page/festival/customer/token-request')
+    .then(m => this.inj(m as AsyncModule, 'token-request'));
   // <Route path='/' component={this.c(Terms)} />
 
   render() {
@@ -115,6 +118,7 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/festival/registration/kelner/:fid' getComponent={this.WaiterReg} />
       <AsyncRoute path='/festival/visitor/orders/:fid' getComponent={this.CustomerOrders} />
       <AsyncRoute path='/festival/visitor/order/control/:fid/:order' getComponent={this.VisitorOrderCtrl} />
+      <AsyncRoute path='/festival/visitor/token-request/:fid/:tokReq' getComponent={this.TokenRequest} />
       <AsyncRoute path='/festival/visitor/order/autopay/:fid/:order' getComponent={this.CustomerAutoPay} />
       <AsyncRoute path='/festival/visitor/menu/:fid' getComponent={this.CustomerMenu} />
       <AsyncRoute path='/festival/invite/customer/:fid' getComponent={this.CustomerLanding} />

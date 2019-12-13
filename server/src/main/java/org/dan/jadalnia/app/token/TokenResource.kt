@@ -63,6 +63,33 @@ class TokenResource @Inject constructor(
   }
 
   @POST
+  @Path(REQUEST_TOKEN + "/{amount}")
+  fun customerRequestsVoidBody(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("amount")
+      amount: TokenPoints) {
+    customerRequests(response, session, amount);
+  }
+
+  @GET
+  @Path(TOKEN + "visitor-view/{tokReq}")
+  fun showVisitorTokenRequest(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("tokReq")
+      tokenReqId: TokenId) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              tokenService.showVisitorTokenRequest(festival.info.get().fid, tokenReqId)
+            },
+        response)
+  }
+
+  @POST
   @Path(REQUEST_TOKEN)
   fun customerRequests(
       @Suspended response: AsyncResponse,

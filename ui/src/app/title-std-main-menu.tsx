@@ -4,7 +4,7 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
 import { Admin, UserAuth } from "app/auth/user-auth";
 import bulma from 'bulma/bulma.sass';
-import {SuperElement} from "../component/types";
+import {SuperElement} from "component/types";
 
 export interface TitleStdMainMenuP {
   t$title: string;
