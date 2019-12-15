@@ -1,0 +1,23 @@
+{"Token Requests": "Zapytania o tokeny",
+  "Visitor id":["Gość ","id", " "],
+  "Visitor hasn't filed any request. Check visitor ID.":
+    "Gość jeszcze nie zapytał o tokeny. Sprawdź indentyfikator gościa. ",
+  "Click on rows, visitor wants to approve.": "Klikaj na rekordach które, gość chce uchwalić. ",
+  "If not enough change ask visitor to file another request with different amount.":[],
+  "Request ID": "Numer zapytania",
+  "Amount": "Kwota",
+  "Visitor requested following token requests.": "Gość wysłał następujące zapytania o tokeny. ",
+  "Collect money first, then click approve.": "Najpierw weź gotówkie a potem klikaj uchwalić. ",
+  "Approve x tokens":["Uchwalić ","x", " tokenów"],
+  "Approving in progress...": "Uchwalianie trwa...",
+  "Not all selected token requests have been accepted.":
+    "Nie wszystkie wybrane zapytania o tokeny były uchwalione. ",
+  "So return part of money (x) back to visitor.":["Więc zwróć część pięniądz (",
+    "x", ") z powrotem gościowi. " ],
+  "List of rejected requests:": "Lista odrzuconych zapytań",
+  "All token requests are accepted.": "Wszystkie zapytania zostały uchwalione. ",
+  "You can start serving next person in line.": "Możesz obsługiwać następną osobę w kolejce. ",
+  "Next person": "Do kolejnej osoby",
+  "Fest control":[],
+  "Menu":[],
+  "Loading...": "Ladowanie..."}

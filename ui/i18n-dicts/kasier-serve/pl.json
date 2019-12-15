@@ -1,0 +1,8 @@
+{"Kasier service":"Stanowisko kasiera",
+  "Your duty is to exchange cash for tokens.": "Twoja czynność to wymiana gotówki na tokeny. ",
+  "Ask visitor for his ID, assigned him at registration and lookup his token requests.":
+    ["Zapytaj klienta o jego identifikator, przeznaczony jemu pod czas rejestracji",
+      " i znaleź jego zapytania o tokeny. " ],
+  "Find token requests": "Znaleść zapytania o tokeny",
+  "Visitor ID": "Identifikator klienta",
+  "Cancel": "Anulować"}

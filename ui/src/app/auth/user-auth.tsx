@@ -1,7 +1,7 @@
 import { LocalStorage } from 'app/persistence/local-storage';
 import { Opt } from 'collection/optional';
 import { route } from 'preact-router';
-import { Fid } from 'app/page/festival/festival-types';
+import { Fid, Uid } from 'app/page/festival/festival-types';
 import {UserType} from "app/service/user-types";
 
 export const MySession = 'mySession';
@@ -56,6 +56,10 @@ export class UserAuth {
 
   public myName(): Opt<string> {
     return this.$locStore.get(MyName);
+  }
+
+  public myUid(): Uid {
+    return this.$locStore.get(MySession).map(session => +session.split(":")[0]).el(0);
   }
 
   public myFid(): Opt<Fid> {

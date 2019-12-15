@@ -10,7 +10,7 @@ import { ObList } from 'collection/observable-list';
 import { MainMenu } from 'app/main-menu';
 import { T } from 'i18n/translate-tag';
 
-import css from './todo-list.css';
+import css from 'app/todo-list.css';
 
 interface TodoListSt {
   todos: ToDo[];

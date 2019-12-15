@@ -16,6 +16,7 @@ import {TokenRequestId, TokenRequestVisitorView, TokenSr} from "app/service/toke
 import {Loading} from "component/loading";
 import { jne } from 'collection/join-non-empty';
 import {reloadPage} from "util/routing";
+import {UserAuth} from "app/auth/user-auth";
 
 export interface TokenRequestP {
   fid: Fid;
@@ -30,6 +31,8 @@ export interface TokenRequestS extends TransComS {
 class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
   // @ts-ignore
   private $tokenSr: TokenSr;
+  // @ts-ignore
+  private $userAuth: UserAuth;
 
   constructor(props) {
     super(props);
@@ -59,7 +62,10 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
           <TI m="Token request tri." tri={p.tokReq}/>
           { !!st.tokenRequestInfo && <TI m="x tokens is requested." x={st.tokenRequestInfo.amount}/> }
         </p>
-        { !!st.tokenRequestInfo && st.tokenRequestInfo.approved && <p>
+        <p>
+          <TI m="Your visitor id" id={this.$userAuth.myUid()}/>
+        </p>
+          { !!st.tokenRequestInfo && st.tokenRequestInfo.approved && <p>
            <TI m="Token request is approved."/>
         </p>}
         { !!st.tokenRequestInfo && !st.tokenRequestInfo.approved && <p>

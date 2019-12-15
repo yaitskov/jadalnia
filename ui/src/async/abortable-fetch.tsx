@@ -1,4 +1,4 @@
-import { Thenable, AbrPro } from './abortable-promise';
+import { Thenable, AbrPro } from 'async/abortable-promise';
 import { Tobj } from 'collection/typed-object'
 
 const f = (req: string | Request): Thenable<Response> => {

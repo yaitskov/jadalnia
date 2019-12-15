@@ -1,7 +1,7 @@
 import { Component } from 'preact';
 import { Instantiable } from 'collection/typed-object';
 import { MyCo } from 'component/my-component';
-import { Container, inject } from './inject-1k';
+import { Container, inject } from 'injection/inject-1k';
 
 export abstract class InjSubCom<P, S> extends MyCo<P, S> {
   protected comps: Map<any, any>  = new Map<any, any>();

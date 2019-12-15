@@ -1,4 +1,4 @@
-import { LocalStorage } from './local-storage';
+import { LocalStorage } from 'app/persistence/local-storage';
 import { opt } from 'collection/optional';
 
 describe('local-storage-wrapper',

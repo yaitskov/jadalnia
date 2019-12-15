@@ -1,4 +1,4 @@
-import { Tobj } from './typed-object';
+import { Tobj } from 'collection/typed-object';
 
 type KeyF<T> = (t: T) => string;
 

@@ -3,9 +3,6 @@ import { Link } from 'preact-router';
 import { InjSubCom } from 'injection/inject-sub-components';
 import { T } from 'i18n/translate-tag';
 import { SuperElement } from 'component/types';
-import { UserAuth } from 'app/auth/user-auth';
-import { If } from 'component/if';
-import { LogoutBtn } from 'app/component/logout-button';
 import { CountryFlag } from 'app/component/country-flag';
 
 import bulma from 'bulma/bulma.sass';
@@ -26,9 +23,6 @@ export class TitleMainMenu extends InjSubCom<TitleMainMenuP, TitleMainMenuS> {
   // @ts-ignore
   private $curLang: ObVar<LanguageCode>;
 
-  // @ts-ignore
-  private $userAuth: UserAuth;
-
   toggleMenu() {
     this.ust(st => ({...st, showMenu: !st.showMenu}));
   }
@@ -40,7 +34,7 @@ export class TitleMainMenu extends InjSubCom<TitleMainMenuP, TitleMainMenuS> {
   }
 
   render() {
-    const [TI, LogoutBtnI] = this.c2(T, LogoutBtn);
+    const TI = this.c(T);
     const active = this.st.showMenu ? bulma.isActive : '';
     return <nav class={bulma.navbar} role="navigation" aria-label="main navigation">
       <div class={bulma.navbarBrand}>
@@ -61,6 +55,7 @@ export class TitleMainMenu extends InjSubCom<TitleMainMenuP, TitleMainMenuS> {
       </div>
 
       <div id="mainMenuAnchor" class={bulma.navbarMenu + ' ' + active}>
+        {!!this.props.menuItems && !!this.props.menuItems.length &&
         <div class={bulma.navbarStart}>
           <div class={jne(bulma.navbarItem, bulma.hasDropdown, bulma.isHoverable)}>
             <a class={bulma.navbarLink}>
@@ -71,24 +66,11 @@ export class TitleMainMenu extends InjSubCom<TitleMainMenuP, TitleMainMenuS> {
               {this.props.menuItems}
             </div>
           </div>
-        </div>
+        </div>}
 
         <div class={bulma.navbarEnd}>
           <div class={bulma.navbarItem}>
             <div class={bulma.buttons}>
-              <If f={!this.$userAuth.isAuthenticated()}>
-                <Link class={bulma.button + ' ' + bulma.isPrimary} href="/sign-up">
-                  <strong>
-                    <TI m="Sign up" />
-                  </strong>
-                </Link>
-                <Link class={bulma.button + ' ' + bulma.isLight} href="/sign-in">
-                  <TI m="Log in" />
-                </Link>
-              </If>
-              <If f={this.$userAuth.isAuthenticated()}>
-                <LogoutBtnI/>
-              </If>
               <Link href="/lang" class={bulma.button + ' ' + bulma.isLight}>
                 <CountryFlag code={this.$curLang.val} />
               </Link>

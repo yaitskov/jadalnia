@@ -1,9 +1,15 @@
 import {Thenable} from "async/abortable-promise";
 import { RestSr } from "app/service/rest-service";
+import {Uid} from "app/page/festival/festival-types";
 
 export interface TokenBalanceView {
   effectiveTokens: number;
   pendingTokens: number;
+}
+
+export interface TokenRequestApprove {
+  customer: Uid;
+  tokens: TokenRequestId[];
 }
 
 export type TokenRequestId = number;
@@ -12,6 +18,11 @@ export interface TokenRequestVisitorView {
   tokenRequestId: TokenRequestId;
   amount: number;
   approved: boolean;
+}
+
+export interface TokenRequestForApprove {
+  tokenId: TokenRequestId;
+  amount: number;
 }
 
 export class TokenSr {
@@ -24,6 +35,14 @@ export class TokenSr {
 
   requestTokens(amount: number): Thenable<TokenRequestId> {
     return this.$restSr.postJ(`/api/token/request/${amount}`, {});
+  }
+
+  approveSelectedRequest(data: TokenRequestApprove): Thenable<TokenRequestForApprove[]> {
+    return this.$restSr.postJ(`/api/token/approve`, data);
+  }
+
+  findTokenRequestsByUid(vid: Uid): Thenable<TokenRequestForApprove[]> {
+    return this.$restSr.getS(`/api/token/list-for-approve/${vid}`);
   }
 
   showRequestTokenToVisitor(tokReq: TokenRequestId): Thenable<TokenRequestVisitorView> {

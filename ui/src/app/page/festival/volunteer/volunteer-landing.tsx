@@ -71,8 +71,18 @@ export class VolunteerLanding extends TransCom<VolunteerLandingP, VolunteerLandi
         }
         {!!st.fest && st.fest.state == Open && <div>
           <p>
-            <TI m="The festival is already running. Contact manager offline to figure out how to help."/>
+            <TI m="Welcome to name! We need volunteers' help." name={st.fest.name}/>
           </p>
+
+          <p>
+            <TI m="The festival is already running."/>
+          </p>
+
+          <div class={bulma.buttons}>
+            <Link class={bulma.button} href={p.nextPage}>
+              <TI m="Enlist as utype" utype={<UsrLblI userType={p.userType}/>} />
+            </Link>
+          </div>
         </div>}
         {!!st.fest && st.fest.state == Close && <div>
           <p>

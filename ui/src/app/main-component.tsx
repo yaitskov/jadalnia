@@ -72,13 +72,23 @@ export class MainCom extends InjSubCom<{}, {}> {
     .then(m => this.inj(m as AsyncModule, 'waiter-landing'));
 
   WaiterReg = async() => await import('app/page/festival/volunteer/kelner-registration')
-    .then(m => this.inj(m as AsyncModule, 'kelner-registration'));n
+    .then(m => this.inj(m as AsyncModule, 'kelner-registration'));
+
+  KasierReg = async() => await import('app/page/festival/volunteer/kasier/kasier-registration')
+    .then(m => this.inj(m as AsyncModule, 'kasier-registration'));
 
   KelnerTakenOrder = async() => await import('app/page/festival/volunteer/kelner/kelner-taken-order-page')
     .then(m => this.inj(m as AsyncModule, 'kelner-taken-order-page'));
 
   KelnerServe = async() => await import('app/page/festival/volunteer/kelner-serve')
     .then(m => this.inj(m as AsyncModule, 'kelner-serve'));
+
+  KasierServe = async() => await import('app/page/festival/volunteer/kasier/kasier-serve')
+    .then(m => this.inj(m as AsyncModule, 'kasier-serve'));
+
+  KasierTokenRequests = async() => await import(
+    'app/page/festival/volunteer/kasier/kasier-token-requests')
+    .then(m => this.inj(m as AsyncModule, 'kasier-token-requests'));
 
   CashierLanding = async() => await import('app/page/festival/volunteer/cashier-landing')
     .then(m => this.inj(m as AsyncModule, 'cashier-landing'));
@@ -113,9 +123,12 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/' getComponent={this.LPG} />
       <AsyncRoute path='/festival/kelner/serve/order/:fid/:order' getComponent={this.KelnerTakenOrder}/>
       <AsyncRoute path='/festival/kelner/serve/:fid' getComponent={this.KelnerServe} />
+      <AsyncRoute path='/festival/kasier/serve/:fid' getComponent={this.KasierServe} />
+      <AsyncRoute path='/festival/kasier/visitor-token-requests/:fid:/:vid' getComponent={this.KasierTokenRequests} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/festival/invite/cashier/:fid' getComponent={this.CashierLanding} />
       <AsyncRoute path='/festival/registration/kelner/:fid' getComponent={this.WaiterReg} />
+      <AsyncRoute path='/festival/registration/kasier/:fid' getComponent={this.KasierReg} />
       <AsyncRoute path='/festival/visitor/orders/:fid' getComponent={this.CustomerOrders} />
       <AsyncRoute path='/festival/visitor/order/control/:fid/:order' getComponent={this.VisitorOrderCtrl} />
       <AsyncRoute path='/festival/visitor/token-request/:fid/:tokReq' getComponent={this.TokenRequest} />
