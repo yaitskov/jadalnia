@@ -1,10 +1,15 @@
 import { h } from 'preact';
+
+import bulma from 'app/style/my-bulma.sass';
+
 import { T } from 'i18n/translate-tag';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
 import {OrderSr} from "app/service/order-service";
 import {OrderLabel, OrderProgress} from "app/types/order";
+import {jne} from "collection/join-non-empty";
+import {Link} from "preact-router";
 
 export interface OrderProgressViewP {
   fid: Fid;
@@ -40,6 +45,10 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
         {st.progress.state == 'Accepted' && <p>
           <TI m="Order o is accepted." o={p.ordLbl}/>
           <TI m="You have to pay to put the order in line."/>
+          <Link href={`/festival/visitor/order/autopay/${p.fid}/${p.ordLbl}`}
+                class={jne(bulma.button, bulma.isPrimary)}>
+            <TI m="pay for the order" />
+          </Link>
         </p>}
         {st.progress.state == 'Paid' && <p>
           <TI m="Order o is xth in line" xth={st.progress.ordersAhead} o={p.ordLbl}/>
