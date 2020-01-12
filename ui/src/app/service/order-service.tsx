@@ -13,7 +13,7 @@ export class OrderSr {
   }
 
   takeOrderForExec(): Thenable<OrderLabel> {
-    return this.$restSr.postJ(`/api/order/try`, '');
+    return this.$restSr.postJ(`/api/order/try`,  {});
   }
 
   countOrdersReadyForExec(): Thenable<number> {
