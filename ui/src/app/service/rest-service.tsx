@@ -15,7 +15,7 @@ const structuredError = (jsonResp) => {
     return jsonResp;
   } else if (jsonResp['@type'] == 'Error') {
     throw new RestErr(jsonResp.id, 'raw', jsonResp.message, {});
-  } else if (jsonResp['@type'] == 'TemplateError') {
+  } else if (jsonResp['@type'] == 'tp') {
     throw new RestErr(jsonResp.id, 'tpl', jsonResp.message, jsonResp.params);
   } else {
     return jsonResp;
