@@ -33,6 +33,7 @@ import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.festival.SetMenuTest.FRYTKI;
 import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
+import static org.dan.jadalnia.app.order.EventWatchers.orderWatcher;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerUser;
@@ -77,7 +78,7 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
 
         val orderLabel = putOrder(myRest(), customerSession, FRYTKI_ORDER);
 
-        val wsKelnerHandler = orderPaidWaiter(kelnerSession, orderLabel);
+        val wsKelnerHandler = orderWatcher(kelnerSession, orderLabel, OrderState.Paid);
 
         bindUserWsHandler(wsKelnerHandler);
 
@@ -85,20 +86,6 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
         // todo customer should be also notified
 
         wsKelnerHandler.waitTillMatcherSatisfied();
-    }
-
-    @NotNull
-    public static WsClientHandle<MessageForClient> orderPaidWaiter(UserSession kelnerSession, OrderLabel orderLabel) {
-        return WsClientHandle.wsClientHandle(
-                kelnerSession,
-                new PredicateStateMatcher<>(
-                        (MessageForClient event) ->
-                                event instanceof OrderStateEvent
-                                        && ((OrderStateEvent) event).getState() == OrderState.Paid
-                                        && ((OrderStateEvent) event).getLabel().equals(orderLabel),
-                        new CompletableFuture<>()),
-                new TypeReference<MessageForClient>() {
-                });
     }
 
     @NotNull
