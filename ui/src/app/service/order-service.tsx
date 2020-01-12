@@ -25,7 +25,7 @@ export class OrderSr {
   }
 
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
-    return this.$restSr.postJ('/api/order/ready', orderLabel);
+    return this.$restSr.postJ(`/api/order/ready/${orderLabel}`, {});
   }
 
   customerPutOrder(items: OrderItem[]): Thenable<OrderLabel> {

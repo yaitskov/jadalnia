@@ -2,7 +2,6 @@ package org.dan.jadalnia.app.order;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.val;
-import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
 import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
@@ -15,11 +14,10 @@ import org.dan.jadalnia.test.match.PredicateStateMatcher;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
@@ -39,8 +37,8 @@ import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.
 public class CustomerNotifiedThatOrderIsReadyTest extends WsIntegrationTest {
     public static Boolean markAsReady(
             MyRest myRest, OrderLabel order, UserSession session) {
-        return myRest.post(OrderResource.ORDER_READY,
-                session, order, Boolean.class);
+        return myRest.post(OrderResource.ORDER_READY + "/" + order,
+                session, emptyMap(), Boolean.class);
     }
 
     @Test

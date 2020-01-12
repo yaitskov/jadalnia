@@ -4,8 +4,8 @@ import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
-import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
+import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserInfo
@@ -14,7 +14,6 @@ import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
 import org.dan.jadalnia.sys.async.AsynSync
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
-
 import javax.inject.Inject
 import javax.inject.Named
 import javax.ws.rs.Consumes
@@ -26,7 +25,6 @@ import javax.ws.rs.PathParam
 import javax.ws.rs.Produces
 import javax.ws.rs.container.AsyncResponse
 import javax.ws.rs.container.Suspended
-
 import javax.ws.rs.core.MediaType.APPLICATION_JSON
 
 @Path("/")
@@ -182,11 +180,11 @@ class OrderResource @Inject constructor(
   }
 
   @POST
-  @Path(ORDER_READY)
+  @Path("$ORDER_READY/{label}")
   fun markOrderReadyToPickup(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
-      label: OrderLabel) {
+      @PathParam("label") label: OrderLabel) {
     asynSync.sync(
         userSessions.get(session)
             .thenApply { user -> user.ensureKelner().fid }
