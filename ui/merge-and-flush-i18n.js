@@ -91,7 +91,7 @@ class MergeAndFlushI18nPlugin {
 
     if (uniqueBaseNames.size != rootFiles.size) {
       throw new Error(
-        `base names ofo some root files are umbigous: ${JSON.stringify([...rootFiles])}`);
+        `base names of some root files are umbigous: ${JSON.stringify([...rootFiles])}`);
     }
   }
 
