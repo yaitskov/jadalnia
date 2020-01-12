@@ -14,6 +14,7 @@ import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicReference
 import java.util.stream.Collectors.toList
+import java.util.stream.Collectors.toMap
 
 class OrderDao : AsyncDao() {
   companion object {
@@ -30,6 +31,22 @@ class OrderDao : AsyncDao() {
           .stream()
           .map { r -> r.get(ORDERS.LABEL) }
           .collect(toList())
+    }
+  }
+
+  fun loadExecutingOrders(fid: Fid): CompletableFuture<Map<OrderLabel, Uid>> {
+    return execQuery { jooq ->
+      jooq.select(ORDERS.LABEL, ORDERS.KELNER_ID)
+          .from(ORDERS)
+          .where(ORDERS.FESTIVAL_ID.eq(fid),
+              ORDERS.STATE.eq(OrderState.Executing))
+          .orderBy(ORDERS.OID)
+          .stream()
+          .map { r -> Pair(r.get(ORDERS.LABEL), r.get(ORDERS.KELNER_ID)) }
+          .collect(
+              toMap<Pair<OrderLabel, Uid>, OrderLabel, Uid>(
+                  { p -> p.first },
+                  { p -> p.second }))
     }
   }
 

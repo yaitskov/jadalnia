@@ -118,8 +118,12 @@ class VolunteerWsListener
         if (userInfo.userType == Kelner) {
             log.info("Mark kelner {} as free", userInfo.uid)
             return festivalCache.get(userInfo.fid).thenAccept { festival ->
-                festival.freeKelners[userInfo.uid] = userInfo.uid
-                log.info("Mark kelner {} is free", userInfo.uid)
+                if (festival.busyKelners.containsKey(userInfo.uid)) {
+                    log.info("Mark kelner {} as busy", userInfo.uid)
+                } else {
+                    festival.freeKelners[userInfo.uid] = userInfo.uid
+                    log.info("Mark kelner {} is free", userInfo.uid)
+                }
             }
         } else {
             return completedFuture(null)

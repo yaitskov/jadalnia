@@ -189,7 +189,7 @@ class OrderService @Inject constructor(
       .thenApply { order -> VisitorOrderView(order.label, order.cost, order.state.get()) }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
-      : CompletableFuture<Void> {
+      : CompletableFuture<Uid> {
     val opLog = OpLog()
     if (!festival.busyKelners.remove(kelnerUid, label)) {
       throw badRequest("kelner was not busy with", "order", label)
@@ -221,6 +221,7 @@ class OrderService @Inject constructor(
                 wsBroadcast.notifyCustomers(
                     festival.fid(), listOf(order.customer), OrderStateEvent(label, Ready))
               }
+          completedFuture(kelnerUid)
         }
         .exceptionally { e -> throw opLog.rollback(e) }
   }
