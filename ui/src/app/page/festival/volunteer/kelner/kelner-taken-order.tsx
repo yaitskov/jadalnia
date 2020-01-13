@@ -96,7 +96,7 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
         </p>
         <ul>
         {!!st.orderInfo && st.orderInfo.items.map(
-          item => <li>{item.name}</li>)
+          item => <li>{item.quantity} * {item.name}</li>)
         }
         </ul>
       </div>}
