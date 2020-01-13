@@ -39,8 +39,13 @@ import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerUser;
 
 public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
-    public static final List<OrderItem> FRYTKI_ORDER = singletonList(
-            new OrderItem(FRYTKI, 1, Collections.emptyList()));
+    public static List<OrderItem> newFrytkiOrder(int quantity) {
+        return singletonList(
+                new OrderItem(FRYTKI, quantity, Collections.emptyList()));
+    }
+
+    public static final List<OrderItem> FRYTKI_ORDER = newFrytkiOrder(1);
+
     public static final String FESTIVAL_STATUS_COND = "festivalStatus";
     public static final String ORDER_PAID_COND = "orderStatus";
 

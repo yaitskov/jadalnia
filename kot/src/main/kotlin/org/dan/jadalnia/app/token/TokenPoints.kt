@@ -16,4 +16,6 @@ class TokenPoints constructor(value: Int): ImmutableNumber(value) {
   fun plus(other: TokenPoints) = TokenPoints(value + other.value)
 
   fun minus(other: TokenPoints) = TokenPoints(value - other.value)
+
+  fun scale(k: Int) = TokenPoints(value * k)
 }

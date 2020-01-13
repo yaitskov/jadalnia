@@ -10,17 +10,19 @@ import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 class CostEstimator {
   fun howMuchFor(festival: Festival, items: List<OrderItem>): TokenPoints {
     val prices = priceTable(festival.info.get().menu)
-    return items.stream().map { item -> howMuchFor(prices, item) }
+    return items.stream()
+        .map { item -> howMuchFor(prices, item.name)
+            .scale(item.quantity) }
         .reduce(TokenPoints(0)) {
           a, b -> TokenPoints(a.value + b.value)
         }
   }
 
-  fun howMuchFor(prices: Map<DishName, TokenPoints>, item: OrderItem): TokenPoints {
+  fun howMuchFor(prices: Map<DishName, TokenPoints>, dishName: DishName): TokenPoints {
     return prices.getOrElse(
-        item.name,
+        dishName,
         {
-          throw badRequest("dish not available", "dish", item.name)
+          throw badRequest("dish not available", "dish", dishName)
         })
   }
 
