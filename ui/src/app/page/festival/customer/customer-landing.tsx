@@ -1,12 +1,12 @@
 import { h } from 'preact';
 import {route} from 'preact-router';
-
+import { jne } from 'collection/join-non-empty';
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
 import {FestSr} from "app/service/fest-service";
 import { T } from 'i18n/translate-tag';
-import { TitleStdMainMenu } from 'app/title-std-main-menu';
+import { TitleStdMainMenu2 } from 'app/title-std-main-menu-2';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { SecCon } from 'app/component/section-container';
 import {Fid, FestInfo, Announce, Open, Close} from 'app/page/festival/festival-types';
@@ -18,7 +18,7 @@ import {UserTypeLbl} from "app/page/festival/volunteer/user-type-lbl";
 import {Customer} from "app/service/user-types";
 
 import bulma from 'app/style/my-bulma.sass';
-import {time2Str} from 'util/my-time';
+import {time2Str, localDateYmd, isoTime, localTimeHm} from 'util/my-time';
 import {Thenable} from "async/abortable-promise";
 import {uuidV4} from "util/crypto";
 import {UserRegReq} from "app/page/sign-up/sign-up-form";
@@ -61,28 +61,26 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
 
   wMnt() {
     this.$festSr.getInfo(this.props.fid)
-      .tn(fInfo => this.ust(st => ({...st, fest: fInfo, e: null})))
-      .ctch(e => this.ust(st => ({...st, e: e})))
+        .tn(fInfo => this.ust(st => ({...st, fest: fInfo, e: null})))
+        .ctch(e => this.ust(st => ({...st, e: e})))
   }
 
   render(p, st) {
-    const [TI, TitleStdMainMenuI, LoadingI, UsrLblI]
-      = this.c4(T, TitleStdMainMenu, Loading, UserTypeLbl);
+    const [TI, TitleStdMainMenu2I, LoadingI, UsrLblI]
+    = this.c4(T, TitleStdMainMenu2, Loading, UserTypeLbl);
     return <div>
-      <TitleStdMainMenuI t$title="Welcome to festival!"/>
+      <TitleStdMainMenu2I title={<TI m="Welcome to name!" name={!!st.fest && st.fest.name}/>} />
       <SecCon css={bulma.content}>
         {!st.fest && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
         {!!st.fest && st.fest.state == Announce && <div>
           <p>
-            <TI m="Welcome to name!" name={st.fest.name}/>
-          </p>
-          <p>
             <TI m="It is good place to eat, drink and enjoy a show. " />
           </p>
           <p>
-            <TI m="Festival start is at" at={st.fest.opensAt}/>
-            <TI m="your time zone"/>
+            <TI m="Festival start is at your time zone"
+                on={localDateYmd(isoTime(st.fest.opensAt))}
+                at={localTimeHm(isoTime(st.fest.opensAt))} />
           </p>
           <p>
             <TI m="On this site you can order festival meals online "/>
@@ -96,7 +94,7 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
             <TI m="and be ready to be called and pick the order." />
           </p>
           <div class={bulma.buttons}>
-            <button class={bulma.button} onClick={this.signUpAndShowMenu}>
+            <button class={jne(bulma.button, bulma.isPrimary)} onClick={this.signUpAndShowMenu}>
               <TI m="see menu" />
             </button>
           </div>
