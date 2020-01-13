@@ -1,4 +1,4 @@
-{"Exec order": "Wykonanie zamówienia",
+{"Exec order": ["Wykonanie zamówienia ", "lbl"],
   "Fest control":[],
   "Menu": "Menu",
   "order issue": "kłopot z zamówieniem",
