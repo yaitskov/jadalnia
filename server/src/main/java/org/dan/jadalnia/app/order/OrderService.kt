@@ -272,7 +272,7 @@ class OrderService @Inject constructor(
                    customerUid: Uid,
                    orderLabel: OrderLabel)
       : CompletableFuture<PaymentAttemptOutcome> {
-    if (festival.info.get().state != FestivalState.Open) {
+    if (festival.info.get().state == FestivalState.Close) {
       return completedFuture(FESTIVAL_OVER)
     }
     return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
