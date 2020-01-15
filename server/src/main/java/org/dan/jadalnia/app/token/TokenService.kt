@@ -16,8 +16,6 @@ import java.util.concurrent.CompletableFuture
 import javax.inject.Inject
 
 
-typealias RejectReason = String
-
 class TokenService @Inject constructor(
     val tokenDao: TokenDao,
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
