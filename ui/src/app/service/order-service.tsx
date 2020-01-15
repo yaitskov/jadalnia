@@ -24,6 +24,10 @@ export class OrderSr {
     return this.$restSr.getS(`/api/order/get/${orderLabel}`);
   }
 
+  customerIsAbsent(orderLabel: OrderLabel): Thenable<void> {
+    return this.$restSr.postJ(`api/order/customer-missing/${orderLabel}`, {});
+  }
+
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
     return this.$restSr.postJ(`/api/order/ready/${orderLabel}`, {});
   }

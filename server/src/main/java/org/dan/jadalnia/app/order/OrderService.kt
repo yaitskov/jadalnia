@@ -11,6 +11,8 @@ import org.dan.jadalnia.app.order.PaymentAttemptOutcome.FESTIVAL_OVER
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.NOT_ENOUGH_FUNDS
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.RETRY
+import org.dan.jadalnia.app.order.complete.CustomerAbsent
+import org.dan.jadalnia.app.order.complete.OrderReady
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -44,6 +46,8 @@ class OrderService @Inject constructor(
     @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
     val orderDao: OrderDao,
+    val orderReady: OrderReady,
+    val customerAbsent: CustomerAbsent,
     val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
     @Named("tokenBalanceCache")
@@ -189,42 +193,7 @@ class OrderService @Inject constructor(
       .thenApply { order -> VisitorOrderView(order.label, order.cost, order.state.get()) }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
-      : CompletableFuture<Uid> {
-    val opLog = OpLog()
-    if (!festival.busyKelners.remove(kelnerUid, label)) {
-      throw badRequest("kelner was not busy with", "order", label)
-    }
-    opLog.add { festival.busyKelners[kelnerUid] = label }
-    festival.freeKelners[kelnerUid] = kelnerUid
-
-    if (!festival.executingOrders.remove(label, kelnerUid)) {
-      opLog.rollback()
-      throw internalError(
-          "Order was not executed by",
-          mapOf(Pair("kelner", kelnerUid),
-              Pair("order", label)))
-    }
-    opLog.add { festival.executingOrders[label] = kelnerUid }
-    return orderCacheByLabel.get(Pair(festival.fid(), label))
-        .thenCompose { order ->
-          if (!order.state.compareAndSet(Executing, Ready)) {
-            throw internalError("order is not executing", "state", order.state.get())
-          }
-          opLog.add { order.state.set(Executing) }
-          log.info("Kelner {} completed executing order {}", kelnerUid, label)
-          festival.freeKelners[kelnerUid] = kelnerUid
-          opLog.add { festival.freeKelners.remove(kelnerUid) }
-          festival.readyToPickupOrders[label] = Unit
-          opLog.add { festival.readyToPickupOrders.remove(label) }
-          orderDao.updateState(festival.fid(), label, Ready)
-              .thenAccept {
-                wsBroadcast.notifyCustomers(
-                    festival.fid(), listOf(order.customer), OrderStateEvent(label, Ready))
-              }
-          completedFuture(kelnerUid)
-        }
-        .exceptionally { e -> throw opLog.rollback(e) }
-  }
+      = orderReady.complete(festival, kelnerUid, label)
 
   fun pickUpReadyOrder(festival: Festival, customerUid: Uid, label: OrderLabel)
       : CompletableFuture<Void> {
@@ -341,4 +310,12 @@ class OrderService @Inject constructor(
   }
 
   fun countReadyForExec(fest: Festival) = completedFuture(fest.readyToExecOrders.count())
+
+  fun customerDidNotShowUpToStartOrderExecution(
+      festival: Festival, kelnerUid: Uid, label: OrderLabel)
+      : CompletableFuture<Uid> {
+    log.info("Kelner {} reschedules order {} due customer didn't show up",
+        kelnerUid, label);
+    return customerAbsent.complete(festival, kelnerUid, label)
+  }
 }

@@ -52,6 +52,8 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
   }
 
   customerLate() {
+    this.$orderSr.customerIsAbsent(this.pr.orderLbl);
+
     // customer is missing and cannot pick up the order
     // reschedule the order
   }

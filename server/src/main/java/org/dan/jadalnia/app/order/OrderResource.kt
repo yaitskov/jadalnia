@@ -180,6 +180,23 @@ class OrderResource @Inject constructor(
   }
 
   @POST
+  @Path("$ORDER/customer-missing/{label}")
+  fun customerDidNotShowUpToStartOrderExecution(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label") label: OrderLabel) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureKelner().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              orderService.customerDidNotShowUpToStartOrderExecution(
+                  festival, session.uid, label)
+            },
+        response)
+  }
+
+  @POST
   @Path("$ORDER_READY/{label}")
   fun markOrderReadyToPickup(
       @Suspended response: AsyncResponse,
