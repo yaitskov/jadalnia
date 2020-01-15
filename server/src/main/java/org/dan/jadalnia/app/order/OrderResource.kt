@@ -1,21 +1,15 @@
 package org.dan.jadalnia.app.order
 
-import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
-import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
-import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.user.Uid
-import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
+import org.dan.jadalnia.app.user.WithUser
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
-import org.dan.jadalnia.sys.async.AsynSync
-import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
-import javax.inject.Named
 import javax.ws.rs.Consumes
 import javax.ws.rs.GET
 import javax.ws.rs.HeaderParam
@@ -31,12 +25,7 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 class OrderResource @Inject constructor(
-    val orderService: OrderService,
-    @Named(USER_SESSIONS)
-    val userSessions: AsyncCache<UserSession, UserInfo>,
-    @Named(FESTIVAL_CACHE)
-    val festivalCache: AsyncCache<Fid, Festival>,
-    val asynSync: AsynSync) {
+    val with: WithUser, val orderService: OrderService) {
   companion object {
     const val ORDER = "order/"
     const val PUT_ORDER = ORDER + "put"
@@ -59,14 +48,9 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       paidOrder: MarkOrderPaid) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKasier().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.markOrderPaid(festival, paidOrder)
-            },
-        response)
+    with.kasierFest(response, session) { festival ->
+      orderService.markOrderPaid(festival, paidOrder)
+    }
   }
 
   @POST
@@ -75,14 +59,9 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       label: OrderLabel) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.pickUpReadyOrder(festival, session.uid, label)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      orderService.pickUpReadyOrder(festival, session.uid, label)
+    }
   }
 
   @GET
@@ -90,11 +69,9 @@ class OrderResource @Inject constructor(
   fun listMyOrders(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose { fid -> orderService.listCustomerOrders(fid, session.uid) },
-        response)
+    with.customer(response, session) {
+      fid -> orderService.listCustomerOrders(fid, session.uid)
+    }
   }
 
   @GET
@@ -104,11 +81,7 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label")
       label: OrderLabel) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose { fid -> orderService.showOrderToKelner(fid, label) },
-        response)
+    with.kelner(response, session) { fid -> orderService.showOrderToKelner(fid, label) }
   }
 
   @GET
@@ -118,38 +91,28 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label")
       label: OrderLabel) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose { fid -> orderService.showOrderToVisitor(fid, label) },
-        response)
+    with.customer(response, session) { fid -> orderService.showOrderToVisitor(fid, label) }
   }
 
   @GET
   @Path(ORDER + "progress/{fid}/{label}")
   fun showOrderProgressToVisitor(
       @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
       @PathParam("fid")
       fid: Fid,
       @PathParam("label")
       label: OrderLabel) {
-    asynSync.sync(
-        orderService.showOrderProgressToVisitor(fid, label),
-        response)
+    with.anonymous(response, orderService.showOrderProgressToVisitor(fid, label))
   }
 
   @GET
   @Path(EXECUTING_ORDER)
   fun getKelnerExecutingOrder(@Suspended response: AsyncResponse,
                               @HeaderParam(SESSION) session: UserSession) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.kelnerTakenOrderId(festival, session.uid)
-            },
-        response)
+    with.kelnerFest(response, session) { festival ->
+      orderService.kelnerTakenOrderId(festival, session.uid)
+    }
   }
 
   @POST
@@ -157,26 +120,16 @@ class OrderResource @Inject constructor(
   fun tryToExecOrder(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.tryToExecOrder(festival, session.uid)
-            },
-        response)
+    with.kelnerFest(response, session) { festival ->
+      orderService.tryToExecOrder(festival, session.uid)
+    }
   }
 
   @GET
   @Path(COUNT_ORDERS_READY_FOR_EXEC)
   fun countOrdersReadyForExec(@Suspended response: AsyncResponse,
                               @HeaderParam(SESSION) session: UserSession) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose(orderService::countReadyForExec),
-        response)
+    with.kelnerFest(response, session, orderService::countReadyForExec)
   }
 
   @POST
@@ -185,15 +138,10 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label") label: OrderLabel) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.customerDidNotShowUpToStartOrderExecution(
-                  festival, session.uid, label)
-            },
-        response)
+    with.kelnerFest(response, session) { festival ->
+      orderService.customerDidNotShowUpToStartOrderExecution(
+          festival, session.uid, label)
+    }
   }
 
   @POST
@@ -202,14 +150,9 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label") label: OrderLabel) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKelner().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.markOrderReadyToPickup(festival, session.uid, label)
-            },
-        response)
+    with.kelnerFest(response, session) { festival ->
+      orderService.markOrderReadyToPickup(festival, session.uid, label)
+    }
   }
 
   @POST
@@ -218,15 +161,9 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       newOrderItems: List<OrderItem>) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.putNewOrder(
-                  festival, session, newOrderItems)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      orderService.putNewOrder(festival, session, newOrderItems)
+    }
   }
 
   @POST
@@ -236,14 +173,9 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label") orderLabel: OrderLabel) {
     log.info("Customer {} try to pay order {}", session.uid, orderLabel)
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.customerPays(festival, session.uid, orderLabel)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      orderService.customerPays(festival, session.uid, orderLabel)
+    }
   }
 
   @POST
@@ -254,31 +186,8 @@ class OrderResource @Inject constructor(
       customerUid: Uid) {
     log.info("Kasier {} try to pay orders for {}",
         kasierSession.uid, customerUid)
-    asynSync.sync(
-        userSessions.get(kasierSession)
-            .thenApply { user -> user.ensureKasier().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              orderService.kasierPaysCustomerOrders(festival, customerUid)
-            },
-        response)
+    with.kasierFest(response, kasierSession) { festival ->
+      orderService.kasierPaysCustomerOrders(festival, customerUid)
+    }
   }
-
-//  @POST
-//  @Path(UNPAID_ORDER)
-//  fun howMuchCustomerHasToPayForOrders(
-//      @Suspended response: AsyncResponse,
-//      @HeaderParam(SESSION) session: UserSession,
-//      orderLabel: OrderLabel) {
-//    asynSync.sync(
-//        userSessions.get(session)
-//            .thenApply { user -> user.ensureCustomer().fid }
-//            .thenCompose(festivalCache::get)
-//            .thenCompose { festival ->
-//              orderService.customerPays(
-//                  festival, session, orderLabel)
-//            },
-//        response)
-//  }
-
 }
