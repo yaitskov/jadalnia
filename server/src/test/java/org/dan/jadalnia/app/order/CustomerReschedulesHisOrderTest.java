@@ -12,6 +12,7 @@ import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
+import static org.dan.jadalnia.app.order.CustomerNotifiedAboutOrderExecutingTest.tryExecOrder;
 import static org.dan.jadalnia.app.order.CustomerPaysForHisOrderTest.tryPayOrder;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.order.EventWatchers.orderWatcher;
@@ -60,6 +61,8 @@ public class CustomerReschedulesHisOrderTest extends WsIntegrationTest {
         bindCustomerWsHandler(watchAbandoned);
         val watchPaid = orderWatcher(festState.sessions.kelner, orderLabel, OrderState.Paid);
         bindUserWsHandler(watchPaid);
+
+        tryExecOrder(myRest(), festState.sessions.kelner);
         customerIsMissing(festState.myRest, festState.sessions.kelner, orderLabel);
 
         watchAbandoned.waitTillMatcherSatisfied();

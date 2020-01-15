@@ -133,7 +133,7 @@ class OrderResource @Inject constructor(
   }
 
   @POST
-  @Path("$ORDER/customer-missing/{label}")
+  @Path("${ORDER}customer-missing/{label}")
   fun customerDidNotShowUpToStartOrderExecution(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
