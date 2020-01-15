@@ -190,4 +190,17 @@ class OrderResource @Inject constructor(
       orderService.kasierPaysCustomerOrders(festival, customerUid)
     }
   }
+
+  @POST
+  @Path("${ORDER}reschedule/{label}")
+  fun customerReschedulesAbandonedOrder(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label") orderLabel: OrderLabel) {
+    with.customerFest(response, session) { festival ->
+      log.info("Customer {} reschedules abandoned order {} in {}",
+          session.uid, orderLabel, festival.fid())
+      orderService.customerReschedules(festival, orderLabel)
+    }
+  }
 }

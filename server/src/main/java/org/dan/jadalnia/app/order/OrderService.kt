@@ -17,6 +17,7 @@ import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
+import org.dan.jadalnia.app.order.pojo.OrderState.Abandoned
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
 import org.dan.jadalnia.app.order.pojo.OrderState.Cancelled
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
@@ -130,7 +131,8 @@ class OrderService @Inject constructor(
         }
   }
 
-  private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem): CompletableFuture<Unit> {
+  private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem)
+      : CompletableFuture<Unit> {
     festival.readyToExecOrders.offer(order.label)
     wsBroadcast.broadcastToFreeKelners(
         festival, OrderStateEvent(order.label, Paid))
@@ -317,5 +319,53 @@ class OrderService @Inject constructor(
     log.info("Kelner {} reschedules order {} due customer didn't show up",
         kelnerUid, label);
     return customerAbsent.complete(festival, kelnerUid, label)
+  }
+
+  fun customerReschedules(festival: Festival, orderLabel: OrderLabel)
+      : CompletableFuture<PaymentAttemptOutcome> {
+    if (festival.info.get().state == FestivalState.Close) {
+      return completedFuture(FESTIVAL_OVER)
+    }
+    return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
+        .thenCompose { order ->
+          when (order.state.get()) {
+            Cancelled -> {
+              log.info("Fid {}; Reject payment of order {} due cancelled",
+                  festival.fid(), order.label)
+              completedFuture(CANCELLED)
+            }
+            Paid -> {
+              log.info("Fid {}; Order {} is already paid",
+                  festival.fid(), order.label)
+              completedFuture(ALREADY_PAID)
+            }
+            Abandoned -> {
+              val opLog = OpLog()
+              if (order.state.compareAndSet(Abandoned, Paid)) {
+                opLog.add { order.state.set(Abandoned) }
+                log.info("Fid {}; Status of order {} is Paid",
+                    festival.fid(), order.label)
+                persistPaidOrderAndNotify(festival, order)
+                    .thenApply { ORDER_PAID }
+                    .whenComplete { _, e ->
+                      if (e != null) {
+                        opLog.rollback()
+                        throw internalError("failed persist order status", e)
+                      }
+                    }
+              } else {
+                log.info("Fid {} Status of order {} is already Paid",
+                    festival.fid(), order.label)
+                opLog.rollback()
+                completedFuture(RETRY)
+              }
+            }
+            else -> {
+              log.info("Fid {}; Reject payment of order {} due already paid",
+                  festival.fid(), order.label)
+              completedFuture(ALREADY_PAID)
+            }
+          }
+        }
   }
 }
