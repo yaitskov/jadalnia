@@ -114,6 +114,11 @@
                                     <binding>org.dan.jadalnia.app.order.OrderStateConverter</binding>
                                 </customType>
                                 <customType>
+                                    <name>OrderCancellationReason</name>
+                                    <type>org.dan.jadalnia.app.order.pojo.OrderCancellationReason</type>
+                                    <binding>org.dan.jadalnia.app.order.OrderCancellationReasonConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>UserType</name>
                                     <type>org.dan.jadalnia.app.user.UserType</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.enums.UserTypeConverter</binding>
@@ -205,6 +210,11 @@
                                 <forcedType>
                                     <name>OrderState</name>
                                     <expression>.*orders\.state</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>OrderCancellationReason</name>
+                                    <expression>.*orders\.cancel_reason</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>

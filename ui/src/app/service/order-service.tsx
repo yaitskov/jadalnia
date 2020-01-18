@@ -3,6 +3,7 @@ import {OrderInfoCustomerView, OrderLabel, OrderPayResult, OrderProgress} from '
 import { RestSr } from "app/service/rest-service";
 import { KelnerOrderView, OrderItem } from 'app/types/order';
 import {Fid} from "app/page/festival/festival-types";
+import { DishName } from 'app/types/menu';
 
 export class OrderSr {
   // @ts-ignore
@@ -34,6 +35,10 @@ export class OrderSr {
 
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
     return this.$restSr.postJ(`/api/order/ready/${orderLabel}`, {});
+  }
+
+  kelnerLacksFood(orderLabel: OrderLabel, dishName: DishName): Thenable<void> {
+    return this.$restSr.postJ(`/api/order/low-food/${orderLabel}/${dishName}`, {});
   }
 
   customerPutOrder(items: OrderItem[]): Thenable<OrderLabel> {

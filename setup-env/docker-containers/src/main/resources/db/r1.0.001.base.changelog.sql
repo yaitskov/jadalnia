@@ -56,6 +56,7 @@ create table orders(
     requirements text not null, -- json
     created timestamp(3) default current_timestamp(3),
     state varchar(10) not null, -- sent, paid, ready, handed, cancelled, returned
+    cancel_reason varchar(8) null, -- nomeal, customer, festover
     foreign key (customer_id) references users(uid),
     foreign key (festival_id) references festival(fid),
     foreign key (kelner_id) references users(uid)
