@@ -9,6 +9,7 @@ import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
+import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
@@ -48,8 +49,9 @@ abstract class BaseOrderCompleteStrategy(
     return opLog
   }
 
-  override fun complete(festival: Festival, kelnerUid: Uid, label: OrderLabel)
+  override fun complete(festival: Festival, kelnerUid: Uid, problemOrder: ProblemOrder)
       : CompletableFuture<Uid> {
+    val label = problemOrder.label
     val opLog = freeOrderAndKelner(festival, kelnerUid, label)
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
@@ -59,11 +61,13 @@ abstract class BaseOrderCompleteStrategy(
           opLog.add { order.state.set(Executing) }
           log.info("Kelner {} completed executing order {} as {}",
               kelnerUid, label, targetState)
-          updateTargetState(festival, label, opLog).thenCompose {
+          updateTargetState(festival, problemOrder, opLog).thenCompose {
             orderDao.assignKelner(festival.fid(), label, null, targetState)
                 .thenAccept {
                   wsBroadcast.notifyCustomers(
-                      festival.fid(), listOf(order.customer), OrderStateEvent(label, targetState))
+                      festival.fid(),
+                      listOf(order.customer),
+                      OrderStateEvent(label, targetState))
                 }
             completedFuture(kelnerUid)
           }
@@ -72,6 +76,7 @@ abstract class BaseOrderCompleteStrategy(
   }
 
   abstract val targetState: OrderState;
-  abstract fun updateTargetState(festival: Festival, label: OrderLabel, opLog: OpLog)
+  abstract fun updateTargetState(
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
       : CompletableFuture<Void>;
 }

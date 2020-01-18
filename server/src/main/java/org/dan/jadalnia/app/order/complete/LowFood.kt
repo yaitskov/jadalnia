@@ -14,38 +14,20 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
-class OrderReady @Inject constructor(
+class LowFood @Inject constructor(
     wsBroadcast: WsBroadcast,
     orderDao: OrderDao,
     orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>)
   : BaseOrderCompleteStrategy(wsBroadcast, orderDao, orderCacheByLabel) {
 
-  override val targetState: OrderState = OrderState.Ready
+  override val targetState: OrderState = OrderState.Paid
 
   override fun updateTargetState(
       festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
       : CompletableFuture<Void> {
-    val label = problemOrder.label
-    festival.readyToPickupOrders[label] = Unit
-    opLog.add { festival.readyToPickupOrders.remove(label) }
-
-    if (festival.queuesForMissingMeals.isEmpty()) {
-      return completedFuture(null)
-    }
-
-    return orderCacheByLabel.get(Pair(festival.fid(), label))
-        .thenApply { order ->
-          order.items.forEach { item ->
-            val suspendedOrders = festival.queuesForMissingMeals.takeAll(item.name)
-            if (!suspendedOrders.isEmpty()) {
-              log.info("Move meals {} to main queue", item.name)
-              suspendedOrders.forEach { label ->
-                log.info("Move {} to missing meals queue to main", label)
-                festival.readyToExecOrders.offerFirst(label)
-              }
-            }
-          }
-          null
-        }
+    festival.queuesForMissingMeals.put(
+        problemOrder.meal!!, problemOrder.label)
+    // notify admin
+    return completedFuture(null);
   }
 }

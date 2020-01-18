@@ -16,6 +16,7 @@ class Festival(
     val freeKelners: ConcurrentMap<Uid, Uid>,
     val busyKelners: ConcurrentMap<Uid, OrderLabel>,
     val nextLabel: AtomicInteger,
+    val queuesForMissingMeals: MapOfQueues,
     val nextToken: AtomicInteger) {
 
     fun fid() = info.get().fid

@@ -1,14 +1,17 @@
 package org.dan.jadalnia.app.order
 
+import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
+import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.user.WithUser
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 import javax.ws.rs.Consumes
 import javax.ws.rs.GET
@@ -153,6 +156,31 @@ class OrderResource @Inject constructor(
     }
   }
 
+  @GET
+  @POST
+  @Path("${ORDER}list-unavailable-meals-with-orders")
+  fun listUnavailableMealsWithOrders(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession) {
+    with.withUserFest({ x -> x }, response, session,
+        { fest -> completedFuture(fest.queuesForMissingMeals.keys()) })
+  }
+
+  @POST
+  @Path("${ORDER}low-food/{label}/{dish}")
+  fun kelnerCannotCompleteOrderDueNoReadyMeal(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label") label: OrderLabel,
+      @PathParam("dish") dish: DishName) {
+    with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in {} cannot complete order {} due no ready meal {}",
+          session.uid, festival.fid(), label, dish)
+      orderService.kelnerCannotCompleteOrderDueNoReadyMeal(
+          festival, session.uid, ProblemOrder(label, dish))
+    }
+  }
+
   @POST
   @Path("${ORDER}kelner-tired/{label}")
   fun kelnerWithAssignedOrderResigns(
@@ -180,16 +208,31 @@ class OrderResource @Inject constructor(
   }
 
   @POST
+  @Path("${ORDER}meal-available/{meal}")
+  fun mealAvailable(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("meal") meal: DishName) {
+    with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in {}: orders with meal {} can be served",
+          session.uid, festival.fid(), meal)
+      orderService.resumeOrdersWithMeal(festival, meal)
+    }
+  }
+
+  @POST
   @Path(PUT_ORDER)
   fun create(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       newOrderItems: List<OrderItem>) {
     with.customerFest(response, session) { festival ->
-      log.info("Customer {} in {} puts order {}", session.uid, festival.fid(), newOrderItems)
+      log.info("Customer {} in {} puts order {}",
+          session.uid, festival.fid(), newOrderItems)
       orderService.putNewOrder(festival, session, newOrderItems)
           .thenApply {label ->
-            log.info("New order {} is put by {} in {}", label, session.uid, festival.fid())
+            log.info("New order {} is put by {} in {}",
+                label, session.uid, festival.fid())
             label
           }
     }

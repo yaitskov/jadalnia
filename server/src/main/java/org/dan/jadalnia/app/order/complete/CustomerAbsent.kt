@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
+import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.util.collection.AsyncCache
 import java.util.concurrent.CompletableFuture
@@ -21,10 +22,11 @@ class CustomerAbsent @Inject constructor(
 
   override val targetState = OrderState.Abandoned
 
-  override fun updateTargetState(festival: Festival, label: OrderLabel, opLog: OpLog)
+  override fun updateTargetState(
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
       : CompletableFuture<Void> {
     // user has reinitiate manually
-    log.info("Order {} in {} is abandoned", label, festival.fid())
+    log.info("Order {} in {} is abandoned", problemOrder.label, festival.fid())
     return completedFuture(null)
   }
 }

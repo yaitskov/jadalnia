@@ -1,6 +1,7 @@
 package org.dan.jadalnia.app.order
 
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
+import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
@@ -13,6 +14,7 @@ import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.RETRY
 import org.dan.jadalnia.app.order.complete.CustomerAbsent
 import org.dan.jadalnia.app.order.complete.KelnerResigns
+import org.dan.jadalnia.app.order.complete.LowFood
 import org.dan.jadalnia.app.order.complete.OrderReady
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
@@ -25,6 +27,7 @@ import org.dan.jadalnia.app.order.pojo.OrderState.Executing
 import org.dan.jadalnia.app.order.pojo.OrderState.Handed
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
 import org.dan.jadalnia.app.order.pojo.OrderState.Ready
+import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.token.TokenBalance
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
@@ -50,6 +53,7 @@ class OrderService @Inject constructor(
     val orderDao: OrderDao,
     val orderReady: OrderReady,
     val kelnerResigns: KelnerResigns,
+    val lowFood: LowFood,
     val customerAbsent: CustomerAbsent,
     val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
@@ -182,7 +186,9 @@ class OrderService @Inject constructor(
           orderDao.assignKelner(festival.fid(), label, kelnerUid, Executing)
               .thenAccept {
                 wsBroadcast.notifyCustomers(
-                    festival.fid(), listOf(order.customer), OrderStateEvent(label, Executing))
+                    festival.fid(),
+                    listOf(order.customer),
+                    OrderStateEvent(label, Executing))
               }.thenApply { Optional.of(label) }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
@@ -197,7 +203,7 @@ class OrderService @Inject constructor(
       .thenApply { order -> VisitorOrderView(order.label, order.cost, order.state.get()) }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
-      = orderReady.complete(festival, kelnerUid, label)
+      = orderReady.complete(festival, kelnerUid, ProblemOrder(label))
 
   fun pickUpReadyOrder(festival: Festival, customerUid: Uid, label: OrderLabel)
       : CompletableFuture<Void> {
@@ -320,7 +326,7 @@ class OrderService @Inject constructor(
       : CompletableFuture<Uid> {
     log.info("Kelner {} reschedules order {} due customer didn't show up",
         kelnerUid, label);
-    return customerAbsent.complete(festival, kelnerUid, label)
+    return customerAbsent.complete(festival, kelnerUid, ProblemOrder(label))
   }
 
   fun customerReschedules(festival: Festival, orderLabel: OrderLabel)
@@ -373,6 +379,24 @@ class OrderService @Inject constructor(
 
   fun kelnerWithAssignedOrderResigns(festival: Festival, kelnerUid: Uid, label: OrderLabel)
       : CompletableFuture<Uid> {
-    return kelnerResigns.complete(festival, kelnerUid, label);
+    return kelnerResigns.complete(festival, kelnerUid, ProblemOrder(label));
+  }
+
+  fun kelnerCannotCompleteOrderDueNoReadyMeal(
+      festival: Festival, uid: Uid,
+      problemOrder: ProblemOrder)
+      : CompletableFuture<Uid> {
+    return lowFood.complete(festival, uid, problemOrder)
+  }
+
+  fun resumeOrdersWithMeal(festival: Festival, meal: DishName)
+      : CompletableFuture<Int> {
+    val suspendedOrders = festival.queuesForMissingMeals.takeAll(meal)
+    log.info("Meal {} was blocking {} orderd", suspendedOrders.size)
+    suspendedOrders.reversed().forEach { label ->
+      log.info("Move {} to missing meals queue to main", label)
+      festival.readyToExecOrders.offerFirst(label)
+    }
+    return completedFuture(suspendedOrders.size)
   }
 }

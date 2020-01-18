@@ -37,7 +37,7 @@ class WithUser @Inject constructor (
             .thenCompose(action::invoke))
   }
 
-  private fun <T> withUserFest(
+  fun <T> withUserFest(
       check: Function1<UserInfo, UserInfo>,
       response: AsyncResponse,
       session: UserSession,

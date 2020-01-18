@@ -4,6 +4,7 @@ import com.google.common.cache.CacheLoader
 import org.dan.jadalnia.app.festival.FestivalDao
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.MapOfQueues
 import org.dan.jadalnia.app.label.LabelDao
 import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.locks.ReentrantLock
 import java.util.stream.Collectors.toConcurrentMap
 import javax.inject.Inject
 
@@ -50,6 +52,9 @@ class FestivalCacheLoader @Inject constructor(
                           freeKelners = ConcurrentHashMap(),
                           executingOrders = ConcurrentHashMap(orderKelnerId),
                           nextToken = AtomicInteger(maxTokenId.value),
+                          queuesForMissingMeals = MapOfQueues(
+                              ReentrantLock(false),
+                              HashMap()),
                           nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
                 }
               }

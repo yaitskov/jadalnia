@@ -7,6 +7,7 @@ import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
+import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.collection.AsyncCache
@@ -22,9 +23,10 @@ class KelnerResigns @Inject constructor(
 
   override val targetState: OrderState = OrderState.Paid
 
-  override fun updateTargetState(festival: Festival, label: OrderLabel, opLog: OpLog)
+  override fun updateTargetState(
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
       : CompletableFuture<Void> {
-
+    val label = problemOrder.label
     if (!festival.readyToExecOrders.offerFirst(label)) {
       throw internalError("Failed to return order back to exec queue", "label", label)
     }
