@@ -121,7 +121,14 @@ class OrderResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession) {
     with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in fest {} wants to pick up an order to exec",
+          session.uid, festival.fid())
       orderService.tryToExecOrder(festival, session.uid)
+          .thenApply { label ->
+            log.info("Kelner {} in fest {} took order {}",
+                session.uid, festival.fid(), label)
+            label
+          }
     }
   }
 
@@ -139,7 +146,23 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label") label: OrderLabel) {
     with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in {} said order {} is abandoned",
+          session.uid, festival.fid(), label)
       orderService.customerDidNotShowUpToStartOrderExecution(
+          festival, session.uid, label)
+    }
+  }
+
+  @POST
+  @Path("${ORDER}kelner-tired/{label}")
+  fun kelnerWithAssignedOrderResigns(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label") label: OrderLabel) {
+    with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in {} tried while preparing order {}",
+          session.uid, festival.fid(), label)
+      orderService.kelnerWithAssignedOrderResigns(
           festival, session.uid, label)
     }
   }
@@ -151,6 +174,7 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("label") label: OrderLabel) {
     with.kelnerFest(response, session) { festival ->
+      log.info("Kelner {} in {} complete order {}", session.uid, festival.fid(), label)
       orderService.markOrderReadyToPickup(festival, session.uid, label)
     }
   }
@@ -162,7 +186,12 @@ class OrderResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       newOrderItems: List<OrderItem>) {
     with.customerFest(response, session) { festival ->
+      log.info("Customer {} in {} puts order {}", session.uid, festival.fid(), newOrderItems)
       orderService.putNewOrder(festival, session, newOrderItems)
+          .thenApply {label ->
+            log.info("New order {} is put by {} in {}", label, session.uid, festival.fid())
+            label
+          }
     }
   }
 

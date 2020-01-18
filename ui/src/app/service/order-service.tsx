@@ -28,6 +28,10 @@ export class OrderSr {
     return this.$restSr.postJ(`api/order/customer-missing/${orderLabel}`, {});
   }
 
+  kelnerTired(orderLabel: OrderLabel): Thenable<void> {
+    return this.$restSr.postJ(`api/order/kelner-tired/${orderLabel}`, {});
+  }
+
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
     return this.$restSr.postJ(`/api/order/ready/${orderLabel}`, {});
   }

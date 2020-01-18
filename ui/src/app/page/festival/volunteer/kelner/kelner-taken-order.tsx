@@ -52,10 +52,9 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
   }
 
   customerLate() {
-    this.$orderSr.customerIsAbsent(this.pr.orderLbl);
-
-    // customer is missing and cannot pick up the order
-    // reschedule the order
+    this.$orderSr.customerIsAbsent(this.pr.orderLbl).tn(ok => {
+      route(`/festival/kelner/serve/${this.pr.fid}`);
+    }).ctch(e => this.ust(st => ({...st, e: e})));
   }
 
   lowFood() {
@@ -64,8 +63,9 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
   }
 
   kelnerNeedRest() {
-    // kelner rejects executing order right now due
-    // personal reason
+    this.$orderSr.kelnerTired(this.pr.orderLbl).tn(ok => {
+      route(`/festival/kelner/serve/${this.pr.fid}`);
+    }).ctch(e => this.ust(st => ({...st, e: e})));
   }
 
   render(p, st) {

@@ -12,6 +12,7 @@ import org.dan.jadalnia.app.order.PaymentAttemptOutcome.NOT_ENOUGH_FUNDS
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ORDER_PAID
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.RETRY
 import org.dan.jadalnia.app.order.complete.CustomerAbsent
+import org.dan.jadalnia.app.order.complete.KelnerResigns
 import org.dan.jadalnia.app.order.complete.OrderReady
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
@@ -48,6 +49,7 @@ class OrderService @Inject constructor(
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
     val orderDao: OrderDao,
     val orderReady: OrderReady,
+    val kelnerResigns: KelnerResigns,
     val customerAbsent: CustomerAbsent,
     val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
@@ -177,7 +179,7 @@ class OrderService @Inject constructor(
           opLog.add { order.state.set(Paid) }
           festival.executingOrders[label] = kelnerUid
           opLog.add { festival.executingOrders.remove(label, kelnerUid) }
-          orderDao.assignKelner(festival.fid(), label, kelnerUid)
+          orderDao.assignKelner(festival.fid(), label, kelnerUid, Executing)
               .thenAccept {
                 wsBroadcast.notifyCustomers(
                     festival.fid(), listOf(order.customer), OrderStateEvent(label, Executing))
@@ -367,5 +369,10 @@ class OrderService @Inject constructor(
             }
           }
         }
+  }
+
+  fun kelnerWithAssignedOrderResigns(festival: Festival, kelnerUid: Uid, label: OrderLabel)
+      : CompletableFuture<Uid> {
+    return kelnerResigns.complete(festival, kelnerUid, label);
   }
 }
