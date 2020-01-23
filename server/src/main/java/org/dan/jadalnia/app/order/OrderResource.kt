@@ -157,7 +157,6 @@ class OrderResource @Inject constructor(
   }
 
   @GET
-  @POST
   @Path("${ORDER}list-unavailable-meals-with-orders")
   fun listUnavailableMealsWithOrders(
       @Suspended response: AsyncResponse,
