@@ -25,7 +25,7 @@ public class CustomerReschedulesHisOrderTest extends WsIntegrationTest {
             MyRest myRest, UserSession session,
             OrderLabel orderLabel) {
         return myRest.post(
-                OrderResource.ORDER + "reschedule/" + orderLabel, session,
+                OrderResource.ORDER + "rescheduleAbandoned/" + orderLabel, session,
                 "", PaymentAttemptOutcome.class);
     }
 

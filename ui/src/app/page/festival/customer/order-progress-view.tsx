@@ -28,11 +28,19 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
   constructor(props) {
     super(props);
     this.st = {at: this.at()};
+    this.rescheduleOrder = this.rescheduleOrder.bind(this);
   }
 
   wMnt() {
     this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
       .tn(progress => this.ust(st => ({...st, progress: progress})))
+      .ctch(e => this.ust(st => ({...st, e: e})))
+  }
+
+  rescheduleOrder() {
+    this.$orderSr.rescheduleOrder(this.pr.ordLbl)
+      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
+        .tn(progress => this.ust(st => ({...st, progress: progress}))))
       .ctch(e => this.ust(st => ({...st, e: e})))
   }
 
@@ -59,6 +67,15 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
         </p>}
         {st.progress.state == 'Ready' && <p>
           <TI m="Order o is ready for pickup" o={p.ordLbl}/>
+        </p>}
+        {st.progress.state == 'Abandoned' && <p>
+          <TI m="Nobody showed to pick order o." o={p.ordLbl}/>
+          <TI m="It was marked as abandoned." />
+          <TI m="Press reschedule button to put order in line." />
+          <button class={jne(bulma.button, bulma.isPrimary)}
+                  onClick={this.rescheduleOrder}>
+            <TI m="Reschedule order" />
+          </button>
         </p>}
         {st.progress.state == 'Cancelled' && <p>
           <TI m="Order o is cancelled" o={p.ordLbl}/>

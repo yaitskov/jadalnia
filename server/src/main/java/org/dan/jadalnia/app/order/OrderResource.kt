@@ -262,7 +262,7 @@ class OrderResource @Inject constructor(
   }
 
   @POST
-  @Path("${ORDER}reschedule/{label}")
+  @Path("${ORDER}rescheduleAbandoned/{label}")
   fun customerReschedulesAbandonedOrder(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,

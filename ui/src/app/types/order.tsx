@@ -3,7 +3,7 @@ import { DishName } from 'app/types/menu';
 export type OrderLabel = string;
 
 export type OrderState = 'Accepted' | 'Paid' | 'Executing' |
-  'Ready' | 'Handed' | 'Cancelled' | 'Returned';
+  'Ready' | 'Handed' | 'Cancelled' | 'Returned' | 'Abandoned';
 
 export type OrderPayResult = 'NOT_ENOUGH_FUNDS' |  'ALREADY_PAID' |
   'CANCELLED' | 'RETRY' | 'ORDER_PAID' | 'FESTIVAL_OVER';

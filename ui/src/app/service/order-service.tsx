@@ -1,5 +1,5 @@
 import { Thenable } from 'async/abortable-promise';
-import {OrderInfoCustomerView, OrderLabel, OrderPayResult, OrderProgress} from 'app/types/order';
+import {OrderInfoCustomerView, OrderLabel, OrderPayResult, OrderProgress, OrderState} from 'app/types/order';
 import { RestSr } from "app/service/rest-service";
 import { KelnerOrderView, OrderItem } from 'app/types/order';
 import {Fid} from "app/page/festival/festival-types";
@@ -26,11 +26,11 @@ export class OrderSr {
   }
 
   customerIsAbsent(orderLabel: OrderLabel): Thenable<void> {
-    return this.$restSr.postJ(`api/order/customer-missing/${orderLabel}`, {});
+    return this.$restSr.postJ(`/api/order/customer-missing/${orderLabel}`, {});
   }
 
   kelnerTired(orderLabel: OrderLabel): Thenable<void> {
-    return this.$restSr.postJ(`api/order/kelner-tired/${orderLabel}`, {});
+    return this.$restSr.postJ(`/api/order/kelner-tired/${orderLabel}`, {});
   }
 
   markOrderReady(orderLabel: OrderLabel): Thenable<void> {
@@ -47,6 +47,10 @@ export class OrderSr {
 
   customerPaysOrder(orderLabel: OrderLabel): Thenable<OrderPayResult> {
     return this.$restSr.postJ(`/api/order/pay/${orderLabel}`, []);
+  }
+
+  rescheduleOrder(orderLabel: OrderLabel): Thenable<OrderPayResult> {
+    return this.$restSr.postJ(`/api/order/rescheduleAbandoned/${orderLabel}`, []);
   }
 
   seeOrderProgress(fid: Fid, orderLabel: OrderLabel): Thenable<OrderProgress> {
