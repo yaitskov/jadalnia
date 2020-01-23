@@ -101,7 +101,6 @@ class OrderResource @Inject constructor(
   @Path(ORDER + "progress/{fid}/{label}")
   fun showOrderProgressToVisitor(
       @Suspended response: AsyncResponse,
-      @HeaderParam(SESSION) session: UserSession,
       @PathParam("fid")
       fid: Fid,
       @PathParam("label")
