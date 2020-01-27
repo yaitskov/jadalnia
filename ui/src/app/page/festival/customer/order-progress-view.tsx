@@ -40,15 +40,15 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
 
   rescheduleOrder() {
     this.$orderSr.rescheduleOrder(this.pr.ordLbl)
-      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
-        .tn(progress => this.ust(st => ({...st, progress: progress}))))
+      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl))
+      .tn(progress => this.ust(st => ({...st, progress: progress})))
       .ctch(e => this.ust(st => ({...st, e: e})))
   }
 
   pickUpOrder() {
     this.$orderSr.customerPicksOrder(this.pr.ordLbl)
-      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
-        .tn(progress => this.ust(st => ({...st, progress: progress}))))
+      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl))
+      .tn(progress => this.ust(st => ({...st, progress: progress})))
       .ctch(e => this.ust(st => ({...st, e: e})))
   }
 

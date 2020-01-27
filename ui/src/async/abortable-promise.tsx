@@ -4,7 +4,7 @@ export interface Abortable {
 
 export interface Thenable<P> extends Abortable {
   p: Promise<P>;
-  //tn2<N>(f: (d: P) => Thenable<N>): Thenable<N>;
+  then<N>(f: (x: P) => Promise<N>): Thenable<N>;
   tn<N>(f: (d: P) => Thenable<N> | Promise<N> | N): Thenable<N>;
   tnr(f: (d: P) => void): Thenable<P>;
   ctch(f: (e) => void): Thenable<P>;
@@ -19,12 +19,12 @@ export class AbrPro<P> implements Thenable<P> {
     return this.tn<P>((a) => { f(a); return a; })
   }
 
-  // public tn2<N>(f: (x: P) => Thenable<N>): Thenable<N> {
-  //   return new AbrPro<N>(this.p.then(f), this);
-  // }
+  public then<N>(f: (x: P) => Promise<N>): Thenable<N> {
+    return new AbrPro<N>(this.p.then(f) as Promise<N>, this);
+  }
 
   public tn<N>(f: (x: P) => Thenable<N> | Promise<N> | N): Thenable<N> {
-    return new AbrPro<N>(this.p.then(f) as Promise<N>, this);
+    return new AbrPro<N>(this.p.then(f as any) as Promise<N>, this);
   }
 
   public ctch(f: (e) => void): Thenable<P> {
