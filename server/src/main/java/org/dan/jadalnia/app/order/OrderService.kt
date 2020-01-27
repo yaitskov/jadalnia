@@ -206,11 +206,11 @@ class OrderService @Inject constructor(
       = orderReady.complete(festival, kelnerUid, ProblemOrder(label))
 
   fun pickUpReadyOrder(festival: Festival, customerUid: Uid, label: OrderLabel)
-      : CompletableFuture<Void> {
+      : CompletableFuture<Uid> {
     val opLog = OpLog()
 
     if (festival.readyToPickupOrders.remove(label) == null) {
-      throw badRequest("Order is  not ready", "order", label)
+      throw badRequest("Order is not ready", "order", label)
     }
     opLog.add { festival.readyToPickupOrders[label] = Unit }
     return orderCacheByLabel.get(Pair(festival.fid(), label))
@@ -221,7 +221,7 @@ class OrderService @Inject constructor(
           opLog.add { order.state.set(Ready) }
           log.info("Customer {} picked up order {}", customerUid, label)
           orderDao.updateState(festival.fid(), label, Handed)
-              .thenAccept {  }
+              .thenApply { customerUid  }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
   }

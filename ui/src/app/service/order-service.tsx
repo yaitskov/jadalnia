@@ -64,4 +64,8 @@ export class OrderSr {
   customerLists(): Thenable<OrderInfoCustomerView> {
     return this.$restSr.getS(`/api/order/listMine`);
   }
+
+  customerPicksOrder(orderLabel: OrderLabel): Thenable<void> {
+    return this.$restSr.postJ(`/api/order/pickup/${orderLabel}`, [])
+  }
 }

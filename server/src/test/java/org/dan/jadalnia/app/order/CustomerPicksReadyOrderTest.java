@@ -1,19 +1,16 @@
 package org.dan.jadalnia.app.order;
 
 import lombok.val;
-import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
-import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.Optional;
 
-import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
@@ -26,6 +23,7 @@ import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FRYTKI
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.markAsPaid;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKasier;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.registerKelner;
+import static org.dan.jadalnia.app.order.OrderResource.PICKUP_ORDER;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.genUserKey;
 import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.registerCustomer;
 
@@ -33,7 +31,7 @@ import static org.dan.jadalnia.app.user.CustomerGetsFestivalStatusOnConnectTest.
 public class CustomerPicksReadyOrderTest extends WsIntegrationTest {
     public static void pickReadyOrder(
             MyRest myRest, OrderLabel order, UserSession session) {
-        myRest.voidPost(OrderResource.PICKUP_ORDER, session, order);
+        myRest.voidPost(PICKUP_ORDER + "/" + order, session, emptyMap());
     }
 
     @Test

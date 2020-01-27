@@ -37,25 +37,27 @@ class FestivalCacheLoader @Inject constructor(
           .thenCompose { maxLabelId ->
             tokenDao.maxTokenNumber(fid).thenCompose { maxTokenId ->
               orderDao.loadReadyToExecOrders(fid).thenCompose { readyToExecOrders ->
-                orderDao.loadExecutingOrders(fid).thenCompose { orderKelnerId ->
-                  completedFuture(
-                      Festival(
-                          info = AtomicReference(festInfo),
-                          readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
-                          readyToPickupOrders = ConcurrentHashMap(),
-                          busyKelners = orderKelnerId.entries.stream()
-                                  .collect(toConcurrentMap<
-                                      Map.Entry<OrderLabel, Uid>,
-                                      Uid, OrderLabel>(
-                                      {e -> e.value},
-                                      { e -> e.key})),
-                          freeKelners = ConcurrentHashMap(),
-                          executingOrders = ConcurrentHashMap(orderKelnerId),
-                          nextToken = AtomicInteger(maxTokenId.value),
-                          queuesForMissingMeals = MapOfQueues(
-                              ReentrantLock(false),
-                              HashMap()),
-                          nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
+                orderDao.loadReadyOrders(fid).thenCompose { readies ->
+                  orderDao.loadExecutingOrders(fid).thenCompose { orderKelnerId ->
+                    completedFuture(
+                        Festival(
+                            info = AtomicReference(festInfo),
+                            readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
+                            readyToPickupOrders = ConcurrentHashMap(readies),
+                            busyKelners = orderKelnerId.entries.stream()
+                                .collect(toConcurrentMap<
+                                    Map.Entry<OrderLabel, Uid>,
+                                    Uid, OrderLabel>(
+                                    { e -> e.value },
+                                    { e -> e.key })),
+                            freeKelners = ConcurrentHashMap(),
+                            executingOrders = ConcurrentHashMap(orderKelnerId),
+                            nextToken = AtomicInteger(maxTokenId.value),
+                            queuesForMissingMeals = MapOfQueues(
+                                ReentrantLock(false),
+                                HashMap()),
+                            nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
+                  }
                 }
               }
             }

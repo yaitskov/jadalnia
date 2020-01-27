@@ -57,10 +57,11 @@ class OrderResource @Inject constructor(
   }
 
   @POST
-  @Path(PICKUP_ORDER)
+  @Path("$PICKUP_ORDER/{label}")
   fun customerPicksUpOrder(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label")
       label: OrderLabel) {
     with.customerFest(response, session) { festival ->
       orderService.pickUpReadyOrder(festival, session.uid, label)

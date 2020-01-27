@@ -34,6 +34,22 @@ class OrderDao : AsyncDao() {
     }
   }
 
+  fun loadReadyOrders(fid: Fid): CompletableFuture<Map<OrderLabel, Unit>> {
+    return execQuery { jooq ->
+      jooq.select(ORDERS.LABEL)
+          .from(ORDERS)
+          .where(ORDERS.FESTIVAL_ID.eq(fid),
+              ORDERS.STATE.eq(OrderState.Ready))
+          .orderBy(ORDERS.OID)
+          .stream()
+          .map { r -> r.get(ORDERS.LABEL) }
+          .collect(
+              toMap<OrderLabel, OrderLabel, Unit>(
+                  { p -> p },
+                  { p -> Unit }))
+    }
+  }
+
   fun loadExecutingOrders(fid: Fid): CompletableFuture<Map<OrderLabel, Uid>> {
     return execQuery { jooq ->
       jooq.select(ORDERS.LABEL, ORDERS.KELNER_ID)

@@ -29,6 +29,7 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
     super(props);
     this.st = {at: this.at()};
     this.rescheduleOrder = this.rescheduleOrder.bind(this);
+    this.pickUpOrder = this.pickUpOrder.bind(this);
   }
 
   wMnt() {
@@ -39,6 +40,13 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
 
   rescheduleOrder() {
     this.$orderSr.rescheduleOrder(this.pr.ordLbl)
+      .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
+        .tn(progress => this.ust(st => ({...st, progress: progress}))))
+      .ctch(e => this.ust(st => ({...st, e: e})))
+  }
+
+  pickUpOrder() {
+    this.$orderSr.customerPicksOrder(this.pr.ordLbl)
       .tn(outcome => this.$orderSr.seeOrderProgress(this.pr.fid, this.pr.ordLbl)
         .tn(progress => this.ust(st => ({...st, progress: progress}))))
       .ctch(e => this.ust(st => ({...st, e: e})))
@@ -67,6 +75,11 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
         </p>}
         {st.progress.state == 'Ready' && <p>
           <TI m="Order o is ready for pickup" o={p.ordLbl}/>
+          <br/>
+          <button class={jne(bulma.button, bulma.isPrimary)}
+                  onClick={this.pickUpOrder}>
+            <TI m="I got order" />
+          </button>
         </p>}
         {st.progress.state == 'Abandoned' && <p>
           <TI m="Nobody showed to pick order o." o={p.ordLbl}/>
