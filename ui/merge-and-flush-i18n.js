@@ -5,22 +5,15 @@ class MergeAndFlushI18nPlugin {
   constructor(state) {
     this.transFolder = 'i18n-dicts';
     this.state = state;
-    this.fired = false;
   }
 
   apply(compiler) {
-    compiler.hooks.afterCompile.tap('Hello World Plugin', stats => {
-      if (this.fired) {
-        console.log('Skip flush twice');
-        return;
-      }
-      this.fired = true;
+    compiler.hooks.afterCompile.tap('Merge-And-Flush i18n Plugin', stats => {
       this.doMergeAndFlush();
     });
   }
 
   doMergeAndFlush() {
-    // this.logInputData();
     const rootFiles = this.findRootFiles();
     this.checkStaticRootsAndBundleNames(rootFiles);
     this.mkdir(this.transFolder);
@@ -35,7 +28,7 @@ class MergeAndFlushI18nPlugin {
 
   findReachableFiles(rootFile, accumulator) {
     const reachable = this.state.staticImports.r(rootFile);
-      accumulator.add(rootFile);
+    accumulator.add(rootFile);
     if (reachable) {
       reachable.forEach(file => {
         this.findReachableFiles(file, accumulator);
@@ -51,7 +44,6 @@ class MergeAndFlushI18nPlugin {
         combined[entry[0]] = entry[1];
       }
     });
-    // console.log(`combine files: ${JSON.stringify([...files])} ==> ${JSON.stringify(combined)}`);
     return combined;
   }
 
@@ -83,7 +75,7 @@ class MergeAndFlushI18nPlugin {
 
     if (staticRootFiles.length !== 1) {
       throw new Error(
-        `expected 1 static root file but got ${JSON.stringify(staticRootFiles)}. 
+        `expected 1 static root file but got ${JSON.stringify(staticRootFiles)}.
         Check that static imports having absolute paths.`);
     }
 
