@@ -17,7 +17,7 @@ class MergeAndFlushI18nPlugin {
     const rootFiles = this.findRootFiles();
     this.checkStaticRootsAndBundleNames(rootFiles);
     this.mkdir(this.transFolder);
-    this.bundlAndFlushBundleDicts(rootFiles);
+    this.bundleAndFlushBundleDictionaries(rootFiles);
   }
 
   logInputData() {
@@ -83,11 +83,11 @@ class MergeAndFlushI18nPlugin {
 
     if (uniqueBaseNames.size != rootFiles.size) {
       throw new Error(
-        `base names of some root files are umbigous: ${JSON.stringify([...rootFiles])}`);
+        `base names of some root files are ambiguous: ${JSON.stringify([...rootFiles])}`);
     }
   }
 
-  bundlAndFlushBundleDicts(rootFiles) {
+  bundleAndFlushBundleDictionaries(rootFiles) {
     for (let rootFile of rootFiles) {
       const reachableFiles = new Set();
       this.findReachableFiles(rootFile, reachableFiles);
