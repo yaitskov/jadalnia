@@ -1,1 +1,28 @@
-{"Token Requests":[],"Visitor id":["id"],"Visitor hasn't filed any request. Check visitor ID.":[],"Visitor requested following token requests.":[],"Click on rows, visitor wants to approve.":[],"If not enough change ask visitor to file another request with different amount.":[],"Request ID":[],"Amount":[],"Collect money first, then click approve.":[],"Approving in progress...":[],"Not all selected token requests have been accepted.":[],"So return part of money (x) back to visitor.":["x"],"List of rejected requests:":[],"All token requests are accepted.":[],"You can start serving next person in line.":[],"Approve x tokens":["x"],"Next person":[],"Fest control":[],"Menu":[],"Loading...":[]}
+{
+  "All token requests are accepted.": [],
+  "Amount": [],
+  "Approve x tokens": [
+    "x"
+  ],
+  "Approving in progress...": [],
+  "Click on rows, visitor wants to approve.": [],
+  "Collect money first, then click approve.": [],
+  "Fest control": [],
+  "If not enough change ask visitor to file another request with different amount.": [],
+  "List of rejected requests:": [],
+  "Loading...": [],
+  "Menu": [],
+  "Next person": [],
+  "Not all selected token requests have been accepted.": [],
+  "Request ID": [],
+  "So return part of money (x) back to visitor.": [
+    "x"
+  ],
+  "Token Requests": [],
+  "Visitor hasn't filed any request. Check visitor ID.": [],
+  "Visitor id": [
+    "id"
+  ],
+  "Visitor requested following token requests.": [],
+  "You can start serving next person in line.": []
+}

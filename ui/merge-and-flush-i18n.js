@@ -1,6 +1,12 @@
 const fPath = require('path');
 const fs = require('fs');
 
+let sortDictionary = d => {
+  let result = {}
+  Object.keys(d).sort().forEach(k => result[k] = d[k])
+  return result
+}
+
 class MergeAndFlushI18nPlugin {
   constructor(state) {
     this.transFolder = 'i18n-dicts';
@@ -50,7 +56,9 @@ class MergeAndFlushI18nPlugin {
   flushDictionary(rootFile, dictionary) {
     const folder = `${this.transFolder}/${fPath.basename(rootFile)}`;
     this.mkdir(folder);
-    fs.writeFileSync(`${folder}/index.json`, JSON.stringify(dictionary));
+    fs.writeFileSync(
+      `${folder}/index.json`,
+      JSON.stringify(sortDictionary(dictionary), null, 2));
   }
 
   mkdir(folder) {

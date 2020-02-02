@@ -1,1 +1,21 @@
-{"Token request":[],"my orders":[],"meal menu":[],"Token request tri.":["tri"],"x tokens is requested.":["x"],"Your visitor id":["id"],"Token request is approved.":[],"Token request is not approved.":[],"Contact cashier pay for amount of requested tokens.":[],"check token request that approved":[],"Fest control":[],"Menu":[],"Loading...":[]}
+{
+  "Contact cashier pay for amount of requested tokens.": [],
+  "Fest control": [],
+  "Loading...": [],
+  "Menu": [],
+  "Token request": [],
+  "Token request is approved.": [],
+  "Token request is not approved.": [],
+  "Token request tri.": [
+    "tri"
+  ],
+  "Your visitor id": [
+    "id"
+  ],
+  "check token request that approved": [],
+  "meal menu": [],
+  "my orders": [],
+  "x tokens is requested.": [
+    "x"
+  ]
+}

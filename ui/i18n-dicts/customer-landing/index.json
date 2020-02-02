@@ -1,1 +1,26 @@
-{"Welcome to name!":["name"],"It is good place to eat, drink and enjoy a show. ":[],"Festival start is at your time zone":["at","on"],"On this site you can order festival meals online ":[],"and pick them up when there are ready, ":[],"without wasting time in line.":[],"There are following steps: pick meals, put order, and pay order to cashier. ":[],"After that enjoy the show and check line progress from time to time. ":[],"A few minutes before you turn come to serving table ":[],"and be ready to be called and pick the order.":[],"see menu":[],"The festival is up and running. ":[],"This festival is over, but it will happen again next year. ":[],"We hope to see you then.":[],"Fest control":[],"Menu":[],"Loading...":[],"Cashier":[],"Waiter":[]}
+{
+  "A few minutes before you turn come to serving table ": [],
+  "After that enjoy the show and check line progress from time to time. ": [],
+  "Cashier": [],
+  "Fest control": [],
+  "Festival start is at your time zone": [
+    "at",
+    "on"
+  ],
+  "It is good place to eat, drink and enjoy a show. ": [],
+  "Loading...": [],
+  "Menu": [],
+  "On this site you can order festival meals online ": [],
+  "The festival is up and running. ": [],
+  "There are following steps: pick meals, put order, and pay order to cashier. ": [],
+  "This festival is over, but it will happen again next year. ": [],
+  "Waiter": [],
+  "We hope to see you then.": [],
+  "Welcome to name!": [
+    "name"
+  ],
+  "and be ready to be called and pick the order.": [],
+  "and pick them up when there are ready, ": [],
+  "see menu": [],
+  "without wasting time in line.": []
+}
