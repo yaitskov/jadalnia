@@ -6,7 +6,6 @@ import assertk.assertions.isNull
 import com.fasterxml.jackson.core.type.TypeReference
 import org.dan.jadalnia.sys.jackson.ObjectMapperFactory
 import org.junit.Test
-// import java.util.List
 
 class MenuItemTest {
   val om = ObjectMapperFactory.create()
