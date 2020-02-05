@@ -29,6 +29,7 @@ import org.dan.jadalnia.app.order.pojo.OrderState.Paid
 import org.dan.jadalnia.app.order.pojo.OrderState.Ready
 import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.token.TokenBalance
+import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
@@ -247,6 +248,40 @@ class OrderService @Inject constructor(
         }
   }
 
+  private fun customerTryPay(order: OrderMem, festival: Festival, opLog: OpLog, balance: TokenBalance, balanceAmount: TokenPoints): CompletableFuture<PaymentAttemptOutcome> {
+    if (balance.effective.compareAndSet(balanceAmount,
+            balanceAmount.minus(order.cost))) {
+      balance.pending.updateAndGet { p -> p.minus(order.cost) }
+      log.info("Balance {} of customer {} is reduced by {}",
+          balanceAmount, order.customer, order.cost)
+      opLog.add {
+        balance.effective.updateAndGet { b -> b.plus(order.cost) }
+        balance.pending.updateAndGet { p -> p.plus(order.cost) }
+      }
+      if (order.state.compareAndSet(Accepted, Paid)) {
+        log.info("Fid {}; Status of order {} is Paid",
+            festival.fid(), order.label)
+        return persistPaidOrderAndNotify(festival, order)
+            .thenApply { ORDER_PAID }
+            .whenComplete { _, e ->
+              if (e != null) {
+                opLog.rollback()
+                throw internalError("failed persist order status", e)
+              }
+            }
+      } else {
+        log.info("Fid {} Status of order {} is already Paid",
+            festival.fid(), order.label)
+        opLog.rollback()
+        return completedFuture(RETRY)
+      }
+    } else {
+      log.info("Fid {} effective balance changed {}",
+          festival.fid(), balanceAmount)
+      return completedFuture(RETRY)
+    }
+  }
+
   fun customerPays(festival: Festival,
                    customerUid: Uid,
                    orderLabel: OrderLabel)
@@ -272,37 +307,7 @@ class OrderService @Inject constructor(
                       completedFuture(NOT_ENOUGH_FUNDS)
                     } else {
                       val opLog = OpLog()
-                      if (balance.effective.compareAndSet(balanceAmount,
-                              balanceAmount.minus(order.cost))) {
-                        balance.pending.updateAndGet { p -> p.minus(order.cost) }
-                        log.info("Balance {} of customer {} is reduced by {}",
-                            balanceAmount, customerUid, order.cost)
-                        opLog.add {
-                          balance.effective.updateAndGet { b -> b.plus(order.cost) }
-                          balance.pending.updateAndGet { p -> p.plus(order.cost) }
-                        }
-                        if (order.state.compareAndSet(Accepted, Paid)) {
-                          log.info("Fid {}; Status of order {} is Paid",
-                              festival.fid(), order.label)
-                          persistPaidOrderAndNotify(festival, order)
-                              .thenApply { ORDER_PAID }
-                              .whenComplete { _, e ->
-                                if (e != null) {
-                                  opLog.rollback()
-                                  throw internalError("failed persist order status", e)
-                                }
-                              }
-                        } else {
-                          log.info("Fid {} Status of order {} is already Paid",
-                              festival.fid(), order.label)
-                          opLog.rollback()
-                          completedFuture(RETRY)
-                        }
-                      } else {
-                        log.info("Fid {} effective balance changed {}",
-                            festival.fid(), balanceAmount)
-                        completedFuture(RETRY)
-                      }
+                      customerTryPay(order, festival, opLog, balance, balanceAmount)
                     }
                   }
             else -> {
