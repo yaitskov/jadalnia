@@ -1,4 +1,5 @@
 import { h } from 'preact';
+import {Link} from 'preact-router';
 
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';
@@ -73,10 +74,14 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
           <TI m="Contact cashier pay for amount of requested tokens."/>
         </p>}
         <div class={bulma.buttons}>
-          <button class={jne(bulma.button, bulma.isPrimary)}
+          {!!st.tokenRequestInfo && !st.tokenRequestInfo.approved && <button class={jne(bulma.button, bulma.isPrimary)}
                   onClick={reloadPage}>
             <TI m="check token request that approved" />
-          </button>
+          </button>}
+          {!!st.tokenRequestInfo && st.tokenRequestInfo.approved && <Link href={`/festival/visitor/orders/${p.fid}`}
+                class={jne(bulma.button, bulma.isPrimary)}>
+            <TI m="To my order" />
+          </Link>}
         </div>
         { !st.e && !st.tokenRequestInfo && <LoadingI /> }
         <RestErrCo e={st.e} />
