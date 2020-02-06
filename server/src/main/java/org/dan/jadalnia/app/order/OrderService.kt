@@ -20,6 +20,7 @@ import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
+import org.dan.jadalnia.app.order.pojo.OrderState
 import org.dan.jadalnia.app.order.pojo.OrderState.Abandoned
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
 import org.dan.jadalnia.app.order.pojo.OrderState.Cancelled
@@ -138,6 +139,13 @@ class OrderService @Inject constructor(
         }
   }
 
+  private fun persistCancelledOrderAndNotify(festival: Festival, order: OrderMem)
+      : CompletableFuture<Unit> {
+    return daoUpdater.exec {
+      orderDao.updateState(festival.fid(), order.label, Cancelled)
+    }
+  }
+
   private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem)
       : CompletableFuture<Unit> {
     festival.readyToExecOrders.offer(order.label)
@@ -248,7 +256,10 @@ class OrderService @Inject constructor(
         }
   }
 
-  private fun customerTryPay(order: OrderMem, festival: Festival, opLog: OpLog, balance: TokenBalance, balanceAmount: TokenPoints): CompletableFuture<PaymentAttemptOutcome> {
+  private fun customerTryPay(order: OrderMem, festival: Festival,
+                             opLog: OpLog, balance: TokenBalance,
+                             balanceAmount: TokenPoints)
+      : CompletableFuture<PaymentAttemptOutcome> {
     if (balance.effective.compareAndSet(balanceAmount,
             balanceAmount.minus(order.cost))) {
       balance.pending.updateAndGet { p -> p.minus(order.cost) }
@@ -382,9 +393,10 @@ class OrderService @Inject constructor(
         }
   }
 
-  fun kelnerWithAssignedOrderResigns(festival: Festival, kelnerUid: Uid, label: OrderLabel)
+  fun kelnerWithAssignedOrderResigns(
+      festival: Festival, kelnerUid: Uid, label: OrderLabel)
       : CompletableFuture<Uid> {
-    return kelnerResigns.complete(festival, kelnerUid, ProblemOrder(label));
+    return kelnerResigns.complete(festival, kelnerUid, ProblemOrder(label))
   }
 
   fun kelnerCannotCompleteOrderDueNoReadyMeal(
@@ -403,5 +415,96 @@ class OrderService @Inject constructor(
       festival.readyToExecOrders.offerFirst(label)
     }
     return completedFuture(suspendedOrders.size)
+  }
+
+  private fun customerTryCancel(order: OrderMem, festival: Festival,
+                                opLog: OpLog, balance: TokenBalance,
+                                balanceAmount: TokenPoints,
+                                orderState: OrderState)
+      : CompletableFuture<CancelAttemptOutcome> {
+    if (balance.effective.compareAndSet(balanceAmount,
+            balanceAmount.plus(order.cost))) {
+      balance.pending.updateAndGet { p -> p.plus(order.cost) }
+      log.info("Balance {} of customer {} is increased by {}",
+          balanceAmount, order.customer, order.cost)
+      opLog.add {
+        balance.effective.updateAndGet { b -> b.minus(order.cost) }
+        balance.pending.updateAndGet { p -> p.minus(order.cost) }
+      }
+      if (order.state.compareAndSet(orderState, Cancelled)) {
+        log.info("Fid {}; Status of order {} is Cancelled",
+            festival.fid(), order.label)
+        return persistCancelledOrderAndNotify(festival, order)
+            .thenApply { CancelAttemptOutcome.CANCELLED }
+            .whenComplete { _, e ->
+              if (e != null) {
+                opLog.rollback()
+                throw internalError("failed persist order status", e)
+              }
+            }
+      } else {
+        log.info("Fid {} Status of order {} is already Paid",
+            festival.fid(), order.label)
+        opLog.rollback()
+        return completedFuture(CancelAttemptOutcome.RETRY)
+      }
+    } else {
+      log.info("Fid {} effective balance changed {}",
+          festival.fid(), balanceAmount)
+      return completedFuture(CancelAttemptOutcome.RETRY)
+    }
+  }
+
+  fun customerCancels(festival: Festival, orderLabel: OrderLabel)
+      : CompletableFuture<CancelAttemptOutcome> {
+    return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
+        .thenCompose { order ->
+          val orderState = order.state.get()
+          when (orderState) {
+            Cancelled -> {
+              log.info("Fid {}; Order {} was cancelled before",
+                  festival.fid(), order.label)
+              completedFuture(CancelAttemptOutcome.CANCELLED)
+            }
+            Accepted -> {
+              log.info("Fid {}; Cancel accepted order {}",
+                  festival.fid(), order.label)
+              val opLog = OpLog()
+              if (order.state.compareAndSet(Accepted, Cancelled)) {
+                opLog.add { order.state.set(Accepted) }
+                log.info("Fid {}; Status of order {} is Cancelled",
+                    festival.fid(), order.label)
+                persistCancelledOrderAndNotify(festival, order)
+                    .thenApply { CancelAttemptOutcome.CANCELLED }
+                    .whenComplete { _, e ->
+                      if (e != null) {
+                        opLog.rollback()
+                        throw internalError("failed persist order status", e)
+                      }
+                    }
+              } else {
+                log.info("Fid {} Status of order {} is changed",
+                    festival.fid(), order.label)
+                opLog.rollback()
+                completedFuture(CancelAttemptOutcome.RETRY)
+              }
+            }
+            Paid, Abandoned -> {
+              tokenBalanceCache
+                  .get(Pair(festival.fid(), order.customer))
+                  .thenCompose { balance ->
+                    val balanceAmount = balance.effective.get();
+                    val opLog = OpLog()
+                    customerTryCancel(order, festival, opLog,
+                        balance, balanceAmount, orderState)
+                  }
+            }
+            else -> {
+              log.info("Fid {}; Order {} is not in cancellable state {}",
+                  festival.fid(), order.label, orderState)
+              completedFuture(CancelAttemptOutcome.NOT_CANCELLED)
+            }
+          }
+        }
   }
 }

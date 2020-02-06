@@ -24,7 +24,8 @@ public class CustomerConnectsWithInvalidSessionTest
                         wsClientHandle(
                                 new UserSession(Uid.of(10000000), "abc"),
                                 voidPredicate(),
-                                new TypeReference<PropertyUpdated>() {}))
+                                new TypeReference<PropertyUpdated>() {}),
+                        getWsClient())
                         .waitTillClosed(),
                 expectErrnoWsCloseReason("session is not valid"));
     }

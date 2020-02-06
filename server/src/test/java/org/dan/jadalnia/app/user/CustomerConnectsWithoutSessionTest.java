@@ -24,7 +24,7 @@ public class CustomerConnectsWithoutSessionTest
     @SneakyThrows
     public void serverClosesConnection() {
         assertThat(
-                bindWsHandler("/ws/customer", anonymousHandler())
+                bindWsHandler("/ws/customer", anonymousHandler(), getWsClient())
                         .waitTillClosed(),
                 expectErrnoWsCloseReason("Header [session] is missing"));
     }

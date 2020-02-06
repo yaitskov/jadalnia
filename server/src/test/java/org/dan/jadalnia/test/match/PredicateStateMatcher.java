@@ -1,11 +1,13 @@
 package org.dan.jadalnia.test.match;
 
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
+@ToString
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
 public class PredicateStateMatcher<T> implements StateMatcher<T> {

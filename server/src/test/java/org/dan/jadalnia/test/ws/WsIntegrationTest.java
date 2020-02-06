@@ -1,6 +1,7 @@
 package org.dan.jadalnia.test.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -23,6 +24,7 @@ import static org.springframework.util.SocketUtils.findAvailableTcpPort;
 
 @Slf4j
 public abstract class WsIntegrationTest {
+    @Getter
     private WebSocketClient wsClient;
     private Client httpClient;
 
@@ -86,8 +88,8 @@ public abstract class WsIntegrationTest {
     }
 
     @SneakyThrows
-    protected <T extends WsHandler> T bindWsHandler(
-            String urlPath, T wsHandler) {
+    protected static <T extends WsHandler> T bindWsHandler(
+            String urlPath, T wsHandler, WebSocketClient wsClient) {
         val upgradeReq = new ClientUpgradeRequest();
 
         wsHandler.getHeaders().forEach(upgradeReq::setHeader);
@@ -100,11 +102,21 @@ public abstract class WsIntegrationTest {
         return wsHandler;
     }
 
+    protected static <T extends WsHandler> T bindCustomerWsHandler(
+            T wsHandler, WebSocketClient wsClient) {
+        return bindWsHandler("/ws/customer", wsHandler, wsClient);
+    }
+
     protected <T extends WsHandler> T bindCustomerWsHandler(T wsHandler) {
-        return bindWsHandler("/ws/customer", wsHandler);
+        return bindCustomerWsHandler(wsHandler, wsClient);
+    }
+
+    protected static <T extends WsHandler> T bindUserWsHandler(
+            T wsHandler, WebSocketClient wsClient) {
+        return bindWsHandler("/ws/user", wsHandler, wsClient);
     }
 
     protected <T extends WsHandler> T bindUserWsHandler(T wsHandler) {
-        return bindWsHandler("/ws/user", wsHandler);
+        return bindUserWsHandler(wsHandler, wsClient);
     }
 }

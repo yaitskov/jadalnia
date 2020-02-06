@@ -41,6 +41,7 @@ class OrderResource @Inject constructor(
     const val ORDER_READY = ORDER + "ready"
     const val PICKUP_ORDER = ORDER + "pickup"
     const val PAY_ORDER = ORDER + "pay"
+    const val CANCEL_ORDER = ORDER + "cancel"
     const val KASIER_PAY_ORDER = ORDER + "kasierPay"
     val log = LoggerFactory.getLogger(OrderService::class.java)
   }
@@ -246,6 +247,18 @@ class OrderResource @Inject constructor(
     log.info("Customer {} try to pay order {}", session.uid, orderLabel)
     with.customerFest(response, session) { festival ->
       orderService.customerPays(festival, session.uid, orderLabel)
+    }
+  }
+
+  @POST
+  @Path(CANCEL_ORDER + "/{label}")
+  fun customerCancelsOrder(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("label") orderLabel: OrderLabel) {
+    log.info("Customer {} cancels order {}", session.uid, orderLabel)
+    with.customerFest(response, session) { festival ->
+      orderService.customerCancels(festival, orderLabel)
     }
   }
 

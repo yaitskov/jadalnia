@@ -47,7 +47,7 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     public static final List<OrderItem> FRYTKI_ORDER = newFrytkiOrder(1);
 
     public static final String FESTIVAL_STATUS_COND = "festivalStatus";
-    public static final String ORDER_PAID_COND = "orderStatus";
+    public static final String ORDER_STATUS_COND = "orderStatus";
 
     public static UserSession registerKasier(Fid fid, String key, MyRest myRest) {
         return registerUser(fid, key, myRest, UserType.Kasier);
@@ -96,6 +96,12 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     @NotNull
     public static WsClientHandle<MessageForClient> festivalStatusAndOrderPaidWaiter(
             UserSession kelnerSession, OrderLabel orderLabel) {
+        return festivalStatusAndOrderStatus(kelnerSession, orderLabel, OrderState.Paid);
+    }
+
+    @NotNull
+    public static WsClientHandle<MessageForClient> festivalStatusAndOrderStatus(
+            UserSession kelnerSession, OrderLabel orderLabel, OrderState awaitedState) {
         return WsClientHandle.wsClientHandle(
                 kelnerSession,
                 new ManyMatchers<>(
@@ -106,11 +112,11 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
                                                 && ((PropertyUpdated) event).getName().equals(
                                                         FestivalService.Companion.getFESTIVAL_STATE()),
                                 new CompletableFuture<>()),
-                        ORDER_PAID_COND,
+                        ORDER_STATUS_COND,
                         new PredicateStateMatcher<>(
                                 (MessageForClient event) ->
                                         event instanceof OrderStateEvent
-                                                && ((OrderStateEvent) event).getState() == OrderState.Paid
+                                                && ((OrderStateEvent) event).getState() == awaitedState
                                                 && ((OrderStateEvent) event).getLabel().equals(orderLabel),
                                 new CompletableFuture<>())
                 ),
