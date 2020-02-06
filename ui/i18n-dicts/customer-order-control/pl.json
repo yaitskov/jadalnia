@@ -1,4 +1,6 @@
-{"Order control": "Zarządzanie zamówieniem",
+{
+  "Cancel order": "Anulować zamówenie",
+  "Order control": "Zarządzanie zamówieniem",
   "Your order number is o":["Numer zamówienia ", "o", ". "],
   "my orders":"Moje zamówienia",
   "meal menu":"Karta dań",

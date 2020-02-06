@@ -49,6 +49,10 @@ export class OrderSr {
     return this.$restSr.postJ(`/api/order/pay/${orderLabel}`, []);
   }
 
+  customerCancelsOrder(orderLabel: OrderLabel): Thenable<OrderPayResult> {
+    return this.$restSr.postJ(`/api/order/cancel/${orderLabel}`, []);
+  }
+
   rescheduleOrder(orderLabel: OrderLabel): Thenable<OrderPayResult> {
     return this.$restSr.postJ(`/api/order/rescheduleAbandoned/${orderLabel}`, []);
   }
