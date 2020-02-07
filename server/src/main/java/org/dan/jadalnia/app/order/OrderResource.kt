@@ -127,7 +127,7 @@ class OrderResource @Inject constructor(
     with.kelnerFest(response, session) { festival ->
       log.info("Kelner {} in fest {} wants to pick up an order to exec",
           session.uid, festival.fid())
-      orderService.tryToExecOrder(festival, session.uid)
+      orderService.tryToExecOrderWhileNotEmpty(festival, session.uid)
           .thenApply { label ->
             log.info("Kelner {} in fest {} took order {}",
                 session.uid, festival.fid(), label)

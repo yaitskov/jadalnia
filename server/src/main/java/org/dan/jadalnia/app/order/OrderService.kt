@@ -162,6 +162,20 @@ class OrderService @Inject constructor(
   fun kelnerTakenOrderId(festival: Festival, kelnerUid: Uid)
       = completedFuture(Optional.ofNullable(festival.busyKelners[kelnerUid]))
 
+  fun tryToExecOrderWhileNotEmpty(festival: Festival, kelnerUid: Uid)
+      : CompletableFuture<Optional<OrderLabel>> {
+    return tryToExecOrder(festival, kelnerUid).thenCompose {
+      orderO ->
+        if (orderO.isPresent || festival.readyToExecOrders.isEmpty()) {
+          completedFuture(orderO)
+        } else {
+          log.info("Kelner {} retries to take order in fid {}",
+              kelnerUid, festival.fid())
+          tryToExecOrderWhileNotEmpty(festival, kelnerUid)
+        }
+    }
+  }
+
   fun tryToExecOrder(festival: Festival, kelnerUid: Uid)
       : CompletableFuture<Optional<OrderLabel>> {
     val opLog = OpLog()
@@ -182,24 +196,29 @@ class OrderService @Inject constructor(
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
           log.info("Kelner {} started executing order {}", kelnerUid, label)
-          val prevOrder = festival.busyKelners.putIfAbsent(kelnerUid, label)
-          if (prevOrder != null) {
-            throw badRequest("kelner is busy with", "order", prevOrder)
+          if (order.state.get() == Cancelled) {
+            log.info("Skip cancelled order {}:{}", festival.fid(), label)
+            completedFuture(empty())
+          } else {
+            val prevOrder = festival.busyKelners.putIfAbsent(kelnerUid, label)
+            if (prevOrder != null) {
+              throw badRequest("kelner is busy with", "order", prevOrder)
+            }
+            opLog.add { festival.busyKelners.remove(kelnerUid, label) }
+            if (!order.state.compareAndSet(Paid, Executing)) {
+              throw internalError("order is not paid", "state", order.state.get())
+            }
+            opLog.add { order.state.set(Paid) }
+            festival.executingOrders[label] = kelnerUid
+            opLog.add { festival.executingOrders.remove(label, kelnerUid) }
+            orderDao.assignKelner(festival.fid(), label, kelnerUid, Executing)
+                .thenAccept {
+                  wsBroadcast.notifyCustomers(
+                      festival.fid(),
+                      listOf(order.customer),
+                      OrderStateEvent(label, Executing))
+                }.thenApply { Optional.of(label) }
           }
-          opLog.add { festival.busyKelners.remove(kelnerUid, label) }
-          if (!order.state.compareAndSet(Paid, Executing)) {
-            throw internalError("order is not paid", "state", order.state.get())
-          }
-          opLog.add { order.state.set(Paid) }
-          festival.executingOrders[label] = kelnerUid
-          opLog.add { festival.executingOrders.remove(label, kelnerUid) }
-          orderDao.assignKelner(festival.fid(), label, kelnerUid, Executing)
-              .thenAccept {
-                wsBroadcast.notifyCustomers(
-                    festival.fid(),
-                    listOf(order.customer),
-                    OrderStateEvent(label, Executing))
-              }.thenApply { Optional.of(label) }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
   }

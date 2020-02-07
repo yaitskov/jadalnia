@@ -27,6 +27,5 @@ public class CustomerCancelsUnPaidOrderTest extends WsIntegrationTest {
                 Is.is(new TokenBalanceView(
                         new TokenPoints(0),
                         new TokenPoints(0))));
-
     }
 }
