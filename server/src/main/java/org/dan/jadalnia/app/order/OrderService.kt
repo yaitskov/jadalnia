@@ -24,6 +24,7 @@ import org.dan.jadalnia.app.order.pojo.OrderState
 import org.dan.jadalnia.app.order.pojo.OrderState.Abandoned
 import org.dan.jadalnia.app.order.pojo.OrderState.Accepted
 import org.dan.jadalnia.app.order.pojo.OrderState.Cancelled
+import org.dan.jadalnia.app.order.pojo.OrderState.Delayed
 import org.dan.jadalnia.app.order.pojo.OrderState.Executing
 import org.dan.jadalnia.app.order.pojo.OrderState.Handed
 import org.dan.jadalnia.app.order.pojo.OrderState.Paid
@@ -489,7 +490,7 @@ class OrderService @Inject constructor(
                 completedFuture(CancelAttemptOutcome.RETRY)
               }
             }
-            Paid, Abandoned -> {
+            Paid, Delayed, Abandoned -> {
               tokenBalanceCache
                   .get(Pair(festival.fid(), order.customer))
                   .thenCompose { balance ->

@@ -41,6 +41,21 @@ class MapOfQueues (
     }
   }
 
+  fun remove(dish: DishName, order: OrderLabel): OrderLabel? {
+    lock.lockInterruptibly()
+    try {
+      val lst = map.get(dish)
+      if (lst != null && !lst.isEmpty()) {
+        if (lst.first == order) {
+          return lst.removeFirst()
+        }
+      }
+      return null;
+    } finally {
+      lock.unlock()
+    }
+  }
+
   fun keys(): Set<DishName> {
     lock.lockInterruptibly()
     try {

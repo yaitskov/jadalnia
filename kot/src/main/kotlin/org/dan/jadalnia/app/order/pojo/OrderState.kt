@@ -8,5 +8,6 @@ enum class OrderState {
     Handed,
     Cancelled,
     Returned,
+    Delayed,
     Abandoned
 }

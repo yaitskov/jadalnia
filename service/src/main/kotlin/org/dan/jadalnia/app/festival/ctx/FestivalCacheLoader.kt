@@ -6,6 +6,7 @@ import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.MapOfQueues
 import org.dan.jadalnia.app.label.LabelDao
+import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -27,6 +28,7 @@ class FestivalCacheLoader @Inject constructor(
     val orderDao: OrderDao,
     val tokenDao: TokenDao,
     val festivalDao: FestivalDao,
+    val delayedOrderDao: DelayedOrderDao,
     val orderAggregator: OrderAggregator,
     val wsBroadcast: WsBroadcast) :
     CacheLoader<Fid, CompletableFuture<Festival>>()  {
@@ -39,24 +41,26 @@ class FestivalCacheLoader @Inject constructor(
               orderDao.loadReadyToExecOrders(fid).thenCompose { readyToExecOrders ->
                 orderDao.loadReadyOrders(fid).thenCompose { readies ->
                   orderDao.loadExecutingOrders(fid).thenCompose { orderKelnerId ->
-                    completedFuture(
-                        Festival(
-                            info = AtomicReference(festInfo),
-                            readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
-                            readyToPickupOrders = ConcurrentHashMap(readies),
-                            busyKelners = orderKelnerId.entries.stream()
-                                .collect(toConcurrentMap<
-                                    Map.Entry<OrderLabel, Uid>,
-                                    Uid, OrderLabel>(
-                                    { e -> e.value },
-                                    { e -> e.key })),
-                            freeKelners = ConcurrentHashMap(),
-                            executingOrders = ConcurrentHashMap(orderKelnerId),
-                            nextToken = AtomicInteger(maxTokenId.value),
-                            queuesForMissingMeals = MapOfQueues(
-                                ReentrantLock(false),
-                                HashMap()),
-                            nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
+                    delayedOrderDao.load(fid).thenCompose { dish2Orders ->
+                      completedFuture(
+                          Festival(
+                              info = AtomicReference(festInfo),
+                              readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
+                              readyToPickupOrders = ConcurrentHashMap(readies),
+                              busyKelners = orderKelnerId.entries.stream()
+                                  .collect(toConcurrentMap<
+                                      Map.Entry<OrderLabel, Uid>,
+                                      Uid, OrderLabel>(
+                                      { e -> e.value },
+                                      { e -> e.key })),
+                              freeKelners = ConcurrentHashMap(),
+                              executingOrders = ConcurrentHashMap(orderKelnerId),
+                              nextToken = AtomicInteger(maxTokenId.value),
+                              queuesForMissingMeals = MapOfQueues(
+                                  ReentrantLock(false),
+                                  dish2Orders),
+                              nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
+                    }
                   }
                 }
               }

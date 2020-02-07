@@ -8,6 +8,7 @@ import org.dan.jadalnia.app.user.WithUser
 import org.springframework.context.annotation.Import
 
 @Import(OrderDao::class,
+    DelayedOrderDao::class,
     OrderResource::class,
     OrderCacheFactory::class,
     OrderCacheLoader::class,

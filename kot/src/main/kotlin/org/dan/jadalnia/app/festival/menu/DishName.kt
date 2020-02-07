@@ -3,7 +3,7 @@ package org.dan.jadalnia.app.festival.menu;
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
-data class DishName constructor(val name: String) {
+data class DishName constructor(val name: String): Comparable<DishName> {
     companion object {
         @JvmStatic
         @JsonCreator
@@ -12,5 +12,7 @@ data class DishName constructor(val name: String) {
 
     @JsonValue
     override fun toString(): String = name
+
+    override fun compareTo(other: DishName) = name.compareTo(other.name)
 }
 

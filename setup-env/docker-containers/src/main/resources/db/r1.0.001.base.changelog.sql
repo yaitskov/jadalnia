@@ -62,6 +62,15 @@ create table orders(
     foreign key (kelner_id) references users(uid)
 );
 
+create table delayed_order(
+    label int(11) not null,
+    created timestamp(3) default current_timestamp(3),
+    festival_id int(11) not null,
+    missing_dish varchar(100) not null,
+    foreign key (festival_id) references festival(fid),
+    primary key (festival_id, label)
+);
+
 create table labels (
     festival_id int(11) not null,
     label int(11) not null,

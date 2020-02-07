@@ -76,6 +76,7 @@ abstract class BaseOrderCompleteStrategy(
   }
 
   abstract val targetState: OrderState;
+
   abstract fun updateTargetState(
       festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
       : CompletableFuture<Void>;

@@ -69,6 +69,11 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
                                 </customType>
                                 <customType>
+                                    <name>DishName</name>
+                                    <type>org.dan.jadalnia.app.festival.menu.DishName</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.json.DishNameConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>OrderLabel</name>
                                     <type>org.dan.jadalnia.app.order.pojo.OrderLabel</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.json.OrderLabelConverter</binding>
@@ -278,6 +283,21 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
+                                    <name>DishName</name>
+                                    <expression>.*delayed_order\.missing_dish</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*delayed_order\.created</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>OrderLabel</name>
+                                    <expression>.*delayed_order\.label</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
                                     <name>Uid</name>
                                     <expression>.*orders\.customer_id</expression>
                                     <types>.*</types>
@@ -290,6 +310,11 @@
                                 <forcedType>
                                     <name>Fid</name>
                                     <expression>.*orders\.festival_id</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>Fid</name>
+                                    <expression>.*delayed_order\.festival_id</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
