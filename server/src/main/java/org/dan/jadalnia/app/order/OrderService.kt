@@ -41,7 +41,7 @@ import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures.Companion.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
-import java.util.Optional
+import java.util.*
 import java.util.Optional.empty
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
@@ -140,7 +140,7 @@ class OrderService @Inject constructor(
         }
   }
 
-  private fun persistCancelledOrderAndNotify(festival: Festival, order: OrderMem)
+  private fun persistCancelledOrder(festival: Festival, order: OrderMem)
       : CompletableFuture<Unit> {
     return daoUpdater.exec {
       orderDao.updateState(festival.fid(), order.label, Cancelled)
@@ -426,15 +426,46 @@ class OrderService @Inject constructor(
     return lowFood.complete(festival, uid, problemOrder)
   }
 
+  fun resumeOrdersBackward(festival: Festival, orders: LinkedList<OrderLabel>)
+      : CompletableFuture<Void> {
+    if (orders.isEmpty()) {
+      return completedFuture(null)
+    }
+    val label = orders.removeLast()
+    val fid = festival.fid()
+
+    return orderCacheByLabel.get(Pair(festival.fid(), label))
+        .thenCompose { order ->
+          if (order.state.compareAndSet(Delayed, Paid)) {
+            log.info("Move delayed order {}:{} to exec queue", fid, label)
+            wsBroadcast.broadcastToFreeKelners(
+                festival, OrderStateEvent(label, Paid))
+            wsBroadcast.notifyCustomers(
+                festival.fid(),
+                listOf(order.customer),
+                OrderStateEvent(label, Paid))
+            festival.readyToExecOrders.offerFirst(label)
+            daoUpdater.exec {
+              orderDao.updateState(festival.fid(), label, Paid)
+            }.thenCompose {
+              resumeOrdersBackward(festival, orders)
+            }
+          } else {
+            log.info("Drop delayed order {}:{} due not Delayed but state {} ",
+                fid, label, order.state.get())
+            resumeOrdersBackward(festival, orders)
+          }
+        }
+  }
+
   fun resumeOrdersWithMeal(festival: Festival, meal: DishName)
       : CompletableFuture<Int> {
+    val fid = festival.fid()
     val suspendedOrders = festival.queuesForMissingMeals.takeAll(meal)
-    log.info("Meal {} was blocking {} orderd", suspendedOrders.size)
-    suspendedOrders.reversed().forEach { label ->
-      log.info("Move {} to missing meals queue to main", label)
-      festival.readyToExecOrders.offerFirst(label)
-    }
-    return completedFuture(suspendedOrders.size)
+    val size = suspendedOrders.size
+    log.info("Meal {}:{} was blocking {} orders", fid, meal, size)
+
+    return resumeOrdersBackward(festival, suspendedOrders).thenApply { size }
   }
 
   private fun customerTryCancel(order: OrderMem, festival: Festival,
@@ -454,7 +485,7 @@ class OrderService @Inject constructor(
       if (order.state.compareAndSet(orderState, Cancelled)) {
         log.info("Fid {}; Status of order {} is Cancelled",
             festival.fid(), order.label)
-        return persistCancelledOrderAndNotify(festival, order)
+        return persistCancelledOrder(festival, order)
             .thenApply { CancelAttemptOutcome.CANCELLED }
             .whenComplete { _, e ->
               if (e != null) {
@@ -494,7 +525,7 @@ class OrderService @Inject constructor(
                 opLog.add { order.state.set(Accepted) }
                 log.info("Fid {}; Status of order {} is Cancelled",
                     festival.fid(), order.label)
-                persistCancelledOrderAndNotify(festival, order)
+                persistCancelledOrder(festival, order)
                     .thenApply { CancelAttemptOutcome.CANCELLED }
                     .whenComplete { _, e ->
                       if (e != null) {
