@@ -33,7 +33,7 @@ class DelayedOrderDao : AsyncDao() {
         .where()
         .execute()
     }.thenAccept {
-      log.info("order {}:{} is not delayed", fid, order)
+      log.info("order {}:{} is marked as not delayed", fid, order)
     }
   }
 

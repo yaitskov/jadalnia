@@ -54,6 +54,7 @@ class OrderService @Inject constructor(
     @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
     val orderDao: OrderDao,
+    val delayedOrderDao: DelayedOrderDao,
     val orderReady: OrderReady,
     val kelnerResigns: KelnerResigns,
     val lowFood: LowFood,
@@ -447,6 +448,7 @@ class OrderService @Inject constructor(
             festival.readyToExecOrders.offerFirst(label)
             daoUpdater.exec {
               orderDao.updateState(festival.fid(), label, Paid)
+              delayedOrderDao.remove(festival.fid(), label)
             }.thenCompose {
               resumeOrdersBackward(festival, orders)
             }
