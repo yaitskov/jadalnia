@@ -5,6 +5,7 @@
   "order picked up": "Klient odebrał",
   "customer late": "Nie ma klienta",
   "low food": "Czegoś chwilowo brakuje",
+  "meal is not available now": ["meal", " chwiliowo nie dostępny"],
   "need rest": "Się zmięciłem",
   "Order includes":["Treść zamówienia ", "lbl"],
   "Loading...":[]}

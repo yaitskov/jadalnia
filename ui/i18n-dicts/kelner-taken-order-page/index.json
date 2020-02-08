@@ -10,6 +10,9 @@
   ],
   "customer late": [],
   "low food": [],
+  "meal is not available now": [
+    "meal"
+  ],
   "need rest": [],
   "order issue": [],
   "order picked up": []

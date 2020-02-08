@@ -2,12 +2,14 @@ import { h } from 'preact';
 import { route } from 'preact-router';
 
 import {TransCom, TransComS} from "i18n/trans-component";
-import {OrderLabel, KelnerOrderView} from "app/types/order";
+import { DishName } from 'app/types/menu';
+import {OrderLabel, KelnerOrderView, OrderItem} from "app/types/order";
 import {Fid} from "app/page/festival/festival-types";
 import {OrderSr} from "app/service/order-service";
 import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
 import { T } from 'i18n/translate-tag';
+
 
 import bulma from "app/style/my-bulma.sass";
 
@@ -20,6 +22,7 @@ export interface KelnerTakenOrderS extends TransComS {
   e?: Error;
   orderInfo?: KelnerOrderView;
   showIssueTypes: boolean;
+  missingMealToPick: OrderItem[];
 }
 
 export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrderS> {
@@ -28,11 +31,12 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
 
   constructor(props) {
     super(props);
-    this.st = {at: this.at(), showIssueTypes: false};
+    this.st = {at: this.at(), showIssueTypes: false, missingMealToPick: []};
     this.orderPickedUpByCustomer = this.orderPickedUpByCustomer.bind(this);
     this.cannotExecOrder = this.cannotExecOrder.bind(this);
     this.customerLate = this.customerLate.bind(this);
     this.lowFood = this.lowFood.bind(this);
+    this.pickMissingMeal = this.pickMissingMeal.bind(this);
   }
 
   wMnt() {
@@ -57,9 +61,18 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
     }).ctch(e => this.ust(st => ({...st, e: e})));
   }
 
-  lowFood() {
-    // food for require item is not ready yet.
-    // postpone and serve asap once ready
+  pickMissingMeal(meal: DishName) {
+    this.$orderSr.kelnerLacksFood(this.pr.orderLbl, meal).tn(ok => {
+      route(`/festival/kelner/serve/${this.pr.fid}`);
+    }).ctch(e => this.ust(st => ({...st, e: e})));
+  }
+
+  lowFood(orderInfo: KelnerOrderView) {
+    if (orderInfo.items.length == 1) {
+      this.pickMissingMeal(orderInfo.items[0].name);
+    } else {
+      this.ust(st => ({...st, missingMealToPick: orderInfo.items}));
+    }
   }
 
   kelnerNeedRest() {
@@ -82,24 +95,33 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
             <TI m="order picked up"/>
           </button>
         </div>
-        { st.showIssueTypes && <div class={bulma.buttons}>
-          <button class={bulma.button} onClick={this.customerLate}>
-            <TI m="customer late"/>
-          </button>
-          <button class={bulma.button} onClick={this.lowFood}>
-            <TI m="low food"/>
-          </button>
-          <button class={bulma.button} onClick={this.kelnerNeedRest}>
-            <TI m="need rest"/>
-          </button>
+        { st.showIssueTypes && <div>
+          { !!st.missingMealToPick.length && <div class={bulma.buttons}>
+            {st.missingMealToPick.map(item =>
+              <button class={bulma.button} onClick={() => this.pickMissingMeal(item.name)}>
+                <TI m="meal is not available now" meal={item.name} />
+              </button>
+            )}
+          </div>}
+          { !st.missingMealToPick.length && <div class={bulma.buttons}>
+            <button class={bulma.button} onClick={this.customerLate}>
+              <TI m="customer late"/>
+            </button>
+            <button class={bulma.button} onClick={() => this.lowFood(st.orderInfo!!)}>
+              <TI m="low food"/>
+            </button>
+            <button class={bulma.button} onClick={this.kelnerNeedRest}>
+              <TI m="need rest"/>
+            </button>
+          </div>}
         </div>}
         <p>
           <TI m="Order includes" lbl={p.orderLbl}/>
         </p>
         <ul>
-        {!!st.orderInfo && st.orderInfo.items.map(
-          item => <li>{item.quantity} * {item.name}</li>)
-        }
+          {!!st.orderInfo && st.orderInfo.items.map(
+            item => <li>{item.quantity} * {item.name}</li>)
+          }
         </ul>
       </div>}
     </div>;
