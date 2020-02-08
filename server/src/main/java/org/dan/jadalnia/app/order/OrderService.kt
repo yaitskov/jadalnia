@@ -596,7 +596,9 @@ class OrderService @Inject constructor(
     return modifyPaidOrder(op, order, festival, update, newCost)
         .thenCompose { outcome ->
           if (outcome == UpdateAttemptOutcome.UPDATED) {
-            if (order.state.compareAndSet(Delayed, Paid)) {
+            val missingMeals = festival.queuesForMissingMeals.keys()
+            if (!update.newItems.any { item -> missingMeals.contains(item.name) }
+                && order.state.compareAndSet(Delayed, Paid)) {
               festival.readyToExecOrders.addFirst(order.label)
               delayedOrderDao.remove(festival.fid(), order.label).thenCompose {
                 orderDao.updateState(festival.fid(), order.label, Paid)

@@ -1,6 +1,7 @@
 package org.dan.jadalnia.app.order;
 
 import lombok.val;
+import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
 import org.dan.jadalnia.app.token.TokenBalanceView;
 import org.dan.jadalnia.app.token.TokenPoints;
@@ -74,7 +75,7 @@ public class CustomerModifiesPaidOrderTest extends WsIntegrationTest {
         checkStateUnchanged(festState, customerSession, orderLabel);
     }
 
-    private void checkStateUnchanged(
+    static void checkStateUnchanged(
             MockBaseFestival festState,
             UserSession customerSession,
             OrderLabel orderLabel) {
@@ -82,11 +83,20 @@ public class CustomerModifiesPaidOrderTest extends WsIntegrationTest {
 
     }
 
-    private void checkState(
+    static void checkState(
             MockBaseFestival festState,
             UserSession customerSession,
             OrderLabel orderLabel,
             int price, int quantity, int balance) {
+        checkState(festState, customerSession, orderLabel,
+                price, quantity, balance, FRYTKI);
+    }
+
+    static void checkState(
+            MockBaseFestival festState,
+            UserSession customerSession,
+            OrderLabel orderLabel,
+            int price, int quantity, int balance, DishName dishName) {
         assertThat(
                 getCustomerOrderInfo(festState.myRest, customerSession, orderLabel),
                 Is.is(allOf(
@@ -97,7 +107,7 @@ public class CustomerModifiesPaidOrderTest extends WsIntegrationTest {
                 Is.is(hasProperty("items",
                         hasItem(
                                 allOf(
-                                        hasProperty("name", Is.is(FRYTKI)),
+                                        hasProperty("name", Is.is(dishName)),
                                         hasProperty("quantity", Is.is(quantity)))))));
 
         assertThat(getBalance(festState.myRest, customerSession),

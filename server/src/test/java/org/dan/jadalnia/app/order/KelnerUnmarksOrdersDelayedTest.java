@@ -27,7 +27,7 @@ public class KelnerUnmarksOrdersDelayedTest extends WsIntegrationTest {
     }
 
     @Test
-    public void kelnerMarksOrderAsDelayed() {
+    public void kelnerUnmarksOrderAsDelayed() {
         val festState = MockBaseFestival.create(myRest());
         val orderLabel = CustomerPaysForHisOrderTest
                 .createPaidOrder(festState, getWsClient());
@@ -41,6 +41,10 @@ public class KelnerUnmarksOrdersDelayedTest extends WsIntegrationTest {
         assertThat(
                 markAsDelayed(myRest(), orderLabel, FRYTKI, kelnerSession),
                 Is.is(true));
+
+        assertThat(
+                tryExecOrder(myRest(), kelnerSession),
+                Is.is(Optional.empty()));
 
         assertThat(
                 markAsAvailable(myRest(), FRYTKI, kelnerSession),

@@ -31,6 +31,7 @@ import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.festival.SetMenuTest.FRYTKI;
+import static org.dan.jadalnia.app.festival.SetMenuTest.SUSZY;
 import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.order.EventWatchers.orderWatcher;
@@ -42,6 +43,11 @@ public class KelnerNotifiedAboutPaidOrderTest extends WsIntegrationTest {
     public static List<OrderItem> newFrytkiOrder(int quantity) {
         return singletonList(
                 new OrderItem(FRYTKI, quantity, Collections.emptyList()));
+    }
+
+    public static List<OrderItem> newSuszyOrder(int quantity) {
+        return singletonList(
+                new OrderItem(SUSZY, quantity, Collections.emptyList()));
     }
 
     public static final List<OrderItem> FRYTKI_ORDER = newFrytkiOrder(1);
