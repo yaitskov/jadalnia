@@ -35,7 +35,6 @@ import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
-import org.dan.jadalnia.sys.db.DaoUpdater
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures.Companion.allOf
@@ -59,7 +58,6 @@ class OrderService @Inject constructor(
     val kelnerResigns: KelnerResigns,
     val lowFood: LowFood,
     val customerAbsent: CustomerAbsent,
-    val daoUpdater: DaoUpdater,
     val costEstimator: CostEstimator,
     @Named("tokenBalanceCache")
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
@@ -143,9 +141,7 @@ class OrderService @Inject constructor(
 
   private fun persistCancelledOrder(festival: Festival, order: OrderMem)
       : CompletableFuture<Unit> {
-    return daoUpdater.exec {
-      orderDao.updateState(festival.fid(), order.label, Cancelled)
-    }
+    return orderDao.updateState(festival.fid(), order.label, Cancelled)
   }
 
   private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem)
@@ -153,9 +149,7 @@ class OrderService @Inject constructor(
     festival.readyToExecOrders.offer(order.label)
     wsBroadcast.broadcastToFreeKelners(
         festival, OrderStateEvent(order.label, Paid))
-    return daoUpdater.exec {
-      orderDao.updateState(festival.fid(), order.label, Paid)
-    }
+    return orderDao.updateState(festival.fid(), order.label, Paid)
   }
 
   private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
@@ -474,11 +468,10 @@ class OrderService @Inject constructor(
                 listOf(order.customer),
                 OrderStateEvent(label, Paid))
             festival.readyToExecOrders.offerFirst(label)
-            daoUpdater.exec {
-              orderDao.updateState(festival.fid(), label, Paid)
-              delayedOrderDao.remove(festival.fid(), label)
-            }.thenCompose {
-              resumeOrdersBackward(festival, orders)
+            orderDao.updateState(festival.fid(), label, Paid).thenCompose {
+              delayedOrderDao.remove(festival.fid(), label).thenCompose {
+                resumeOrdersBackward(festival, orders)
+              }
             }
           } else {
             log.info("Drop delayed order {}:{} due not Delayed but state {} ",
@@ -646,7 +639,6 @@ class OrderService @Inject constructor(
                   op.rollback()
                   completedFuture(UpdateAttemptOutcome.RETRY)
                 }
-                completedFuture(UpdateAttemptOutcome.UPDATED)
               } else {
                 log.info("Rollback paid order modification {}:{} due cost change {} != {}. Retry.",
                     festival.fid(), order.label, order.cost.get(), update)

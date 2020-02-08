@@ -229,7 +229,7 @@ class OrderResource @Inject constructor(
     with.customerFest(response, session) { festival ->
       log.info("Customer {} tries to update order {}:{} with {}",
           session.uid, festival.fid(), update.label, update.newItems)
-      orderService.modifyOrder(festival, session.uid, update)
+      orderService.modifyOrder(festival, update)
           .thenApply {outcome ->
             log.info("Order {}:{} is modified: {}",
                 festival.fid(), update.label, outcome)

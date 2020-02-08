@@ -23,7 +23,7 @@ import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
 import static org.dan.jadalnia.app.festival.SetMenuTest.setMenu;
-import static org.dan.jadalnia.app.order.CustomerNotifiedAboutOrderExecutingTest.getOrderInfo;
+import static org.dan.jadalnia.app.order.CustomerNotifiedAboutOrderExecutingTest.getKelnerOrderInfo;
 import static org.dan.jadalnia.app.order.CustomerNotifiedAboutOrderExecutingTest.tryExecOrder;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FRYTKI_ORDER;
@@ -71,7 +71,7 @@ public class CustomerNotifiedThatOrderIsReadyTest extends WsIntegrationTest {
 
         bindCustomerWsHandler(wsCustomerHandler);
 
-        assertThat(getOrderInfo(myRest(), kelnerSession, orderLabel).getItems())
+        assertThat(getKelnerOrderInfo(myRest(), kelnerSession, orderLabel).getItems())
                 .extracting(OrderItem::getQuantity)
                 .contains(1);
 

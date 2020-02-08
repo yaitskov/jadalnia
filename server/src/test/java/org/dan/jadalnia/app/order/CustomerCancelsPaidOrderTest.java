@@ -18,7 +18,7 @@ import static org.dan.jadalnia.app.token.CustomerBalanceZeroAtStartTest.getBalan
 import static org.junit.Assert.assertThat;
 
 public class CustomerCancelsPaidOrderTest extends WsIntegrationTest {
-     public static CancelAttemptOutcome tryCancelOrder(
+    public static CancelAttemptOutcome tryCancelOrder(
             MyRest myRest, UserSession customerSession,
             OrderLabel orderLabel) {
         return myRest.post(

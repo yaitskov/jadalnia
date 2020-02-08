@@ -4,9 +4,7 @@ package org.dan.jadalnia.app.order;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.dan.jadalnia.app.festival.menu.DishName;
 import org.dan.jadalnia.app.festival.pojo.FestivalState;
-import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
 import org.dan.jadalnia.app.order.pojo.OrderState;
 import org.dan.jadalnia.app.user.UserSession;
@@ -19,11 +17,9 @@ import org.hamcrest.core.Is;
 import org.junit.Test;
 
 import javax.ws.rs.core.GenericType;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static java.util.Collections.singletonList;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.createFestival;
 import static org.dan.jadalnia.app.festival.NewFestivalTest.genAdminKey;
 import static org.dan.jadalnia.app.festival.SetFestivalStateTest.setState;
@@ -40,7 +36,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertThat;
 
 public class CustomerNotifiedAboutOrderExecutingTest extends WsIntegrationTest {
-    public static KelnerOrderView getOrderInfo(MyRest myRest, UserSession session, OrderLabel label) {
+    public static KelnerOrderView getKelnerOrderInfo(MyRest myRest, UserSession session, OrderLabel label) {
         return myRest.get(OrderResource.GET_ORDER + "/" + label.getName(),  session, KelnerOrderView.class);
     }
 
@@ -80,7 +76,7 @@ public class CustomerNotifiedAboutOrderExecutingTest extends WsIntegrationTest {
 
         bindCustomerWsHandler(wsCustomerHandler);
 
-        assertThat(getOrderInfo(myRest(), kelnerSession, orderLabel).getItems(),
+        assertThat(getKelnerOrderInfo(myRest(), kelnerSession, orderLabel).getItems(),
                 hasItem(hasProperty("quantity", Is.is(1))));
 
         assertThat(tryExecOrder(myRest(), kelnerSession), Is.is(Optional.of(orderLabel)));
