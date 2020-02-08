@@ -8,5 +8,5 @@ data class OrderMem(
     val customer: Uid,
     val state: AtomicReference<OrderState>,
     val label: OrderLabel,
-    val cost: TokenPoints,
-    val items: List<OrderItem>)
+    val cost: AtomicReference<TokenPoints>,
+    val items: AtomicReference<List<OrderItem>>)

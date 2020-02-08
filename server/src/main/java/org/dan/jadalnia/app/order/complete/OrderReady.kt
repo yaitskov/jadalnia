@@ -35,7 +35,7 @@ class OrderReady @Inject constructor(
 
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenApply { order ->
-          order.items.forEach { item ->
+          order.items.get().forEach { item ->
             val suspendedOrders = festival.queuesForMissingMeals.takeAll(item.name)
             if (!suspendedOrders.isEmpty()) {
               log.info("Move meals {} to main queue", item.name)

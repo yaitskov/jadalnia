@@ -221,6 +221,24 @@ class OrderResource @Inject constructor(
   }
 
   @POST
+  @Path("${ORDER}modify")
+  fun modifyOrder(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      update: OrderUpdate) {
+    with.customerFest(response, session) { festival ->
+      log.info("Customer {} tries to update order {}:{} with {}",
+          session.uid, festival.fid(), update.label, update.newItems)
+      orderService.modifyOrder(festival, session.uid, update)
+          .thenApply {outcome ->
+            log.info("Order {}:{} is modified: {}",
+                festival.fid(), update.label, outcome)
+            outcome
+          }
+    }
+  }
+
+  @POST
   @Path(PUT_ORDER)
   fun create(
       @Suspended response: AsyncResponse,

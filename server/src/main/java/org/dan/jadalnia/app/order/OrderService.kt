@@ -112,8 +112,8 @@ class OrderService @Inject constructor(
               OrderMem(
                   label = label,
                   customer = customerSession.uid,
-                  items = newOrderItems,
-                  cost = costEstimator.howMuchFor(festival, newOrderItems),
+                  items = AtomicReference(newOrderItems),
+                  cost = AtomicReference(costEstimator.howMuchFor(festival, newOrderItems)),
                   state = AtomicReference(Accepted)
               ))
         }
@@ -226,11 +226,11 @@ class OrderService @Inject constructor(
 
   fun showOrderToKelner(fid: Fid, label: OrderLabel) = orderCacheByLabel
       .get(Pair(fid, label))
-      .thenApply { order -> KelnerOrderView(order.items) }
+      .thenApply { order -> KelnerOrderView(order.items.get()) }
 
   fun showOrderToVisitor(fid: Fid, label: OrderLabel) = orderCacheByLabel
       .get(Pair(fid, label))
-      .thenApply { order -> VisitorOrderView(order.label, order.cost, order.state.get()) }
+      .thenApply { order -> VisitorOrderView(order.label, order.cost.get(), order.state.get()) }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
       = orderReady.complete(festival, kelnerUid, ProblemOrder(label))
@@ -277,18 +277,45 @@ class OrderService @Inject constructor(
         }
   }
 
+  private fun updateBalance(order: OrderMem, fid: Fid,
+                            opLog: OpLog, balance: TokenBalance,
+                            balanceAmount: TokenPoints,
+                            update: TokenPoints)
+      : Boolean {
+    if (balance.effective.compareAndSet(balanceAmount,
+            balanceAmount.minus(update))) {
+      balance.pending.updateAndGet { p -> p.minus(update) }
+      log.info("Balance {} of customer {}:{} is updated by {}",
+          balanceAmount, fid, order.customer, update)
+      opLog.add {
+        balance.effective.updateAndGet { b -> b.plus(update) }
+        balance.pending.updateAndGet { p -> p.plus(update) }
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+
   private fun customerTryPay(order: OrderMem, festival: Festival,
                              opLog: OpLog, balance: TokenBalance,
-                             balanceAmount: TokenPoints)
+                             balanceAmount: TokenPoints,
+                             orderCost: TokenPoints)
       : CompletableFuture<PaymentAttemptOutcome> {
     if (balance.effective.compareAndSet(balanceAmount,
-            balanceAmount.minus(order.cost))) {
-      balance.pending.updateAndGet { p -> p.minus(order.cost) }
+            balanceAmount.minus(orderCost))) {
+      balance.pending.updateAndGet { p -> p.minus(orderCost) }
       log.info("Balance {} of customer {} is reduced by {}",
-          balanceAmount, order.customer, order.cost)
+          balanceAmount, order.customer, orderCost)
       opLog.add {
-        balance.effective.updateAndGet { b -> b.plus(order.cost) }
-        balance.pending.updateAndGet { p -> p.plus(order.cost) }
+        balance.effective.updateAndGet { b -> b.plus(orderCost) }
+        balance.pending.updateAndGet { p -> p.plus(orderCost) }
+      }
+      if (order.cost.get() != orderCost) {
+        log.info("Rollback pay {}:{} due cost change {} != {}. Retry.",
+            festival.fid(), order.label, order.cost.get(), orderCost)
+        opLog.rollback()
+        return completedFuture(RETRY)
       }
       if (order.state.compareAndSet(Accepted, Paid)) {
         log.info("Fid {}; Status of order {} is Paid",
@@ -334,12 +361,13 @@ class OrderService @Inject constructor(
                   .get(Pair(festival.fid(), customerUid))
                   .thenCompose { balance ->
                     val balanceAmount = balance.effective.get();
-                    if (balanceAmount.value < order.cost.value) {
+                    val orderCost = order.cost.get()
+                    if (balanceAmount.value < orderCost.value) {
                       log.info("Reject payment for order {} due no funds", order.label)
                       completedFuture(NOT_ENOUGH_FUNDS)
                     } else {
                       val opLog = OpLog()
-                      customerTryPay(order, festival, opLog, balance, balanceAmount)
+                      customerTryPay(order, festival, opLog, balance, balanceAmount, orderCost)
                     }
                   }
             else -> {
@@ -475,14 +503,21 @@ class OrderService @Inject constructor(
                                 balanceAmount: TokenPoints,
                                 orderState: OrderState)
       : CompletableFuture<CancelAttemptOutcome> {
+    val orderCost = order.cost.get()
     if (balance.effective.compareAndSet(balanceAmount,
-            balanceAmount.plus(order.cost))) {
-      balance.pending.updateAndGet { p -> p.plus(order.cost) }
+            balanceAmount.plus(orderCost))) {
+      balance.pending.updateAndGet { p -> p.plus(orderCost) }
       log.info("Balance {} of customer {} is increased by {}",
           balanceAmount, order.customer, order.cost)
       opLog.add {
-        balance.effective.updateAndGet { b -> b.minus(order.cost) }
-        balance.pending.updateAndGet { p -> p.minus(order.cost) }
+        balance.effective.updateAndGet { b -> b.minus(orderCost) }
+        balance.pending.updateAndGet { p -> p.minus(orderCost) }
+      }
+      if (orderCost != order.cost.get()) {
+        log.info("Rollback cancel {}:{} due cost change {} != {}. Retry.",
+            festival.fid(), order.label, order.cost.get(), orderCost)
+        opLog.rollback()
+        return completedFuture(CancelAttemptOutcome.RETRY)
       }
       if (order.state.compareAndSet(orderState, Cancelled)) {
         log.info("Fid {}; Status of order {} is Cancelled",
@@ -556,6 +591,121 @@ class OrderService @Inject constructor(
               log.info("Fid {}; Order {} is not in cancellable state {}",
                   festival.fid(), order.label, orderState)
               completedFuture(CancelAttemptOutcome.NOT_CANCELLED)
+            }
+          }
+        }
+  }
+
+  fun modifyDelayedOrder(op: OpLog, order: OrderMem,
+                         festival: Festival, update: OrderUpdate,
+                         newCost: TokenPoints)
+      : CompletableFuture<UpdateAttemptOutcome> {
+    return modifyPaidOrder(op, order, festival, update, newCost)
+        .thenCompose { outcome ->
+          if (outcome == UpdateAttemptOutcome.UPDATED) {
+            if (order.state.compareAndSet(Delayed, Paid)) {
+              festival.readyToExecOrders.addFirst(order.label)
+              delayedOrderDao.remove(festival.fid(), order.label).thenCompose {
+                orderDao.updateState(festival.fid(), order.label, Paid)
+              }.thenApply {
+                outcome
+              }
+            } else {
+              completedFuture(outcome)
+            }
+          } else {
+            completedFuture(outcome)
+          }
+        }
+  }
+
+  fun modifyPaidOrder(op: OpLog, order: OrderMem,
+                          festival: Festival, update: OrderUpdate,
+                          newCost: TokenPoints)
+      : CompletableFuture<UpdateAttemptOutcome> {
+    val wasItems = order.items.get()
+    return tokenBalanceCache
+        .get(Pair(festival.fid(), order.customer))
+        .thenCompose { balance ->
+          val balanceAmount = balance.effective.get();
+          val orderCost = order.cost.get()
+          val diff = newCost.minus(orderCost)
+          if (balanceAmount.value < diff.value) {
+            log.info("Reject order {}:{} update due no funds",
+                festival.fid(), order.label)
+            completedFuture(UpdateAttemptOutcome.NOT_ENOUGH_FUNDS)
+          } else {
+            if (updateBalance(order, festival.fid(), op, balance, balanceAmount, diff)) {
+              if (order.cost.compareAndSet(orderCost, newCost)) {
+                op.add { order.cost.set(orderCost) }
+                if (order.items.compareAndSet(wasItems, update.newItems)) {
+                  orderDao.updateCostAndItems(festival.fid(), newCost, update).thenApply {
+                    UpdateAttemptOutcome.UPDATED
+                  }
+                } else {
+                  op.rollback()
+                  completedFuture(UpdateAttemptOutcome.RETRY)
+                }
+                completedFuture(UpdateAttemptOutcome.UPDATED)
+              } else {
+                log.info("Rollback paid order modification {}:{} due cost change {} != {}. Retry.",
+                    festival.fid(), order.label, order.cost.get(), update)
+                op.rollback()
+                 completedFuture(UpdateAttemptOutcome.RETRY)
+              }
+            } else {
+              op.rollback()
+              completedFuture(UpdateAttemptOutcome.RETRY)
+            }
+          }
+        }
+  }
+
+  fun modifyAcceptedOrder(op: OpLog, order: OrderMem,
+                          festival: Festival, update: OrderUpdate,
+                          newCost: TokenPoints)
+      : CompletableFuture<UpdateAttemptOutcome> {
+    val wasCost = order.cost.get()
+    val wasItems = order.items.get()
+    if (order.cost.compareAndSet(wasCost, newCost)) {
+      op.add { order.cost.set(wasCost) }
+      if (order.items.compareAndSet(wasItems, update.newItems)) {
+        return orderDao.updateCostAndItems(festival.fid(), newCost, update).thenApply {
+          UpdateAttemptOutcome.UPDATED
+        }
+      } else {
+        op.rollback()
+        return completedFuture(UpdateAttemptOutcome.RETRY)
+      }
+    } else {
+      op.rollback()
+      return completedFuture(UpdateAttemptOutcome.RETRY)
+    }
+  }
+
+  fun modifyOrder(festival: Festival, update: OrderUpdate)
+      : CompletableFuture<UpdateAttemptOutcome> {
+    if (festival.info.get().state == FestivalState.Close) {
+      return completedFuture(UpdateAttemptOutcome.FESTIVAL_OVER)
+    }
+    val newCost = costEstimator.howMuchFor(festival, update.newItems)
+    val orderLabel = update.label
+    val op = OpLog()
+    return orderCacheByLabel.get(Pair(festival.fid(), orderLabel))
+        .thenCompose { order ->
+          when (order.state.get()) {
+            Cancelled -> {
+              log.info("Fid {}; Reject order update {} due cancelled",
+                  festival.fid(), order.label)
+              completedFuture(UpdateAttemptOutcome.BAD_ORDER_STATE)
+            }
+            Accepted -> modifyAcceptedOrder(op, order, festival, update, newCost)
+            Paid -> modifyPaidOrder(op, order, festival, update, newCost)
+            Delayed -> modifyDelayedOrder(op, order, festival, update, newCost)
+            else -> {
+              log.info("Fid {}; Reject order update {} due bad state {}",
+                  festival.fid(), order.label, order.state.get())
+              completedFuture(UpdateAttemptOutcome.BAD_ORDER_STATE)
             }
           }
         }

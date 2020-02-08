@@ -77,15 +77,14 @@ class OrderDao : AsyncDao() {
           ORDERS.POINTS_COST,
           ORDERS.REQUIREMENTS)
           .values(fid, order.customer, order.label,
-              order.state.get(), order.cost, order.items)
+              order.state.get(), order.cost.get(), order.items.get())
           .returning(ORDERS.OID)
           .fetchOne()
           .getOid()
+    }.thenApply { oid ->
+      log.info("Store new order {} => {}", oid, order.label)
+      order.label
     }
-        .thenApply { oid ->
-          log.info("Store new order {} => {}", oid, order.label)
-          order.label
-        }
   }
 
   fun updateState(fid: Fid, label: OrderLabel, state: OrderState)
@@ -131,8 +130,8 @@ class OrderDao : AsyncDao() {
                 customer = record.get(ORDERS.CUSTOMER_ID),
                 state = AtomicReference(record.get(ORDERS.STATE)),
                 label = label,
-                cost = record.get(ORDERS.POINTS_COST),
-                items = record.get(ORDERS.REQUIREMENTS)
+                cost = AtomicReference(record.get(ORDERS.POINTS_COST)),
+                items = AtomicReference(record.get(ORDERS.REQUIREMENTS))
             )
           }
     }
@@ -189,6 +188,21 @@ class OrderDao : AsyncDao() {
             created = r.get(ORDERS.CREATED),
             state = r.get(ORDERS.STATE))
         }
+    }
+  }
+
+  fun updateCostAndItems(fid: Fid, cost: TokenPoints, update: OrderUpdate)
+      : CompletableFuture<Int> {
+    return execQuery { jooq ->
+      jooq.update(ORDERS)
+          .set(ORDERS.POINTS_COST, cost)
+          .set(ORDERS.REQUIREMENTS, update.newItems)
+          .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(update.label))
+          .execute()
+    }.thenApply { updated ->
+      log.info("Order {}:{} changed items {} and cost {}",
+          fid, update.label, update.newItems, cost)
+      updated
     }
   }
 }
