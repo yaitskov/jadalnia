@@ -1,5 +1,6 @@
 package org.dan.jadalnia.app.order
 
+import com.google.common.collect.ImmutableSet
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
@@ -67,6 +68,10 @@ class OrderService @Inject constructor(
 
   companion object {
     val log = LoggerFactory.getLogger(OrderService::class.java)
+    val skipOrderStates = ImmutableSet.of(
+        // order can have all these state due order label could be duplicated
+        // in line and selected by 2 kelners
+        Executing, Ready, Cancelled, Handed, Abandoned, Delayed)
   }
 
   fun showOrderProgressToVisitor(fid: Fid, label: OrderLabel)
@@ -191,8 +196,9 @@ class OrderService @Inject constructor(
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
           log.info("Kelner {} started executing order {}", kelnerUid, label)
-          if (order.state.get() == Cancelled) {
-            log.info("Skip cancelled order {}:{}", festival.fid(), label)
+          if (skipOrderStates.contains(order.state.get())) {
+            log.info("Skip order {}:{} due state {}",
+                festival.fid(), label, order.state.get())
             completedFuture(empty())
           } else {
             val prevOrder = festival.busyKelners.putIfAbsent(kelnerUid, label)
