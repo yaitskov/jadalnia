@@ -12,7 +12,6 @@ import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.util.collection.AsyncCache
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
 class LowFood @Inject constructor(
@@ -29,11 +28,9 @@ class LowFood @Inject constructor(
       : CompletableFuture<Void> {
     festival.queuesForMissingMeals.put(
         problemOrder.meal!!, problemOrder.label)
-    delayedOrderDao.delayed(festival.fid(), problemOrder.meal!!, problemOrder.label)
     opLog.add {
       festival.queuesForMissingMeals.remove(problemOrder.meal!!, problemOrder.label)
     }
-    // notify admin
-    return completedFuture(null);
+    return delayedOrderDao.delayed(festival.fid(), problemOrder.meal!!, problemOrder.label)
   }
 }
