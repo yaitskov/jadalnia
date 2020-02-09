@@ -9,7 +9,7 @@ import {OrderSr} from "app/service/order-service";
 import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
 import { T } from 'i18n/translate-tag';
-
+import { jne } from 'collection/join-non-empty';
 
 import bulma from "app/style/my-bulma.sass";
 
@@ -88,33 +88,40 @@ export class KelnerTakenOrder extends TransCom<KelnerTakenOrderP, KelnerTakenOrd
       {!st.e && !st.orderInfo && <LoadingI/>}
       {!st.e && !!st.orderInfo && <div>
         <div class={bulma.buttons}>
-          <button class={bulma.button} onClick={this.cannotExecOrder}>
-            <TI m="order issue"/>
-          </button>
-          <button class={bulma.button} onClick={this.orderPickedUpByCustomer}>
-            <TI m="order picked up"/>
-          </button>
-        </div>
-        { st.showIssueTypes && <div>
-          { !!st.missingMealToPick.length && <div class={bulma.buttons}>
-            {st.missingMealToPick.map(item =>
-              <button class={bulma.button} onClick={() => this.pickMissingMeal(item.name)}>
-                <TI m="meal is not available now" meal={item.name} />
+            { !st.showIssueTypes && <div>
+              <button class={jne(bulma.button, bulma.isWarning)}
+                      onClick={this.cannotExecOrder}>
+                <TI m="order issue"/>
               </button>
-            )}
-          </div>}
-          { !st.missingMealToPick.length && <div class={bulma.buttons}>
-            <button class={bulma.button} onClick={this.customerLate}>
-              <TI m="customer late"/>
-            </button>
-            <button class={bulma.button} onClick={() => this.lowFood(st.orderInfo!!)}>
-              <TI m="low food"/>
-            </button>
-            <button class={bulma.button} onClick={this.kelnerNeedRest}>
-              <TI m="need rest"/>
-            </button>
-          </div>}
-        </div>}
+              <button class={jne(bulma.button, bulma.isPrimary)}
+                      onClick={this.orderPickedUpByCustomer}>
+                <TI m="order picked up"/>
+              </button>
+            </div>}
+            { st.showIssueTypes && <div>
+              { !!st.missingMealToPick.length && <div>
+                {st.missingMealToPick.map(item =>
+                  <button class={bulma.button} onClick={() => this.pickMissingMeal(item.name)}>
+                    <TI m="meal is not available now" meal={item.name} />
+                  </button>
+                )}
+              </div>}
+              { !st.missingMealToPick.length && <div>
+                <button class={jne(bulma.button, bulma.isWarning)}
+                        onClick={this.customerLate}>
+                  <TI m="customer late"/>
+                </button>
+                <button class={jne(bulma.button, bulma.isDanger)}
+                        onClick={() => this.lowFood(st.orderInfo!!)}>
+                  <TI m="low food"/>
+                </button>
+                <button class={jne(bulma.button, bulma.isPrimary)}
+                        onClick={this.kelnerNeedRest}>
+                  <TI m="need rest"/>
+                </button>
+              </div>}
+            </div>}
+        </div>
         <p>
           <TI m="Order includes" lbl={p.orderLbl}/>
         </p>
