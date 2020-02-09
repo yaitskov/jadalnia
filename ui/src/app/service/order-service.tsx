@@ -1,7 +1,8 @@
 import { Thenable } from 'async/abortable-promise';
-import {OrderInfoCustomerView, OrderLabel, OrderPayResult, OrderProgress, OrderState} from 'app/types/order';
+import {OrderInfoCustomerView, OrderLabel, OrderPayResult } from 'app/types/order';
+import { OrderProgress, OrderState, UpdateAttemptOutcome } from 'app/types/order';
 import { RestSr } from "app/service/rest-service";
-import { KelnerOrderView, OrderItem } from 'app/types/order';
+import { KelnerOrderView, OrderItem, OrderUpdate } from 'app/types/order';
 import {Fid} from "app/page/festival/festival-types";
 import { DishName } from 'app/types/menu';
 
@@ -71,5 +72,13 @@ export class OrderSr {
 
   customerPicksOrder(orderLabel: OrderLabel): Thenable<void> {
     return this.$restSr.postJ(`/api/order/pickup/${orderLabel}`, [])
+  }
+
+  modifyOrder(orderUpdate: OrderUpdate): Thenable<UpdateAttemptOutcome> {
+    return this.$restSr.postJ('/api/order/modify', orderUpdate)
+  }
+
+  listUnavailableMeals(): Thenable<DishName[]> {
+    return this.$restSr.getS('/api/order/list-unavailable-meals-with-orders')
   }
 }

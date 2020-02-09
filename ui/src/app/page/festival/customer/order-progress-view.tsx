@@ -117,6 +117,17 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
             </button>
           </div>
         </p>}
+        {st.progress.state == 'Delayed' && <p>
+          <TI m="Order o is delayed due some meal is not available." o={p.ordLbl}/>
+          <TI m="You can wait till the meal is ready or change the order and replace/remove the meal causing the problem." />
+          <TI m="Modified order is served with same priority." />
+          <div class={bulma.buttons}>
+            <Link class={jne(bulma.button, bulma.isPrimary)}
+                  href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
+              <TI m="Modify order" />
+            </Link>
+          </div>
+        </p>}
         {st.progress.state == 'Cancelled' && <p>
           <TI m="Order o is cancelled" o={p.ordLbl}/>
         </p>}

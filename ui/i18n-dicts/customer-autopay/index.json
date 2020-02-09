@@ -10,6 +10,8 @@
   "It was marked as abandoned.": [],
   "Loading...": [],
   "Menu": [],
+  "Modified order is served with same priority.": [],
+  "Modify order": [],
   "Nobody showed to pick order o.": [
     "o"
   ],
@@ -21,6 +23,9 @@
     "o"
   ],
   "Order o is cancelled": [
+    "o"
+  ],
+  "Order o is delayed due some meal is not available.": [
     "o"
   ],
   "Order o is executing": [
@@ -47,6 +52,7 @@
   "Requesting tokens ...": [],
   "Reschedule order": [],
   "Retry later.": [],
+  "You can wait till the meal is ready or change the order and replace/remove the meal causing the problem.": [],
   "You have to pay to put the order in line.": [],
   "Your order number is o": [
     "o"

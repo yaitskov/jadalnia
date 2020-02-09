@@ -230,7 +230,11 @@ class OrderService @Inject constructor(
 
   fun showOrderToVisitor(fid: Fid, label: OrderLabel) = orderCacheByLabel
       .get(Pair(fid, label))
-      .thenApply { order -> VisitorOrderView(order.label, order.cost.get(), order.state.get()) }
+      .thenApply { order ->
+        VisitorOrderView(
+            order.label, order.cost.get(),
+            order.state.get(), order.items.get())
+      }
 
   fun markOrderReadyToPickup(festival: Festival, kelnerUid: Uid, label: OrderLabel)
       = orderReady.complete(festival, kelnerUid, ProblemOrder(label))

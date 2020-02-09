@@ -1579,6 +1579,8 @@ interface CssExports {
   'section': string;
   'select': string;
   'spinAround': string;
+  'strike-through': string;
+  'strikeThrough': string;
   'subtitle': string;
   'svg-icon': string;
   'svgIcon': string;
