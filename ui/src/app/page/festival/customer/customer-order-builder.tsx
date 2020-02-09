@@ -2,7 +2,6 @@ import { h } from 'preact';
 
 import bulma from 'app/style/my-bulma.sass';
 
-import { SecCon } from 'app/component/section-container';
 import { T } from 'i18n/translate-tag';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { jne } from "collection/join-non-empty";
@@ -67,42 +66,62 @@ export class CustomerOrderBuilder
   render(p, st) {
     const [TI, LoadingI] = this.c2(T, Loading);
     const sumMeals = this.sumMeals(p);
-    return <SecCon css={bulma.content}>
-        <ul class={bulma.list}>
-          {p.menu.map((item: MenuItemView, i: number) => <li>
-            <p class={jne(bulma.isInfo, !!p.mealSelections[i] && bulma.isPrimary,
-               p.newMeals.indexOf(p.menu[i].name) >= 0 && bulma.isSuccess,
-               p.missingMeals.indexOf(p.menu[i].name) >= 0 && bulma.strikeThrough)}
-               onClick={() => this.toggleItem(i)}>
-               {item.name} / {item.price}
-            </p>
-            { !!p.mealSelections[i] && <div class={bulma.buttons}>
-              <button class={bulma.button} onClick={() => this.addItem(i)}>+</button>
-              <button class={bulma.button}>{p.mealSelections[i]}</button>
-              <button class={bulma.button} onClick={() => this.removeItem(i)}>-</button>
-            </div>}
-          </li>)}
-        </ul>
-        { sumMeals == 0 && <div>
-          <p>
-            <TI m="Choose a meal from the list above to make an order."/>
+    return <section class={bulma.section}>
+      <ul class={bulma.list}>
+        {p.menu.map((item: MenuItemView, i: number) => <li class={bulma.listItem}>
+          <p class={jne(p.newMeals.indexOf(p.menu[i].name) >= 0 && bulma.bold,
+                        p.missingMeals.indexOf(p.menu[i].name) >= 0 && bulma.strikeThrough)}
+             onClick={() => this.toggleItem(i)}>
+            {item.name} / {item.price}
           </p>
-        </div>}
-        { sumMeals > 0 && <div>
-          <p><TI m="Total:"/></p>
-          <p><TI m="Current balance" v={p.currentBalance}/></p>
-          <p><TI m="Order cost" v={sumMeals}/></p>
-          <p><TI m="Quote to pay" v={Math.max(0, sumMeals - p.currentBalance)}/></p>
-          { !st.puttingOrder && <div class={bulma.buttons} >
-            <button onClick={this.putOrder}
-                    class={jne(bulma.button, bulma.isPrimary, bulma.isCenter )}>
-              <TI m="put order" />
+          { !!p.mealSelections[i] && <div class={bulma.buttons}>
+            <button class={jne(bulma.button, bulma.isSuccess)}
+                    onClick={() => this.addItem(i)}>
+              +
+            </button>
+            <button class={jne(bulma.button, bulma.isInfo)}>
+              {p.mealSelections[i]}
+            </button>
+            <button class={jne(bulma.button, bulma.isDanger)}
+                    onClick={() => this.removeItem(i)}>
+              -
             </button>
           </div>}
-          { st.puttingOrder && <LoadingI t$lbl="Putting order..." />}
-        </div> }
-      </SecCon>;
+        </li>)}
+    </ul>
+    { sumMeals == 0 && <div class={bulma.content}>
+      <p>
+        <TI m="Choose a meal from the list above to make an order."/>
+      </p>
+    </div>}
+    { sumMeals > 0 && <div class={bulma.content}>
+      <table class={bulma.table}>
+        <tr>
+          <td colSpan={2}><TI m="Total:"/></td>
+        </tr>
+        <tr>
+          <td><TI m="Current balance"/></td>
+          <td>{p.currentBalance}</td>
+        </tr>
+        <tr>
+          <td><TI m="Order cost"/></td>
+          <td>{sumMeals}</td>
+        </tr>
+        <tr>
+          <td><TI m="Quote to pay"/></td>
+          <td>{Math.max(0, sumMeals - p.currentBalance)}</td>
+        </tr>
+      </table>
+      { !st.puttingOrder && <div class={bulma.buttons} >
+        <button onClick={this.putOrder}
+                class={jne(bulma.button, bulma.isPrimary, bulma.isCenter )}>
+          <TI m="put order" />
+        </button>
+      </div>}
+      { st.puttingOrder && <LoadingI t$lbl="Putting order..." />}
+    </div> }
+    </section>;
   }
 
-  at(): string[] { return []; }
+    at(): string[] { return []; }
 }

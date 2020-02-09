@@ -54,6 +54,8 @@ extends TransCom<CustomerOrderModificationP, CustomerOrderModificationS> {
   constructor(props) {
     super(props);
     this.st = {at: this.at(), newMeals: [], missingMeals: []};
+    this.putOrder = this.putOrder.bind(this);
+    this.mealSelected = this.mealSelected.bind(this);
   }
 
   putOrder(): Thenable<any> {
@@ -118,7 +120,7 @@ extends TransCom<CustomerOrderModificationP, CustomerOrderModificationS> {
                       mealSelections={st.mealSelections!!}
                       newMeals={st.newMeals}
                       missingMeals={st.missingMeals}
-                      currentBalance={st.currentBalance - sumMealsPrice(p.menu!!, p.originMealSelections!!) }
+                      currentBalance={st.currentBalance + sumMealsPrice(st.menu!!, st.originMealSelections!!) }
                       onPutOrder={this.putOrder}
                       onMealSelected={this.mealSelected} />}
       {!!st.updateOutcome && <div class={bulma.isDanger}>

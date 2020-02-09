@@ -8,6 +8,7 @@ interface CssExports {
   'areMedium': string;
   'areSmall': string;
   'block': string;
+  'bold': string;
   'box': string;
   'breadcrumb': string;
   'button': string;
