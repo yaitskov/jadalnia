@@ -2,14 +2,16 @@
   "Cancel order": "Anulować zamówenie",
   "order page":"Nowe zamówienie",
   "my orders":"Moje zamówienia",
+  "Modified order is served with same priority.": [
+    "Zaktualizowane zamówienie będzie obsługiwanę z takim samym priorytemem. "
+  ],
   "back to menu":"wróczyć do karty dań",
   "Order payment":"Opłata zamówienia",
   "Your order number is o":["Numer twojego zamówienia: ", "o"],
-  "Order was just paid.": "Zamówienie zostało opłacone",
-  "Order is already paid": "Zamówienie już było opłacone",
+  "Order was just paid.": "Zamówienie zostało opłacone. ",
+  "Order is already paid": "Zamówienie już było opłacone. ",
   "Order is not paid due festival is over.": "Opłata za zamówienie nie pobrana, bo festiwal się skończył.",
   "order is not paid due technical reason": "Opłata za zamówienie nie pobrana, bo ze względów technicznych.",
-  "Retry later.": "Spróbuj jeszcze raz.",
   "Order is not paid because it has been cancelled.": "Zamówienie nie może być opłacone, bo jest anulowane.",
   "Put similar order again if you want.": "Możesz złorzyć podobnę zamówienie jeszcze raz.",
   "Not enough tokens to pay order.": "Nie starczy tokenów do opłaty zamówienia.",
@@ -33,6 +35,14 @@
   "Estimated order time minutes":["Przewidywany czas oczekiwania ", "time", " minut. "],
   "Order o is executing":["o"],
   "Order o is ready for pickup":["o"],
-  "Order o is cancelled":["o"],
-  "Order o is taken":["o"]
+  "Order o is cancelled":["Zamówienie ","o", " anulowane. "],
+  "Order o is delayed due some meal is not available.": [
+    "Zamówienie ", "o", " jest wstrzymane, bo jakaś potrawa z niego chwiliowo niedostępna. "],
+  "Order o is taken":["o"],
+  "Retry later.": "Spróbuj jeszcze raz.",
+  "You can wait till the meal is ready or change the order and replace/remove the meal causing the problem.": [
+    "Możesz zaczekać dopóki wszystkie potrawy będą gotowę lub zmienić treść zamówienia",
+    " i zastąpić potrawę czymś innym lub prosto ją usunąć. "
+  ]
+
 }

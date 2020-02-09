@@ -7,10 +7,12 @@
   "pay for the order": "Zapłacić za zamówienie",
   "Fest control":[],
   "Menu":"Pilot",
+  "Modified order is served with same priority.": [
+    "Zaktualizowane zamówienie będzie obsługiwanę z takim samym priorytemem. "
+  ],
   "Sign up":[],
   "Log in":[],
   "I got order": "Odebrałem zamówienie",
-  "Reschedule order": "Wstać do kolejki",
   "Press reschedule button to put order in line.": "Naciśnij przycisk aby poczekać jeszcze raz. ",
   "Nobody showed to pick order o.": ["Nikt nie zjawił się po odbiór zamówiena ", "o",". "],
   "It was marked as abandoned.": "Zamówienie jest porzucone. ",
@@ -22,4 +24,12 @@
   "Order o is executing":["Zamówienie ","o", " szykuje się. "],
   "Order o is ready for pickup":["Zamówienie ","o", " gotowe do obioru. "],
   "Order o is cancelled":["Zamówienie ","o", " anulowane. "],
-  "Order o is taken":["Zamówienie ", "o", " odebrane. "]}
+  "Order o is delayed due some meal is not available.": [
+    "Zamówienie ", "o", " jest wstrzymane, bo jakaś potrawa z niego chwiliowo niedostępna. "],
+  "Order o is taken":["Zamówienie ", "o", " odebrane. "],
+  "Reschedule order": "Wstać do kolejki",
+  "You can wait till the meal is ready or change the order and replace/remove the meal causing the problem.": [
+    "Możesz zaczekać dopóki wszystkie potrawy będą gotowę lub zmienić treść zamówienia",
+    " i zastąpić potrawę czymś innym lub prosto ją usunąć. "
+  ]
+}
