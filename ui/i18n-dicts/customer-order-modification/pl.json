@@ -1,9 +1,11 @@
 {
   "Current balance": "Saldo: ",
+  "Loading...":"ładowanie",
   "Menu": "Pilot",
   "Total:": "Kwota gółna",
   "Order cost":"Cena zamówienia: ",
   "Order update": "Prawka zamówienia",
-  "put order": "Zaktualizować zamówienie",
-  "Quote to pay": "Do opłaty: "
+  "Quote to pay": "Do opłaty: ",
+  "my orders":"Moje zamówienia",
+  "put order": "Zaktualizować zamówienie"
 }

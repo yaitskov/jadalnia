@@ -1,4 +1,6 @@
-{"Choose meals": "Wybór dań",
+{
+  "Choose meals": "Wybór dań",
+  "Loading...":"ładowanie",
   "my orders": "Moje zamówienia",
   "Total:": "Kwota gółna",
   "Current balance": "Saldo: ",
@@ -9,5 +11,5 @@
   "Fest control":[],
   "Menu": "Pilot",
   "Sign up":[],
-  "Log in":[],
-  "Loading...":[]}
+  "Log in":[]
+}
