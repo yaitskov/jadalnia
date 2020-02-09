@@ -90,6 +90,7 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
                       mealSelections={st.mealSelections}
                       newMeals={[]}
                       missingMeals={[]}
+                      validationError={<span/>}
                       currentBalance={st.currentBalance}
                       onPutOrder={this.putOrder}
                       onMealSelected={this.mealSelected} />}
@@ -98,6 +99,7 @@ class CustomerMenu extends TransCom<CustomerMenuP, CustomerMenuS> {
 
   at(): string[] { return []; }
 }
+
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
   : Instantiable<CustomerMenu> {

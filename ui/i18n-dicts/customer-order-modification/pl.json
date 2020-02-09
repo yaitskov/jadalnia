@@ -1,11 +1,19 @@
 {
   "Current balance": "Saldo: ",
+  "Festival is over": "Festiwal skończył się",
   "Loading...":"ładowanie",
   "Menu": "Pilot",
-  "Total:": "Kwota gółna",
+  "Not enough money to pay new version of order": [
+    "Brakuje pięniądz, żeby opłacić zakutalizowane zamówienie"
+  ],
   "Order cost":"Cena zamówienia: ",
   "Order update": "Prawka zamówienia",
+  "Order state does not support modification": [
+    "Stan zamówienia nie wspiera prawki"
+  ],
   "Quote to pay": "Do opłaty: ",
+  "Total:": "Kwota gółna",
+  "Try again": "Sprubój jeszcze raz",
   "my orders":"Moje zamówienia",
   "put order": "Zaktualizować zamówienie"
 }

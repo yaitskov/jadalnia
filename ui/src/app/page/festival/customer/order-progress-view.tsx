@@ -80,16 +80,20 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
             </button>
           </div>
         </p>}
-        {st.progress.state == 'Paid' && <p>
-          <TI m="Order o is xth in line" xth={st.progress.ordersAhead} o={p.ordLbl}/>
-          <TI m="Estimated order time minutes" time={Math.round(st.progress.etaSeconds / 60)} />
+        {st.progress.state == 'Paid' && <div>
+          <p>
+            <TI m="Order o is xth in line" xth={st.progress.ordersAhead} o={p.ordLbl}/>
+            <TI m="Estimated order time minutes" time={Math.round(st.progress.etaSeconds / 60)} />
+          </p>
           <div class={bulma.buttons}>
-            <button class={jne(bulma.button, bulma.isWarning)}
-                    onClick={this.cancelOrder}>
-              <TI m="Cancel order" />
-            </button>
+            <div class={bulma.buttons}>
+              <Link class={jne(bulma.button, bulma.isPrimary)}
+                    href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
+                <TI m="Modify order" />
+              </Link>
+            </div>
           </div>
-        </p>}
+        </div>}
         {st.progress.state == 'Executing' && <p>
           <TI m="Order o is executing" o={p.ordLbl}/>
         </p>}
@@ -117,26 +121,28 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
             </button>
           </div>
         </p>}
-        {st.progress.state == 'Delayed' && <p>
-          <TI m="Order o is delayed due some meal is not available." o={p.ordLbl}/>
-          <TI m="You can wait till the meal is ready or change the order and replace/remove the meal causing the problem." />
-          <TI m="Modified order is served with same priority." />
+        {st.progress.state == 'Delayed' && <div>
+          <p>
+            <TI m="Order o is delayed due some meal is not available." o={p.ordLbl}/>
+            <TI m="You can wait till the meal is ready or change the order and replace/remove the meal causing the problem." />
+            <TI m="Modified order is served with same priority." />
+          </p>
           <div class={bulma.buttons}>
             <Link class={jne(bulma.button, bulma.isPrimary)}
                   href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
               <TI m="Modify order" />
             </Link>
           </div>
-        </p>}
+        </div>}
         {st.progress.state == 'Cancelled' && <p>
           <TI m="Order o is cancelled" o={p.ordLbl}/>
         </p>}
         {st.progress.state == 'Handed' && <p>
           <TI m="Order o is taken" o={p.ordLbl}/>
         </p>}
-          </div>
+      </div>
       }
-      </div>;
+    </div>;
   }
 
   at(): string[] { return []; }

@@ -2,6 +2,7 @@ import { h } from 'preact';
 
 import bulma from 'app/style/my-bulma.sass';
 
+import { SuperElement } from 'component/types';
 import { T } from 'i18n/translate-tag';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import { jne } from "collection/join-non-empty";
@@ -13,6 +14,7 @@ import { Thenable } from "async/abortable-promise";
 
 export interface CustomerOrderBuilderP {
   menu: MenuItemView[];
+  validationError: SuperElement;
   mealSelections: number[];
   newMeals: DishName[];
   missingMeals: DishName[];
@@ -88,7 +90,7 @@ export class CustomerOrderBuilder
             </button>
           </div>}
         </li>)}
-    </ul>
+      </ul>
     { sumMeals == 0 && <div class={bulma.content}>
       <p>
         <TI m="Choose a meal from the list above to make an order."/>
@@ -112,6 +114,7 @@ export class CustomerOrderBuilder
           <td>{Math.max(0, sumMeals - p.currentBalance)}</td>
         </tr>
       </table>
+      { p.validationError }
       { !st.puttingOrder && <div class={bulma.buttons} >
         <button onClick={this.putOrder}
                 class={jne(bulma.button, bulma.isPrimary, bulma.isCenter )}>
@@ -119,9 +122,9 @@ export class CustomerOrderBuilder
         </button>
       </div>}
       { st.puttingOrder && <LoadingI t$lbl="Putting order..." />}
-    </div> }
-    </section>;
+    </div>}
+  </section>;
   }
 
-    at(): string[] { return []; }
+  at(): string[] { return []; }
 }

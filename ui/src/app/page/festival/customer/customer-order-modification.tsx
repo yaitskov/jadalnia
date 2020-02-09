@@ -1,6 +1,7 @@
 import { h } from 'preact';
 import { route } from 'preact-router';
 
+import { SuperElement } from 'component/types';
 import { U } from 'util/const';
 import {Loading} from "component/loading";
 import {Container, FwdContainer} from 'injection/inject-1k';
@@ -24,7 +25,7 @@ import {TokenSr} from "app/service/token-service";
 
 import bulma from 'app/style/my-bulma.sass';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
-
+import {jne} from "collection/join-non-empty";
 
 export interface CustomerOrderModificationP {
   fid: Fid;
@@ -116,19 +117,23 @@ extends TransCom<CustomerOrderModificationP, CustomerOrderModificationS> {
       {(!st.menu || !st.originMealSelections ||  st.currentBalance === U) && !st.e && <LoadingI/>}
       <RestErrCo e={st.e} />
       {!!st.menu && !!st.originMealSelections && st.currentBalance !== U && <CustomerOrderBuilderI
-                      menu={st.menu!!}
-                      mealSelections={st.mealSelections!!}
-                      newMeals={st.newMeals}
-                      missingMeals={st.missingMeals}
-                      currentBalance={st.currentBalance + sumMealsPrice(st.menu!!, st.originMealSelections!!) }
-                      onPutOrder={this.putOrder}
-                      onMealSelected={this.mealSelected} />}
-      {!!st.updateOutcome && <div class={bulma.isDanger}>
-        {st.updateOutcome == 'RETRY' && <p><TI m="Try again"/></p> }
-        {st.updateOutcome == 'FESTIVAL_OVER' && <p><TI m="Festival is over"/></p> }
-        {st.updateOutcome == 'BAD_ORDER_STATE' && <p><TI m="Order state does not support modification"/></p> }
-        {st.updateOutcome == 'NOT_ENOUGH_FUNDS' && <p><TI m="Not enough money to pay new version of order"/></p> }
-      </div>}
+         menu={st.menu!!}
+         mealSelections={st.mealSelections!!}
+         newMeals={st.newMeals}
+         missingMeals={st.missingMeals}
+         currentBalance={st.currentBalance + sumMealsPrice(st.menu!!, st.originMealSelections!!) }
+         onPutOrder={this.putOrder}
+         validationError={
+           !!st.updateOutcome && <div class={jne(bulma.message, bulma.isDanger)}>
+             <div class={bulma.messageHeader}>
+               {st.updateOutcome == 'RETRY' && <p><TI m="Try again"/></p> }
+               {st.updateOutcome == 'FESTIVAL_OVER' && <p><TI m="Festival is over"/></p> }
+               {st.updateOutcome == 'BAD_ORDER_STATE' && <p><TI m="Order state does not support modification"/></p> }
+               {st.updateOutcome == 'NOT_ENOUGH_FUNDS' && <p><TI m="Not enough money to pay new version of order"/></p>}
+             </div>
+           </div>
+         }
+         onMealSelected={this.mealSelected} />}
     </div>;
   }
 
