@@ -82,7 +82,8 @@ class OrderDao : AsyncDao() {
           .fetchOne()
           .getOid()
     }.thenApply { oid ->
-      log.info("Store new order {} => {}", oid, order.label)
+      log.info("Stored new order {}:{} => {}",
+          fid, oid, order.label)
       order.label
     }
   }

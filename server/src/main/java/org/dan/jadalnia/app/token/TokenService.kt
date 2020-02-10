@@ -63,7 +63,6 @@ class TokenService @Inject constructor(
     }
   }
 
-
   fun approveTokens(
       festival: Festival,
       kasierUid: Uid,
@@ -81,8 +80,8 @@ class TokenService @Inject constructor(
                       tokenDao.approveToken(fid, token.tokenId, kasierUid).thenAccept {
                         balance.effective.updateAndGet {
                           points ->
-                          log.info("Increase effective balance by {} for {}",
-                              token.amount, approveReq.customer)
+                          log.info("Increase effective balance {} by {} for {}",
+                              points, token.amount, approveReq.customer)
                           points.plus(token.amount)
                         }
                       }.thenApply { Optional.of(token)

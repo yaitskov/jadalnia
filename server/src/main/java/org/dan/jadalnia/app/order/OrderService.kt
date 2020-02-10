@@ -110,13 +110,16 @@ class OrderService @Inject constructor(
     return labelService
         .allocate(festival)
         .thenApply { label ->
+          val cost = costEstimator.howMuchFor(festival, newOrderItems)
+          log.info("Store new order {}:{} price {} items {}",
+              festival.fid(), label, cost, newOrderItems)
           orderCacheByLabel.inject(
               Pair(festival.fid(), label),
               OrderMem(
                   label = label,
                   customer = customerSession.uid,
                   items = AtomicReference(newOrderItems),
-                  cost = AtomicReference(costEstimator.howMuchFor(festival, newOrderItems)),
+                  cost = AtomicReference(cost),
                   state = AtomicReference(Accepted)
               ))
         }
@@ -292,6 +295,8 @@ class OrderService @Inject constructor(
       log.info("Balance {} of customer {}:{} is updated by {}",
           balanceAmount, fid, order.customer, update)
       opLog.add {
+        log.info("Revert balance {}:{} to {}",
+            fid, order.customer, balanceAmount)
         balance.effective.updateAndGet { b -> b.plus(update) }
         balance.pending.updateAndGet { p -> p.plus(update) }
       }
@@ -629,22 +634,28 @@ class OrderService @Inject constructor(
                           newCost: TokenPoints)
       : CompletableFuture<UpdateAttemptOutcome> {
     val wasItems = order.items.get()
+    val fid = festival.fid()
     return tokenBalanceCache
-        .get(Pair(festival.fid(), order.customer))
+        .get(Pair(fid, order.customer))
         .thenCompose { balance ->
           val balanceAmount = balance.effective.get();
           val orderCost = order.cost.get()
           val diff = newCost.minus(orderCost)
           if (balanceAmount.value < diff.value) {
-            log.info("Reject order {}:{} update due no funds",
-                festival.fid(), order.label)
+            log.info("Reject order {}:{} update due no funds", fid, order.label)
             completedFuture(UpdateAttemptOutcome.NOT_ENOUGH_FUNDS)
           } else {
-            if (updateBalance(order, festival.fid(), op, balance, balanceAmount, diff)) {
+            if (updateBalance(order, fid, op, balance, balanceAmount, diff)) {
+              log.info("Update cost {}:{} {} => {}",
+                  fid, order.label, orderCost, newCost)
               if (order.cost.compareAndSet(orderCost, newCost)) {
-                op.add { order.cost.set(orderCost) }
+                op.add {
+                  log.info("Revert order cost {}:{} => {}",
+                      fid, order.label, orderCost)
+                  order.cost.set(orderCost)
+                }
                 if (order.items.compareAndSet(wasItems, update.newItems)) {
-                  orderDao.updateCostAndItems(festival.fid(), newCost, update).thenApply {
+                  orderDao.updateCostAndItems(fid, newCost, update).thenApply {
                     UpdateAttemptOutcome.UPDATED
                   }
                 } else {
@@ -653,9 +664,9 @@ class OrderService @Inject constructor(
                 }
               } else {
                 log.info("Rollback paid order modification {}:{} due cost change {} != {}. Retry.",
-                    festival.fid(), order.label, order.cost.get(), update)
+                    fid, order.label, order.cost.get(), update)
                 op.rollback()
-                 completedFuture(UpdateAttemptOutcome.RETRY)
+                completedFuture(UpdateAttemptOutcome.RETRY)
               }
             } else {
               op.rollback()
