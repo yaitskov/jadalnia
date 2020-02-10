@@ -85,7 +85,6 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
           </p>
           <OrderProgressViewI fid={p.fid} ordLbl={p.order} />
         </div>}
-
         {st.payResult === 'ALREADY_PAID' && <div>
           <p>
             <TI m="Order is already paid"/>

@@ -2,6 +2,7 @@ import { h } from 'preact';
 
 import bulma from 'app/style/my-bulma.sass';
 
+import {reloadPage} from "util/routing";
 import { T } from 'i18n/translate-tag';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {Fid} from 'app/page/festival/festival-types';
@@ -92,6 +93,10 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
                   href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
               <TI m="Modify order" />
             </Link>
+            <button class={jne(bulma.button, bulma.isInfo)}
+                    onClick={reloadPage}>
+              <TI m="reload page" />
+            </button>
           </div>
         </div>}
         {st.progress.state == 'Executing' && <p>

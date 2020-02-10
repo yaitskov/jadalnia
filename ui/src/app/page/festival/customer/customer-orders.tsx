@@ -1,6 +1,8 @@
 import { h } from 'preact';
 import {Link} from 'preact-router';
 
+import { jne } from 'collection/join-non-empty';
+import {reloadPage} from "util/routing";
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -53,12 +55,12 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
         {!st.orders && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
         {!!st.orders && <table class={bulma.table}>
-          {!!st.orders.length || <tr>
+          {!st.orders.length && <tr>
             <td colSpan={2}>
               <TI m="No orders"/>
             </td>
           </tr>}
-          {!!st.orders.length || <tr>
+          {!!st.orders.length && <tr>
             <td>#</td>
             <td>
               <TI m="State"/>
@@ -77,6 +79,17 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
             </td>
           </tr>)}
         </table>}
+        <div class={bulma.buttons}>
+          {!!st.orders && !st.orders.length && <Link
+            class={jne(bulma.button, bulma.isPrimary)}
+            href={`/festival/visitor/menu/${p.fid}`}>
+            <TI m="meal menu" />
+          </Link>}
+          <button class={jne(bulma.button, bulma.isPrimary)}
+                  onClick={reloadPage}>
+            <TI m="reload page" />
+          </button>
+        </div>
       </SecCon>
     </div>;
   }

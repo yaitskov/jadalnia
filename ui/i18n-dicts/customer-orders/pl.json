@@ -1,8 +1,10 @@
-{"My orders": "Moje zamówienia",
+{
+  "My orders": "Moje zamówienia",
   "meal menu": "Karta dań",
   "Fest control":[],
   "Menu": "Pilot",
   "Sign up":[],
   "Log in":[],
-  "Loading...": "Ladowanie..."
+  "Loading...": "Ladowanie...",
+  "reload page": "Sprawdzić"
 }
