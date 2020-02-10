@@ -66,9 +66,11 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
       {!st.progress && !st.e && <TI m="loading order progress..." o={p.ordLbl}/>}
       <RestErrCo e={st.e} />
       {!!st.progress && <div>
-        {st.progress.state == 'Accepted' && <p>
-          <TI m="Order o is accepted." o={p.ordLbl}/>
-          <TI m="You have to pay to put the order in line."/>
+        {st.progress.state == 'Accepted' && <div>
+          <p>
+            <TI m="Order o is accepted." o={p.ordLbl}/>
+            <TI m="You have to pay to put the order in line."/>
+          </p>
           <div class={bulma.buttons}>
             <Link href={`/festival/visitor/order/autopay/${p.fid}/${p.ordLbl}`}
                   class={jne(bulma.button, bulma.isPrimary)}>
@@ -79,37 +81,37 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
               <TI m="Cancel order" />
             </button>
           </div>
-        </p>}
+        </div>}
         {st.progress.state == 'Paid' && <div>
           <p>
             <TI m="Order o is xth in line" xth={st.progress.ordersAhead} o={p.ordLbl}/>
             <TI m="Estimated order time minutes" time={Math.round(st.progress.etaSeconds / 60)} />
           </p>
           <div class={bulma.buttons}>
-            <div class={bulma.buttons}>
-              <Link class={jne(bulma.button, bulma.isPrimary)}
-                    href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
-                <TI m="Modify order" />
-              </Link>
-            </div>
+            <Link class={jne(bulma.button, bulma.isPrimary)}
+                  href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
+              <TI m="Modify order" />
+            </Link>
           </div>
         </div>}
         {st.progress.state == 'Executing' && <p>
           <TI m="Order o is executing" o={p.ordLbl}/>
         </p>}
-        {st.progress.state == 'Ready' && <p>
-          <TI m="Order o is ready for pickup" o={p.ordLbl}/>
+        {st.progress.state == 'Ready' && <div>
+          <p><TI m="Order o is ready for pickup" o={p.ordLbl}/></p>
           <div class={bulma.buttons}>
             <button class={jne(bulma.button, bulma.isPrimary)}
                     onClick={this.pickUpOrder}>
               <TI m="I got order" />
             </button>
           </div>
-        </p>}
-        {st.progress.state == 'Abandoned' && <p>
-          <TI m="Nobody showed to pick order o." o={p.ordLbl}/>
-          <TI m="It was marked as abandoned." />
-          <TI m="Press reschedule button to put order in line." />
+        </div>}
+        {st.progress.state == 'Abandoned' && <div>
+          <p>
+            <TI m="Nobody showed to pick order o." o={p.ordLbl}/>
+            <TI m="It was marked as abandoned." />
+            <TI m="Press reschedule button to put order in line." />
+          </p>
           <div class={bulma.buttons}>
             <button class={jne(bulma.button, bulma.isPrimary)}
                     onClick={this.rescheduleOrder}>
@@ -120,7 +122,7 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
               <TI m="Cancel order" />
             </button>
           </div>
-        </p>}
+        </div>}
         {st.progress.state == 'Delayed' && <div>
           <p>
             <TI m="Order o is delayed due some meal is not available." o={p.ordLbl}/>
