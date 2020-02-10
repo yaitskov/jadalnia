@@ -1,6 +1,9 @@
 {"Token request": "Zapytanie o tokieny",
   "my orders": "moje zamówienia",
   "meal menu": "karta dań",
+  "Pay order": [
+    "Zapłacić za ", "o"
+  ],
   "Your visitor id": ["Twój identyfikator gościa ", "id"],
   "Token request tri.":["Zapytanie o tokieny ", "tri", ". "],
   "x tokens is requested.":["Zapytano o ", "x", " tokenów. "],

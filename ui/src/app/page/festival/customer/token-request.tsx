@@ -18,9 +18,11 @@ import {Loading} from "component/loading";
 import { jne } from 'collection/join-non-empty';
 import {reloadPage} from "util/routing";
 import {UserAuth} from "app/auth/user-auth";
+import {OrderLabel} from "app/types/order";
 
 export interface TokenRequestP {
   fid: Fid;
+  order?: OrderLabel;
   tokReq: TokenRequestId;
 }
 
@@ -78,10 +80,20 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
                   onClick={reloadPage}>
             <TI m="check token request that approved" />
           </button>}
-          {!!st.tokenRequestInfo && st.tokenRequestInfo.approved && <Link href={`/festival/visitor/orders/${p.fid}`}
-                class={jne(bulma.button, bulma.isPrimary)}>
-            <TI m="To my order" />
-          </Link>}
+          {!!st.tokenRequestInfo
+            && st.tokenRequestInfo.approved
+            && !!p.order
+            && <Link href={`/festival/visitor/order/autopay/${p.fid}/${p.order}`}
+                     class={jne(bulma.button, bulma.isPrimary)}>
+                 <TI m="Pay order" o={p.order} />
+               </Link>}
+          {!!st.tokenRequestInfo
+            && st.tokenRequestInfo.approved
+            && !p.order
+            && <Link href={`/festival/visitor/orders/${p.fid}`}
+                     class={jne(bulma.button, bulma.isPrimary)}>
+                 <TI m="To my order" />
+               </Link>}
         </div>
         { !st.e && !st.tokenRequestInfo && <LoadingI /> }
         <RestErrCo e={st.e} />

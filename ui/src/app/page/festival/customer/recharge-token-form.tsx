@@ -11,10 +11,11 @@ import {Thenable} from "async/abortable-promise";
 
 import bulma from 'app/style/my-bulma.sass';
 import { TxtField } from 'app/component/field/txt-field';
-
+import {OrderLabel} from "app/types/order";
 
 export interface RechargeTokenFormP {
   fid: Fid;
+  order?: OrderLabel;
   minQuote: number;
 }
 
@@ -46,7 +47,7 @@ export class RechargeTokenForm extends TransCom<RechargeTokenFormP, RechargeToke
     this.ust(st => ({...st, progress: true}));
     return this.$tokenSr.requestTokens(form.amount)
       .tn(tokenRequestId => {
-        route(`/festival/visitor/token-request/${this.pr.fid}/${tokenRequestId}`);
+        route(`/festival/visitor/token-request/${this.pr.fid}/${tokenRequestId}/${this.pr.order}`);
       })
       .ctch(e => this.ust(st => ({...st, e: e, progress: false})));
   }

@@ -112,7 +112,9 @@ class CustomerAutopay extends TransCom<CustomerAutopayP, CustomerAutopayS> {
           <p>
             <TI m="Not enough tokens to pay order."/>
           </p>
-          { !!st.orderInfo && <RechargeTokenFormI fid={p.fid} minQuote={st.orderInfo.price - st.balance} /> }
+          { !!st.orderInfo && <RechargeTokenFormI fid={p.fid}
+                                                  order={p.order}
+                                                  minQuote={st.orderInfo.price - st.balance} /> }
         </div>}
         <RestErrCo e={st.e} />
       </SecCon>
