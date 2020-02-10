@@ -122,7 +122,8 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
             <TI m="and be ready to be called and pick the order." />
           </p>
           <div class={bulma.buttons}>
-            <button class={bulma.button} onClick={this.signUpAndShowMenu}>
+            <button class={jne(bulma.button, bulma.isPrimary)}
+                    onClick={this.signUpAndShowMenu}>
               <TI m="see menu" />
             </button>
           </div>
