@@ -81,4 +81,8 @@ export class OrderSr {
   listUnavailableMeals(): Thenable<DishName[]> {
     return this.$restSr.getS('/api/order/list-unavailable-meals-with-orders')
   }
+
+  mealAvailable(meal: DishName): Thenable<void> {
+    return this.$restSr.postJ(`/api/order/meal-available/${meal}`, [])
+  }
 }

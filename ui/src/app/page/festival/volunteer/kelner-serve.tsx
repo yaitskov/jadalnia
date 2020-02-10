@@ -16,6 +16,7 @@ import {Loading} from "component/loading";
 import {OrderSr} from "app/service/order-service";
 import {KelnerOrder} from "app/page/festival/volunteer/kelner-order";
 import { T } from 'i18n/translate-tag';
+import { NavbarLinkItem } from 'app/component/navbar-link-item';
 
 export interface KelnerServeS extends TransComS {
   festState?: FestState;
@@ -42,7 +43,11 @@ class KelnerServe extends TransCom<{fid: Fid}, KelnerServeS> {
       = this.c4(TitleStdMainMenu, Loading, KelnerOrder, T);
 
     return <div>
-      <TitleStdMainMenuI t$title="Kelner service"/>
+      <TitleStdMainMenuI t$title="Kelner service"
+                         extraItems={[
+                           <NavbarLinkItem path={`/festival/kelner/missing/meals/${p.fid}`}
+                                           t$label="Missing meals" />
+                         ]}/>
       <SecCon css={bulma.content}>
         <RestErrCo e={st.e} />
         {!st.festState && !st.e && <LoadingI/>}

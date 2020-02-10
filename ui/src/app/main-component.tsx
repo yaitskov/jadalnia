@@ -80,6 +80,9 @@ export class MainCom extends InjSubCom<{}, {}> {
   KelnerTakenOrder = async() => await import('app/page/festival/volunteer/kelner/kelner-taken-order-page')
     .then(m => this.inj(m as AsyncModule, 'kelner-taken-order-page'));
 
+  KelnerMissingMeals = async() => await import('app/page/festival/volunteer/kelner/kelner-missing-meals')
+    .then(m => this.inj(m as AsyncModule, 'kelner-missing-meals'));
+
   KelnerServe = async() => await import('app/page/festival/volunteer/kelner-serve')
     .then(m => this.inj(m as AsyncModule, 'kelner-serve'));
 
@@ -126,6 +129,7 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/' getComponent={this.LPG} />
       <AsyncRoute path='/festival/kelner/serve/order/:fid/:order' getComponent={this.KelnerTakenOrder}/>
       <AsyncRoute path='/festival/kelner/serve/:fid' getComponent={this.KelnerServe} />
+      <AsyncRoute path='/festival/kelner/missing/meals/:fid' getComponent={this.KelnerMissingMeals} />
       <AsyncRoute path='/festival/kasier/serve/:fid' getComponent={this.KasierServe} />
       <AsyncRoute path='/festival/kasier/visitor-token-requests/:fid:/:vid' getComponent={this.KasierTokenRequests} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
