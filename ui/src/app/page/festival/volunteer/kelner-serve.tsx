@@ -1,4 +1,7 @@
 import { h } from 'preact';
+
+import { jne } from 'collection/join-non-empty';
+import {reloadPage} from "util/routing";
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';
 import { Instantiable } from 'collection/typed-object';
@@ -12,7 +15,7 @@ import bulma from 'app/style/my-bulma.sass';
 import {Loading} from "component/loading";
 import {OrderSr} from "app/service/order-service";
 import {KelnerOrder} from "app/page/festival/volunteer/kelner-order";
-
+import { T } from 'i18n/translate-tag';
 
 export interface KelnerServeS extends TransComS {
   festState?: FestState;
@@ -35,18 +38,35 @@ class KelnerServe extends TransCom<{fid: Fid}, KelnerServeS> {
   }
 
   render(p, st) {
-    const [TitleStdMainMenuI, LoadingI, KelnerOrderI] = this.c3(TitleStdMainMenu, Loading, KelnerOrder);
+    const [TitleStdMainMenuI, LoadingI, KelnerOrderI, TI]
+      = this.c4(TitleStdMainMenu, Loading, KelnerOrder, T);
 
     return <div>
       <TitleStdMainMenuI t$title="Kelner service"/>
       <SecCon css={bulma.content}>
         <RestErrCo e={st.e} />
         {!st.festState && !st.e && <LoadingI/>}
-        {st.festState == Announce && <div>
-          Festival is not started yet.
+        {st.festState == Announce && <div class={jne(bulma.message, bulma.isInfo)}>
+          <div class={bulma.messageHeader}>
+            <TI m="Festival is not started yet"/>
+          </div>
+          <div class={bulma.messageBody}>
+            <button class={jne(bulma.button, bulma.isPrimary)}
+                    onClick={reloadPage}>
+              <TI m="reload page" />
+            </button>
+          </div>
         </div>}
-        {st.festState == Close && <div>
-          Festival is over. Thanks for your help.
+        {st.festState == Close && <div class={jne(bulma.message, bulma.isInfo)}>
+          <div class={bulma.messageHeader}>
+            <TI m="Festival is over"/>
+          </div>
+          <div class={bulma.messageBody}>
+            <button class={jne(bulma.button, bulma.isPrimary)}
+                    onClick={reloadPage}>
+              <TI m="reload page" />
+           </button>
+          </div>
         </div>}
         {st.festState == Open && <div>
           <KelnerOrderI fid={p.fid} />

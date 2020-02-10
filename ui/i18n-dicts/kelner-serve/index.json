@@ -1,5 +1,7 @@
 {
   "Fest control": [],
+  "Festival is not started yet": [],
+  "Festival is over": [],
   "Kelner service": [],
   "Line is empty": [],
   "Loading...": [],
@@ -16,6 +18,7 @@
   "no order on you": [],
   "order issue": [],
   "order picked up": [],
+  "reload page": [],
   "there is an order ready to be executed": [
     "an"
   ],

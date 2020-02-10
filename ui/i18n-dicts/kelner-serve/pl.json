@@ -1,0 +1,27 @@
+{
+  "Festival is not started yet": "Festiwal jeszcze nie ruszył",
+  "Festival is over": "Festiwal skończył się",
+  "Kelner service": "Strona kelnera",
+  "Line is empty": "Kolejka pusta",
+  "Loading...": "ładowanie...",
+  "Menu": "Pilot",
+  "Order includes": [
+    "Treść zamówienia ",
+    "lbl"
+  ],
+  "customer late": "Nie ma klijęta",
+  "low food": "Czegoś brakuje",
+  "meal is not available now": [
+    "Danie ", "meal", " tymczasowo niedostępne. "
+  ],
+  "need rest": "Odpoczywam",
+  "no order on you": [
+    "W dannej chwili nie wykonujesz żadnego zamówienia. ",
+    "Klikaj przycisk wybrać jesli masz ochotę pomóc. "
+  ],
+  "reload page": "Sprawdzić",
+  "there is an order ready to be executed": [
+    "Zamówień do wykonania: ", "an"
+  ],
+  "try take order": "Wybrać zamówienie"
+}

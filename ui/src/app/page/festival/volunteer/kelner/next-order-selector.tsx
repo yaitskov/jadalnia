@@ -1,5 +1,7 @@
 import { h } from 'preact';
+
 import { route } from 'preact-router';
+import {reloadPage} from "util/routing";
 import {TransCom, TransComS} from "i18n/trans-component";
 import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
@@ -8,6 +10,7 @@ import {OrderSr} from "app/service/order-service";
 import {OrderLabel} from "app/types/order";
 import {Fid} from "app/page/festival/festival-types";
 import { T } from 'i18n/translate-tag';
+import { jne } from 'collection/join-non-empty';
 
 import bulma from "app/style/my-bulma.sass";
 
@@ -51,13 +54,24 @@ export class KelnerNextOrderSelector extends TransCom<KelnerNextOrderSelectorP, 
     return <div>
       <RestErrCo e={st.e} />
       {!st.e && st.readyToTakeOrders === U && <LoadingI/>}
-      {!st.e && st.readyToTakeOrders === 0 && <TI m="Line is empty"/>}
-      {!st.e && !!st.readyToTakeOrders && <div>
-        <p>
+      {!st.e && st.readyToTakeOrders === 0 && <div class={jne(bulma.message, bulma.isInfo)}>
+        <div class={bulma.messageHeader}>
+          <TI m="Line is empty"/>
+        </div>
+        <div class={bulma.messageBody}>
+          <button class={jne(bulma.button, bulma.isPrimary)}
+                  onClick={reloadPage}>
+            <TI m="reload page" />
+         </button>
+        </div>
+      </div>}
+      {!st.e && !!st.readyToTakeOrders && <div class={jne(bulma.message, bulma.isSuccess)}>
+        <div class={bulma.messageHeader}>
           <TI m="there is an order ready to be executed" an={st.readyToTakeOrders} />
-        </p>
-        <div class={bulma.buttons}>
-          <button class={bulma.button} onClick={this.tryTakeOrder}>
+        </div>
+        <div class={bulma.messageBody}>
+          <button class={jne(bulma.button, bulma.isPrimary)}
+                  onClick={this.tryTakeOrder}>
             <TI m="try take order" />
           </button>
         </div>

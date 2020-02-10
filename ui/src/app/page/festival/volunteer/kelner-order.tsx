@@ -9,6 +9,9 @@ import {OrderLabel} from "app/types/order";
 import {KelnerTakenOrder} from "app/page/festival/volunteer/kelner/kelner-taken-order";
 import {KelnerNextOrderSelector} from "app/page/festival/volunteer/kelner/next-order-selector";
 import { T } from 'i18n/translate-tag';
+import { jne } from 'collection/join-non-empty';
+
+import bulma from "app/style/my-bulma.sass";
 
 export interface KelnerOrderP {
   fid: Fid;
@@ -41,10 +44,15 @@ export class KelnerOrder extends TransCom<KelnerOrderP, KelnerOrderS> {
       <RestErrCo e={st.e} />
       {!st.e && st.takenOrderId === U && <LoadingI/>}
       {!st.e && st.takenOrderId === null && <div>
-        <p><TI m="no order on you"/></p>
+        <div class={jne(bulma.message, bulma.isLight)}>
+          <div class={bulma.messageBody}>
+            <TI m="no order on you"/>
+          </div>
+        </div>
         <KelnerNextOrderSelectorI fid={p.fid} />
       </div>}
-      {!st.e && !!st.takenOrderId && <KelnerTakenOrderI fid={p.fid} orderLbl={st.takenOrderId}/>}
+      {!st.e && !!st.takenOrderId && <KelnerTakenOrderI fid={p.fid}
+                                                        orderLbl={st.takenOrderId}/>}
     </div>;
   }
 
