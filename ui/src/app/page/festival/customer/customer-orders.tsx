@@ -52,15 +52,31 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
       <SecCon css={bulma.content}>
         {!st.orders && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
-        {!!st.orders && <ul class={bulma.list}>
-          {!!st.orders.length || <li>No orders</li>}
-          {st.orders.map((order: OrderInfoCustomerView, i: number) => <li>
-            <Link href={`/festival/visitor/order/control/${p.fid}/${order.label}`}
-                  class={bulma.button}>
-              {order.label} / {order.state} / {order.price}
-            </Link>
-          </li>)}
-        </ul>}
+        {!!st.orders && <table class={bulma.table}>
+          {!!st.orders.length || <tr>
+            <td colSpan={2}>
+              <TI m="No orders"/>
+            </td>
+          </tr>}
+          {!!st.orders.length || <tr>
+            <td>#</td>
+            <td>
+              <TI m="State"/>
+            </td>
+          </tr>}
+          {st.orders.map((order: OrderInfoCustomerView, i: number) => <tr>
+            <td>
+              <Link href={`/festival/visitor/order/control/${p.fid}/${order.label}`}>
+                {order.label}
+              </Link>
+            </td>
+            <td>
+              <Link href={`/festival/visitor/order/control/${p.fid}/${order.label}`}>
+                {order.state}
+              </Link>
+            </td>
+          </tr>)}
+        </table>}
       </SecCon>
     </div>;
   }
