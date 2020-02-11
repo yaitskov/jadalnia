@@ -129,7 +129,7 @@ class CustomerWsListener
                                     newValue = state))
                         })
                 })
-                .orElseGet(Futures.Companion::voidF)
+                .orElseGet(Futures::voidF)
     }
 
     fun <T> send(msgToClient: T): CompletableFuture<Void> {

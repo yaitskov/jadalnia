@@ -25,6 +25,11 @@ class WithUser @Inject constructor (
     asynSync.sync(action, response)
   }
 
+   fun <TT> withFest(fid: Fid, response: AsyncResponse,
+                     f: Function1<Festival, CompletableFuture<TT>>) {
+     anonymous(response, festivalCache.get(fid).thenCompose(f))
+  }
+
   private fun <T, I> withUser(
       check: Function1<UserInfo, CompletableFuture<I>>,
       response: AsyncResponse,
@@ -44,7 +49,6 @@ class WithUser @Inject constructor (
       action: Function1<Festival, CompletableFuture<T>>)
       = withUser({ user -> festivalCache.get((check(user).fid)) },
       response, session, action)
-
 
   fun <T> customerFest(
       response: AsyncResponse,

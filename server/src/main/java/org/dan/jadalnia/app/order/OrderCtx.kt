@@ -4,6 +4,8 @@ import org.dan.jadalnia.app.order.complete.CustomerAbsent
 import org.dan.jadalnia.app.order.complete.KelnerResigns
 import org.dan.jadalnia.app.order.complete.LowFood
 import org.dan.jadalnia.app.order.complete.OrderReady
+import org.dan.jadalnia.app.order.stats.OrderStatsResource
+import org.dan.jadalnia.app.order.stats.OrderStatsService
 import org.dan.jadalnia.app.user.WithUser
 import org.springframework.context.annotation.Import
 
@@ -17,6 +19,8 @@ import org.springframework.context.annotation.Import
     OrderReady::class,
     KelnerResigns::class,
     LowFood::class,
+    OrderStatsService::class,
+    OrderStatsResource::class,
     WithUser::class,
     CustomerAbsent::class,
     OrderAggregator::class)

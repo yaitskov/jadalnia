@@ -2,6 +2,7 @@ package org.dan.jadalnia.sys
 
 import org.dan.jadalnia.app.festival.FestivalResource
 import org.dan.jadalnia.app.order.OrderResource
+import org.dan.jadalnia.app.order.stats.OrderStatsResource
 import org.dan.jadalnia.app.push.WebPushResource
 import org.dan.jadalnia.app.token.TokenResource
 import org.dan.jadalnia.app.user.UserResource
@@ -58,6 +59,7 @@ class JerseyConfig : ResourceConfig() {
                 FestivalResource::class.java,
                 TokenResource::class.java,
                 WebPushResource::class.java,
+                OrderStatsResource::class.java,
                 OrderResource::class.java)
                 .stream()
                 .map { cls -> cls.`package`.name }

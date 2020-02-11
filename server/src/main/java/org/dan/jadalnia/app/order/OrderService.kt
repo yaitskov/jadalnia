@@ -38,7 +38,7 @@ import org.dan.jadalnia.app.user.UserSession
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
-import org.dan.jadalnia.util.Futures.Companion.allOf
+import org.dan.jadalnia.util.Futures.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import java.util.*

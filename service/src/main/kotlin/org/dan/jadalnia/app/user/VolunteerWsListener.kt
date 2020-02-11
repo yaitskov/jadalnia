@@ -137,7 +137,7 @@ class VolunteerWsListener
                         name = FestivalService.FESTIVAL_STATE,
                         newValue = state))
             }
-        }.orElseGet(Futures.Companion::voidF)
+        }.orElseGet(Futures::voidF)
     }
 
     fun <T> send(msgToClient: T): CompletableFuture<Void> {
