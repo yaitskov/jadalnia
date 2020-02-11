@@ -1,7 +1,6 @@
 import { h } from 'preact';
 import { route } from 'preact-router';
 
-import { SuperElement } from 'component/types';
 import { U } from 'util/const';
 import {Loading} from "component/loading";
 import {Container, FwdContainer} from 'injection/inject-1k';
@@ -13,9 +12,9 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
 import {OrderSr} from "app/service/order-service";
-import {OrderInfoCustomerView, OrderLabel, orderItems, sumMealsPrice } from 'app/types/order';
-import {OrderUpdate, OrderItem, findSelectedMeals, UpdateAttemptOutcome} from 'app/types/order';
-import {OrderProgressView} from "app/page/festival/customer/order-progress-view";
+import { OrderLabel, orderItems, sumMealsPrice } from 'app/types/order';
+import { OrderItem, findSelectedMeals, UpdateAttemptOutcome } from 'app/types/order';
+
 import {resolved, Thenable} from "async/abortable-promise";
 import { DishName  } from "app/types/menu";
 import { MenuItemView} from 'app/service/fest-menu-types';

@@ -1,5 +1,4 @@
 import { h } from 'preact';
-import {Link} from 'preact-router';
 
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';

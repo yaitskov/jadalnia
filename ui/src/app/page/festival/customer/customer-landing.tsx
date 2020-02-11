@@ -14,7 +14,6 @@ import {Fid, FestInfo, Announce, Open, Close} from 'app/page/festival/festival-t
 import {SignUpSr} from "app/auth/sign-up-service";
 import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
-import {UserTypeLbl} from "app/page/festival/volunteer/user-type-lbl";
 import {Customer} from "app/service/user-types";
 
 import bulma from 'app/style/my-bulma.sass';
@@ -66,8 +65,8 @@ class CustomerLanding extends TransCom<CustomerLandingP, CustomerLandingS> {
   }
 
   render(p, st) {
-    const [TI, TitleStdMainMenu2I, LoadingI, UsrLblI]
-    = this.c4(T, TitleStdMainMenu2, Loading, UserTypeLbl);
+    const [TI, TitleStdMainMenu2I, LoadingI]
+    = this.c3(T, TitleStdMainMenu2, Loading);
     return <div>
       <TitleStdMainMenu2I title={<TI m="Welcome to name!" name={!!st.fest && st.fest.name}/>} />
       <SecCon css={bulma.content}>

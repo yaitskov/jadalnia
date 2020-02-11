@@ -28,6 +28,11 @@ class AdminCtrlMenu extends TransCom<{}, TransComS> {
             </Link>
           </li>
           <li>
+            <Link href={`/festival/stats/demand/paid/${p.fid}`}>
+              <TI m="demand" />
+            </Link>
+          </li>
+          <li>
             <Link href={`/admin/festival/line/stats/${p.fid}`}>
               <TI m="line stats" />
             </Link>
