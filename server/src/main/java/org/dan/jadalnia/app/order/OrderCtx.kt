@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Import
     OrderReady::class,
     KelnerResigns::class,
     LowFood::class,
+    OrderStatsDao::class,
     OrderStatsService::class,
     OrderStatsResource::class,
     WithUser::class,

@@ -16,6 +16,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static org.dan.jadalnia.app.festival.SetMenuTest.FRYTKI;
+import static org.dan.jadalnia.app.order.CustomerNotifiedAboutOrderExecutingTest.tryExecOrder;
+import static org.dan.jadalnia.app.order.CustomerNotifiedThatOrderIsReadyTest.markAsReady;
 import static org.dan.jadalnia.app.order.CustomerPaysForHisOrderTest.tryPayOrder;
 import static org.dan.jadalnia.app.order.CustomerPutsOrderTest.putOrder;
 import static org.dan.jadalnia.app.order.KelnerNotifiedAboutPaidOrderTest.FRYTKI_ORDER;
@@ -23,23 +25,19 @@ import static org.dan.jadalnia.app.token.CustomerNotifiedAboutApprovedTokenTest.
 import static org.dan.jadalnia.app.token.CustomerNotifiedAboutApprovedTokenTest.requestToken;
 import static org.junit.Assert.assertThat;
 
-public class PaidDemandTest extends WsIntegrationTest {
-    public static MealsCount paidDemand(MyRest myRest, Fid fid) {
-        return myRest.get("/order-stats/demand/" + fid, MealsCount.class);
+public class ServedMealsTest extends WsIntegrationTest {
+    public static MealsCount servedMeals(MyRest myRest, Fid fid) {
+        return myRest.get("/order-stats/served-meals/" + fid, MealsCount.class);
     }
 
     @Test
     @SneakyThrows
-    public void paidDemand() {
+    public void servedMeals() {
         val festState = MockBaseFestival.create(myRest());
         val customer = festState.getSessions().getCustomer();
         val rest = festState.getMyRest();
 
         val o1 = putOrder(rest, customer, FRYTKI_ORDER);
-
-        assertThat(
-                paidDemand(rest, festState.getFestival().getFid()),
-                Is.is(new MealsCount(emptyMap())));
 
         val tokenId = requestToken(rest, TokenPoints.valueOf(10), customer);
 
@@ -50,14 +48,16 @@ public class PaidDemandTest extends WsIntegrationTest {
                 tryPayOrder(rest, customer, o1), Is.is(PaymentAttemptOutcome.ORDER_PAID));
 
         assertThat(
-                paidDemand(rest, festState.getFestival().getFid()),
-                Is.is(new MealsCount(singletonMap(FRYTKI, 1))));
+                servedMeals(rest, festState.getFestival().getFid()),
+                Is.is(new MealsCount(emptyMap())));
 
-        assertThat(tryPayOrder(rest, customer, putOrder(rest, customer, FRYTKI_ORDER)),
-                Is.is(PaymentAttemptOutcome.ORDER_PAID));
+        tryExecOrder(myRest(), festState.getSessions().getKelner());
+
+        assertThat(markAsReady(rest, o1, festState.getSessions().getKelner()),
+                Is.is(true));
 
         assertThat(
-                paidDemand(rest, festState.getFestival().getFid()),
-                Is.is(new MealsCount(singletonMap(FRYTKI, 2))));
+                servedMeals(rest, festState.getFestival().getFid()),
+                Is.is(new MealsCount(singletonMap(FRYTKI, 1))));
     }
 }

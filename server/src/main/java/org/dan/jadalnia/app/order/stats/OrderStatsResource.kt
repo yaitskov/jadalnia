@@ -28,4 +28,14 @@ class OrderStatsResource @Inject constructor(
       orderStats.paidDemand(festival)
     }
   }
+
+  @GET
+  @Path("order-stats/served-meals/{fid}")
+  fun servedMeals(
+      @Suspended response: AsyncResponse,
+      @PathParam("fid") fid: Fid) {
+    with.withFest(fid, response) { festival ->
+      orderStats.servedMeals(festival)
+    }
+  }
 }

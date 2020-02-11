@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.stats
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.order.OrderStatsDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
 import org.dan.jadalnia.app.order.pojo.OrderState
@@ -14,9 +15,10 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 class OrderStatsService @Inject constructor(
+    val orderStatsDao: OrderStatsDao,
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>) {
 
-  fun paidDemand(festival: Festival): CompletableFuture<MealDemand> {
+  fun paidDemand(festival: Festival): CompletableFuture<MealsCount> {
     val fid = festival.fid()
     return Futures.reduce(
         { label, map ->
@@ -31,6 +33,10 @@ class OrderStatsService @Inject constructor(
         },
         ConcurrentHashMap<DishName, Int>(),
         festival.readyToExecOrders.iterator())
-        .thenApply(::MealDemand)
+        .thenApply(::MealsCount)
+  }
+
+  fun servedMeals(festival: Festival): CompletableFuture<MealsCount> {
+    return orderStatsDao.servedMeals(festival.fid());
   }
 }
