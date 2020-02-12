@@ -62,7 +62,7 @@ abstract class BaseOrderCompleteStrategy(
           log.info("Kelner {} completed executing order {} as {}",
               kelnerUid, label, targetState)
           updateTargetState(festival, problemOrder, opLog).thenCompose {
-            orderDao.assignKelner(festival.fid(), label, null, targetState)
+            orderDao.assignKelner(festival.fid(), label, kelnerUid, targetState)
                 .thenAccept {
                   wsBroadcast.notifyCustomers(
                       festival.fid(),

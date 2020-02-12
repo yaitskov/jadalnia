@@ -1,6 +1,5 @@
 package org.dan.jadalnia.app.festival
 
-import com.github.jasync.sql.db.util.map
 import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
 import org.dan.jadalnia.app.festival.menu.MenuItem
