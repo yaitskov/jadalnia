@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture
 
 class KelnerPerformacenDao : AsyncDao() {
   companion object {
-    val log = LoggerFactory.getLogger(OrderDao::class.java)
+    val log = LoggerFactory.getLogger(KelnerPerformacenDao::class.java)
   }
 
   fun performance(fid: Fid): CompletableFuture<Map<Uid, Pair<Int, TokenPoints>>> {

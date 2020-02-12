@@ -21,14 +21,17 @@ public class TripleSession {
     UserSession cashier;
 
     String kelnerName;
+    String cashierName;
 
     public static TripleSession triSession(Fid fid, MyRest myRest) {
         String kelnerKey = genUserKey();
+        String cashierKey = genUserKey();
         return TripleSession.builder()
                 .customer(registerCustomer(
                         fid, genUserKey(), myRest))
                 .kelner(registerKelner(fid, kelnerKey, myRest))
-                .cashier(registerKasier(fid, genUserKey(), myRest))
+                .cashier(registerKasier(fid, cashierKey, myRest))
+                .cashierName("user" + cashierKey)
                 .kelnerName("user" + kelnerKey)
         .build();
     }

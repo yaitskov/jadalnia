@@ -2,7 +2,7 @@ package org.dan.jadalnia.sys
 
 import org.dan.jadalnia.app.festival.FestivalResource
 import org.dan.jadalnia.app.order.OrderResource
-import org.dan.jadalnia.app.order.pref.KelnerPerformanceResource
+import org.dan.jadalnia.app.order.pref.CashierPerformanceResource
 import org.dan.jadalnia.app.order.stats.OrderStatsResource
 import org.dan.jadalnia.app.order.stats.TokenStatsResource
 import org.dan.jadalnia.app.push.WebPushResource
@@ -57,7 +57,7 @@ class JerseyConfig : ResourceConfig() {
                 FestivalResource::class.java,
                 TokenResource::class.java,
                 TokenStatsResource::class.java,
-                KelnerPerformanceResource::class.java,
+                CashierPerformanceResource::class.java,
                 WebPushResource::class.java,
                 OrderStatsResource::class.java,
                 OrderResource::class.java)
