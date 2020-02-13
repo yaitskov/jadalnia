@@ -8,11 +8,13 @@ import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.error.JadEx
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
+import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
 
@@ -24,7 +26,8 @@ class TokenService @Inject constructor(
     val log = LoggerFactory.getLogger(TokenService::class.java)
   }
 
-  fun requestTokens(festival: Festival, customerUid: Uid, amount: TokenPoints)
+  fun requestTokensPurchase(festival: Festival, customerUid: Uid,
+                            amount: TokenPoints, tokOp: TokenOp)
       : CompletableFuture<TokenId> {
     if (amount.value < 1) {
       throw badRequest("min amount tokens to request is 1")
@@ -32,22 +35,51 @@ class TokenService @Inject constructor(
     if (amount.value > 100) {
       throw badRequest("max amount tokens to request is 100")
     }
+    return requestTokensNoValidation(festival, customerUid, amount, tokOp)
+  }
+
+  fun requestTokensOnce(balance: TokenBalance, festival: Festival,
+                        customerUid: Uid, amount: TokenPoints, tokOp: TokenOp)
+      : CompletableFuture<TokenId> {
+    val opLog = OpLog()
+    val currentBalance = balance.pending.get()
+    val change = amount.value * tokOp.sign()
+    val newBalance = currentBalance.value + change
+    if (newBalance < 0) {
+      throw badRequest("Balance would be less than 0")
+    }
+    val fid = festival.fid()
+    var attempts = 10;
+    while (--attempts > 0) {
+      if (balance.pending.compareAndSet(currentBalance, TokenPoints(newBalance))) {
+        opLog.add {
+          balance.pending.updateAndGet { points ->
+            TokenPoints(points.value - change)
+          }
+        }
+        return tokenDao.requestTokens(
+            fid,
+            TokenId(festival.nextToken.incrementAndGet()),
+            amount, customerUid, tokOp)
+            .whenComplete { _, e ->
+              if (e != null) {
+                opLog.rollback()
+              }
+            }
+      } else {
+        log.info("Collision on balance update {} for {}:{}",
+            newBalance, fid, customerUid)
+      }
+    }
+    throw internalError("To many attempts to update balance")
+  }
+
+  fun requestTokensNoValidation(
+      festival: Festival, customerUid: Uid,
+      amount: TokenPoints, tokOp: TokenOp): CompletableFuture<TokenId> {
     return tokenBalanceCache.get(Pair(festival.fid(), customerUid))
         .thenCompose { balance ->
-          val opLog = OpLog()
-          balance.pending.updateAndGet { points -> TokenPoints(points.value + amount.value) }
-          opLog.add {
-            balance.pending.updateAndGet { points -> TokenPoints(points.value - amount.value) }
-          }
-          tokenDao.requestTokens(
-              festival.fid(),
-              TokenId(festival.nextToken.incrementAndGet()),
-              amount, customerUid)
-              .whenComplete { _, e ->
-                if (e != null) {
-                  opLog.rollback()
-                }
-              }
+          requestTokensOnce(balance, festival, customerUid, amount, tokOp)
         }
   }
 
@@ -77,17 +109,28 @@ class TokenService @Inject constructor(
                 Futures.allOf(
                     tokens.map { token ->
                       log.info("Kasier {} tries to approve token {}", kasierUid, token.tokenId)
-                      tokenDao.approveToken(fid, token.tokenId, kasierUid).thenAccept {
-                        balance.effective.updateAndGet {
-                          points ->
-                          log.info("Increase effective balance {} by {} for {}",
-                              points, token.amount, approveReq.customer)
-                          points.plus(token.amount)
+                      val currentBalance = balance.effective.get()
+                      val nextBalance = currentBalance.plus(token.amount)
+                      if (nextBalance.value >= 0) {
+                        if (balance.effective.compareAndSet(currentBalance, nextBalance)) {
+                          log.info("Increase effective balance {} by {} for {}:{}",
+                              nextBalance, token.amount, fid, approveReq.customer)
+                          tokenDao.approveToken(fid, token.tokenId, kasierUid).thenApply {
+                            Optional.of(token)
+                          }.exceptionally { e ->
+                            log.error("Attempt to approve token {} failed", token.tokenId, e)
+                            balance.effective.updateAndGet { tokens -> tokens.minus(token.amount) }
+                            Optional.empty()
+                          }
+                        } else {
+                          log.error("Reject token request {}:{} due effective balance changed",
+                              fid, token.tokenId)
+                          completedFuture(Optional.empty())
                         }
-                      }.thenApply { Optional.of(token)
-                      }.exceptionally { e ->
-                        log.error("Attempt to approve token {} failed", token.tokenId, e)
-                        Optional.empty()
+                      } else {
+                        log.error("Reject token request {}:{} due effective balance would be negative",
+                            fid, token.tokenId)
+                        completedFuture(Optional.empty())
                       }
                     })
                     .thenApply { tokenUpdates ->

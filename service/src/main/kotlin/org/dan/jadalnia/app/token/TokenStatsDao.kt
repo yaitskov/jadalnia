@@ -17,11 +17,11 @@ class TokenStatsDao : AsyncDao() {
   fun tokenStats(fid: Fid): CompletableFuture<TokenStats> {
     return sumApprovedTokens(fid, TokenOp.Buy)
         .thenCompose { bought ->
-          sumApprovedTokens(fid, TokenOp.Sell)
+          sumApprovedTokens(fid, TokenOp.Sel)
               .thenCompose { returns ->
                 sumNotApprovedTokens(fid, TokenOp.Buy)
                     .thenCompose { pendingBought ->
-                      sumNotApprovedTokens(fid, TokenOp.Sell)
+                      sumNotApprovedTokens(fid, TokenOp.Sel)
                           .thenCompose { pendingReturns ->
                             CompletableFuture.completedFuture(
                                 TokenStats(bought, returns,

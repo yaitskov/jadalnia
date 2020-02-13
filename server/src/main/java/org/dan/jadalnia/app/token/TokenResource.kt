@@ -41,6 +41,7 @@ class TokenResource @Inject constructor(
     val log = LoggerFactory.getLogger(TokenResource::class.java)
     const val TOKEN = "token/"
     const val REQUEST_TOKEN = TOKEN + "request"
+    const val REQUEST_TOKEN_RETURN = TOKEN + "request-return"
     const val APPROVE_REQUEST = TOKEN + "approve"
     const val LIST_REQUESTS_FOR_APPROVE = TOKEN + "list-for-approve"
     const val GET_MY_BALANCE = TOKEN + "myBalance"
@@ -100,7 +101,25 @@ class TokenResource @Inject constructor(
             .thenApply { user -> user.ensureCustomer().fid }
             .thenCompose(festivalCache::get)
             .thenCompose { festival ->
-              tokenService.requestTokens(festival, session.uid, amount)
+              tokenService.requestTokensPurchase(
+                  festival, session.uid, amount, TokenOp.Buy)
+            },
+        response)
+  }
+
+  @POST
+  @Path(REQUEST_TOKEN_RETURN)
+  fun customerRequestsTokenReturn(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      amount: TokenPoints) {
+    asynSync.sync(
+        userSessions.get(session)
+            .thenApply { user -> user.ensureCustomer().fid }
+            .thenCompose(festivalCache::get)
+            .thenCompose { festival ->
+              tokenService.requestTokensPurchase(
+                  festival, session.uid, amount, TokenOp.Sel)
             },
         response)
   }

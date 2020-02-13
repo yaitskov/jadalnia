@@ -4,7 +4,7 @@ enum class TokenOp {
   Buy {
     override fun sign(): Int = 1
   },
-  Sell {
+  Sel {
     override fun sign(): Int = -1
   };
 

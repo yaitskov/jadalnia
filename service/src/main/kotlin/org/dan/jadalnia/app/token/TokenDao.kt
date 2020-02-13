@@ -5,6 +5,7 @@ import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.TOKEN
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
+import org.dan.jadalnia.util.NullForKotlin.nullValue
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Optional.ofNullable
@@ -17,7 +18,8 @@ class TokenDao: AsyncDao() {
 
   fun requestTokens(
       fid: Fid, tokenId: TokenId,
-      amount: TokenPoints, customerId: Uid): CompletableFuture<TokenId> {
+      amount: TokenPoints, customerId: Uid,
+      tokenOp: TokenOp): CompletableFuture<TokenId> {
     return execQuery {
       jooq -> jooq.insertInto(TOKEN,
         TOKEN.TID,
@@ -25,7 +27,7 @@ class TokenDao: AsyncDao() {
         TOKEN.CUSTOMER_ID,
         TOKEN.AMOUNT,
         TOKEN.OPERATION)
-        .values(tokenId, fid, customerId, amount, TokenOp.Buy)
+        .values(tokenId, fid, customerId, amount, tokenOp)
         .execute()
     }.thenApply {
       log.info("Customer {} requested token {}", customerId, tokenId)
@@ -35,14 +37,35 @@ class TokenDao: AsyncDao() {
 
   fun findTokenForApprove(fid: Fid, customer: Uid)
       : CompletableFuture<List<PreApproveTokenView>> {
-    return execQuery { jooq -> jooq.select(TOKEN.TID, TOKEN.AMOUNT)
+    return execQuery { jooq -> jooq.select(TOKEN.TID, TOKEN.AMOUNT, TOKEN.OPERATION)
         .from(TOKEN)
         .where(TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.CUSTOMER_ID.eq(customer),
             TOKEN.KASIER_ID.isNull())
         .forUpdate()
         .fetch()
-        .map { r -> PreApproveTokenView(r.get(TOKEN.TID), r.get(TOKEN.AMOUNT)) }
+        .map { r -> PreApproveTokenView(
+            r.get(TOKEN.TID),
+            r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION).sign()))
+        }
+    }
+  }
+
+  fun disapproveToken(fid: Fid, tokenId: TokenId)
+      : CompletableFuture<Void> {
+    return execQuery { jooq ->
+      jooq.update(TOKEN)
+          .set(TOKEN.KASIER_ID, nullValue<Uid>())
+          .where(
+              TOKEN.FESTIVAL_ID.eq(fid),
+              TOKEN.TID.eq(tokenId))
+          .execute()
+    }.thenAccept { rows ->
+      if (rows != 1) {
+        throw conflict("just token DB record was not updated: $rows")
+      } else {
+        log.info("Token {} is disapproved by {}", tokenId)
+      }
     }
   }
 
@@ -57,7 +80,7 @@ class TokenDao: AsyncDao() {
         .execute()
     }.thenAccept { rows ->
       if (rows != 1) {
-        throw conflict("just token DB record was not updated: " + rows)
+        throw conflict("just token DB record was not updated: $rows")
       } else {
         log.info("Token {} is approved by {}", tokenId, kasierUid)
       }
@@ -106,14 +129,14 @@ class TokenDao: AsyncDao() {
   fun getCustomerPendingTokensByIds(customerId: Uid, tokens: List<TokenId>)
       : CompletableFuture<List<PreApproveTokenView>> {
     return execQuery { jooq -> jooq
-        .select(TOKEN.TID, TOKEN.AMOUNT)
+        .select(TOKEN.TID, TOKEN.AMOUNT, TOKEN.OPERATION)
         .from(TOKEN)
         .where(TOKEN.CUSTOMER_ID.eq(customerId),
             TOKEN.TID.`in`(tokens),
             TOKEN.KASIER_ID.isNull)
         .fetch()
         .map { r -> PreApproveTokenView(
-            r.get(TOKEN.TID), r.get(TOKEN.AMOUNT))
+            r.get(TOKEN.TID), r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION).sign()))
         }
     }
   }
