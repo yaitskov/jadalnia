@@ -10,26 +10,23 @@ import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import { TransCom, TransComS } from 'i18n/trans-component';
 import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
-
 import bulma from 'app/style/my-bulma.sass';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
-
 import {jne} from "collection/join-non-empty";
-import {TokenStatsSr} from 'app/service/token-stats-service';
-import { TokenStatsResponse } from 'app/types/token';
+import {KelnerPerformanceRow, PerformanceSr } from "app/service/performance-service";
 
-export interface TokenStatsP {
+export interface KelnerPerformanceP {
   fid: Fid;
 }
 
-export interface TokenStatsS extends TransComS {
+export interface KelnerPerformanceS extends TransComS {
   e?: Error;
-  stats?: TokenStatsResponse;
+  stats?: KelnerPerformanceRow[];
 }
 
-class TokenStats  extends TransCom<TokenStatsP, TokenStatsS> {
+class KelnerPerformance extends TransCom<KelnerPerformanceP, KelnerPerformanceS> {
   // @ts-ignore
-  private $tokenStatsSr: TokenStatsSr;
+  private $performanceSr: PerformanceSr;
 
   constructor(props) {
     super(props);
@@ -37,9 +34,14 @@ class TokenStats  extends TransCom<TokenStatsP, TokenStatsS> {
   }
 
   wMnt() {
-    this.$tokenStatsSr.tokenStats(this.pr.fid)
-      .tn(stats => this.ust(st => ({...st, stats: stats})))
+    this.$performanceSr.kelnerPerformance(this.pr.fid)
+      .tn(rows => this.ust(
+        st => ({...st, stats: this.sortedList(rows)})))
       .ctch(e => this.ust(st => ({...st, e: e})));
+  }
+
+  sortedList(m: KelnerPerformanceRow[]): KelnerPerformanceRow[] {
+    return m.sort((a, b) => b.tokens - a.tokens);
   }
 
   render(p, st) {
@@ -47,7 +49,7 @@ class TokenStats  extends TransCom<TokenStatsP, TokenStatsS> {
       = this.c3(T, TitleStdMainMenu, Loading);
 
     return <div>
-      <TitleStdMainMenuI t$title="Token stats"
+      <TitleStdMainMenuI t$title="Kelner performance"
                          extraItems={[
                            <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
                                            t$label="Fest control" />
@@ -55,20 +57,22 @@ class TokenStats  extends TransCom<TokenStatsP, TokenStatsS> {
       <section class={jne(bulma.section, bulma.content)}>
         {st.stats === U  && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
-        {!!st.stats && <table class={bulma.table}>
+        {!!st.stats && !st.stats.length && <div class={jne(bulma.message, bulma.isInfo)}>
+          <div class={bulma.messageHeader}>
+            <TI m="No kelners"/>
+          </div>
+        </div>}
+        {!!st.stats && !!st.stats.length && <table class={bulma.table}>
           <tr>
-            <td><TI m="Tokens sold to customers"/></td><td>{st.stats.boughtByCustomers}</td>
+            <td><TI m="Kelner"/></td>
+            <td><TI m="Orders"/></td>
+            <td><TI m="Tokens"/></td>
           </tr>
-          <tr>
-            <td><TI m="Tokens returned by customers"/></td><td>{st.stats.returnedToCustomers}</td>
-          </tr>
-          <tr>
-            <td><TI m="Tokens pending approval"/></td><td>{st.stats.pendingBoughtByCustomers}</td>
-          </tr>
-          <tr>
-            <td><TI m="Returning tokens pending approval"/></td>
-            <td>{st.stats.pendingReturnToCustomers}</td>
-          </tr>
+          {st.stats.map((row: KelnerPerformanceRow) => <tr>
+            <td>{row.name}</td>
+            <td>{row.orders}</td>
+            <td>{row.tokens}</td>
+          </tr>)}
         </table>}
       </section>
     </div>;
@@ -78,9 +82,9 @@ class TokenStats  extends TransCom<TokenStatsP, TokenStatsS> {
 }
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
-  : Instantiable<TokenStats> {
-  return regBundleCtx(bundleName, mainContainer, TokenStats,
+  : Instantiable<KelnerPerformance> {
+  return regBundleCtx(bundleName, mainContainer, KelnerPerformance,
     o => o.bind([
-      ['tokenStatsSr', TokenStatsSr],
+      ['performanceSr', PerformanceSr],
     ]) as FwdContainer);
 }

@@ -83,6 +83,12 @@ export class MainCom extends InjSubCom<{}, {}> {
   KasierReg = async() => await import('app/page/festival/volunteer/kasier/kasier-registration')
     .then(m => this.inj(m as AsyncModule, 'kasier-registration'));
 
+  KelnerPerformance = async () => await import('./page/festival/volunteer/kelner/kelner-performance')
+    .then(m => this.inj(m as AsyncModule, 'kelner-performance'));
+
+  KasierPerformance = async () => await import('./page/festival/volunteer/kasier/kasier-performance')
+    .then(m => this.inj(m as AsyncModule, 'kasier-performance'));
+
   KelnerTakenOrder = async() => await import('app/page/festival/volunteer/kelner/kelner-taken-order-page')
     .then(m => this.inj(m as AsyncModule, 'kelner-taken-order-page'));
 
@@ -157,6 +163,8 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/admin/festival/control/:fid' getComponent={this.AdminCtrlMenu} />
       <AsyncRoute path='/festival/stats/tokens/:fid' getComponent={this.TokenStats} />
       <AsyncRoute path='/festival/stats/demand/paid/:fid' getComponent={this.DemandPaid} />
+      <AsyncRoute path='/festival/performance/kelner/:fid' getComponent={this.KelnerPerformance} />
+      <AsyncRoute path='/festival/performance/cashier/:fid' getComponent={this.KasierPerformance} />
       <AsyncRoute path='/festival/new/notification/:fid' getComponent={this.AdminNotificationPermitRequest} />
       <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
       <AsyncRoute path='/admin/festival/new/invites/:fid' getComponent={this.NewInvites} />
