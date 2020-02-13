@@ -49,7 +49,7 @@ class KasierPerformance extends TransCom<KasierPerformanceP, KasierPerformanceS>
       = this.c3(T, TitleStdMainMenu, Loading);
 
     return <div>
-      <TitleStdMainMenuI t$title="Cashier of paid orders"
+      <TitleStdMainMenuI t$title="Cashier performance"
                          extraItems={[
                            <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
                                            t$label="Fest control" />
