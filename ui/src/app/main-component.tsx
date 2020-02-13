@@ -44,6 +44,9 @@ export class MainCom extends InjSubCom<{}, {}> {
   DemandPaid = async () => await import('./page/festival/stats/demand-paid')
     .then(m => this.inj(m as AsyncModule, 'demand-paid'));
 
+  TokenStats = async () => await import('./page/festival/stats/token-stats')
+    .then(m => this.inj(m as AsyncModule, 'token-stats'));
+
   NewInvites = async () => await import('./page/festival/invite/new-invites')
     .then(m => this.inj(m as AsyncModule, 'new-invites'));
 
@@ -152,6 +155,7 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/admin/festival/cashiers/:fid' getComponent={this.CashiersCtrl} />
       <AsyncRoute path='/admin/festival/invite-links/:fid' getComponent={this.InviteLinks} />
       <AsyncRoute path='/admin/festival/control/:fid' getComponent={this.AdminCtrlMenu} />
+      <AsyncRoute path='/festival/stats/tokens/:fid' getComponent={this.TokenStats} />
       <AsyncRoute path='/festival/stats/demand/paid/:fid' getComponent={this.DemandPaid} />
       <AsyncRoute path='/festival/new/notification/:fid' getComponent={this.AdminNotificationPermitRequest} />
       <AsyncRoute path='/festival/new/menu/:fid' getComponent={this.FestMenu} />
