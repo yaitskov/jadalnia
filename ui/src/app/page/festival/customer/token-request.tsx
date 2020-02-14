@@ -55,6 +55,8 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
     return <div>
       <TitleStdMainMenuI t$title="Token request"
                          extraItems={[
+                           <NavbarLinkItem path={`/festival/visitor/balance/${p.fid}`}
+                                           t$label="My balance" />,
                            <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
                                            t$label="my orders" />,
                            <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}
@@ -82,14 +84,14 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
           </button>}
           {!!st.tokenRequestInfo
             && st.tokenRequestInfo.approved
-            && !!p.order
+            && !!(+p.order)
             && <Link href={`/festival/visitor/order/autopay/${p.fid}/${p.order}`}
                      class={jne(bulma.button, bulma.isPrimary)}>
                  <TI m="Pay order" o={p.order} />
                </Link>}
           {!!st.tokenRequestInfo
             && st.tokenRequestInfo.approved
-            && !p.order
+            && !(+p.order)
             && <Link href={`/festival/visitor/orders/${p.fid}`}
                      class={jne(bulma.button, bulma.isPrimary)}>
                  <TI m="To my order" />

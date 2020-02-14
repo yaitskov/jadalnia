@@ -11,25 +11,23 @@ import {Thenable} from "async/abortable-promise";
 
 import bulma from 'app/style/my-bulma.sass';
 import { TxtField } from 'app/component/field/txt-field';
-import {OrderLabel} from "app/types/order";
 
-export interface RechargeTokenFormP {
+export interface ReturnTokenFormP {
   fid: Fid;
-  order?: OrderLabel;
-  minQuote: number;
+  maxQuote: number;
 }
 
 interface RechargeFormData {
   amount: number
 }
 
-export interface RechargeTokenFormS extends TransComS {
+export interface ReturnTokenFormS extends TransComS {
   form: RechargeFormData;
   progress: boolean;
   e?: Error;
 }
 
-export class RechargeTokenForm extends TransCom<RechargeTokenFormP, RechargeTokenFormS> {
+export class ReturnTokenForm extends TransCom<ReturnTokenFormP, ReturnTokenFormS> {
   // @ts-ignore
   private $tokenSr: TokenSr;
 
@@ -38,16 +36,16 @@ export class RechargeTokenForm extends TransCom<RechargeTokenFormP, RechargeToke
     this.st = {
       at: this.at(),
       progress: false,
-      form: {amount: props.minQuote}
+      form: {amount: props.maxQuote}
     };
     this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSubmit(form: RechargeFormData): Thenable<any> {
     this.ust(st => ({...st, progress: true}));
-    return this.$tokenSr.requestTokens(form.amount)
+    return this.$tokenSr.requestTokenReturn(form.amount)
       .tn(tokenRequestId => {
-        route(`/festival/visitor/token-request/${this.pr.fid}/${tokenRequestId}/${this.pr.order || 0}`);
+        route(`/festival/visitor/token-request/${this.pr.fid}/${tokenRequestId}/0`);
       })
       .ctch(e => this.ust(st => ({...st, e: e, progress: false})));
   }
@@ -56,17 +54,17 @@ export class RechargeTokenForm extends TransCom<RechargeTokenFormP, RechargeToke
     class NextCancelFormT extends NextCancelForm<RechargeFormData> {}
     const [TI, NextCancelFormTI, TxtFieldI] = this.c3(T, NextCancelFormT, TxtField);
 
-    return <NextCancelFormTI t$next="Request tokens"
+    return <NextCancelFormTI t$next="Request return"
                              origin={st.form}
                              next={this.onSubmit}>
       <p>
-        {!st.progress && <TI m="Recharge your account at least by n tokens." n={p.minQuote} /> }
-        {st.progress && <TI m="Requesting tokens ..." /> }
+        {!st.progress && <TI m="You can request to return up to n tokens." n={p.maxQuote} /> }
+        {st.progress && <TI m="Requesting tokens return ..." /> }
       </p>
       <div class={bulma.field}>
-        <TxtFieldI t$lbl="Enter number of tokens to request"
+        <TxtFieldI t$lbl="Enter number of tokens to return"
                    name="amount"
-                   mit={`!e min:${p.minQuote}`} />
+                   mit={`!e min:1 max:${p.maxQuote}`} />
       </div>
       <RestErrCo e={st.e} />
     </NextCancelFormTI>;

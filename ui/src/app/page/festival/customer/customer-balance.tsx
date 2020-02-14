@@ -13,24 +13,26 @@ import { SecCon } from 'app/component/section-container';
 import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
 import {Loading} from "component/loading";
-import {OrderSr} from "app/service/order-service";
-import {OrderInfoCustomerView} from 'app/types/order';
 
 import bulma from 'app/style/my-bulma.sass';
 import { NavbarLinkItem } from 'app/component/navbar-link-item';
+import {TokenSr, TokenBalanceView} from "app/service/token-service";
 
-export interface CustomerOrdersP {
+export interface CustomerBalanceP {
   fid: Fid;
 }
 
-export interface CustomerOrdersS extends TransComS {
-  orders?: OrderInfoCustomerView[];
+export interface CustomerBalanceS extends TransComS {
+  balance?: TokenBalanceView;
   e?: Error;
 }
 
-class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
+class CustomerBalance extends TransCom<CustomerBalanceP, CustomerBalanceS> {
   // @ts-ignore
-  private $orderSr: OrderSr;
+  private $userAuth: UserAuth;
+
+  // @ts-ignore
+  private $tokenSr: TokenSr;
 
   constructor(props) {
     super(props);
@@ -38,54 +40,56 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
   }
 
   wMnt() {
-    this.$orderSr.customerLists()
-      .tn(lst => this.ust(st => ({...st, orders: lst})))
+    this.$tokenSr.getBalance()
+      .tn(balance => this.ust(st => ({...st, balance})))
       .ctch(e => this.ust(st => ({...st, e: e})));
   }
 
   render(p, st) {
     const [TI, TitleStdMainMenuI, LoadingI] = this.c3(T, TitleStdMainMenu, Loading);
     return <div>
-      <TitleStdMainMenuI t$title="My orders"
+      <TitleStdMainMenuI t$title="Balance"
                          extraItems={[
-                           <NavbarLinkItem path={`/festival/visitor/balance/${p.fid}`}
-                                           t$label="balance" />,
+                           <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
+                                           t$label="my orders" />,
                            <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}
                                            t$label="meal menu" />
                          ]}/>
       <SecCon css={bulma.content}>
-        {!st.orders && !st.e && <LoadingI/>}
+        {!st.balance && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />
-        {!!st.orders && <table class={bulma.table}>
-          {!st.orders.length && <tr>
-            <td colSpan={2}>
-              <TI m="No orders"/>
-            </td>
-          </tr>}
-          {!!st.orders.length && <tr>
-            <td>#</td>
+        {!!st.balance && <table class={bulma.table}>
+          <tr>
             <td>
-              <TI m="State"/>
+              <TI m="Your ID"/>
             </td>
-          </tr>}
-          {st.orders.map((order: OrderInfoCustomerView, i: number) => <tr>
+            <td>{this.$userAuth.myUid()}</td>
+          </tr>
+          <tr>
             <td>
-              <Link href={`/festival/visitor/order/control/${p.fid}/${order.label}`}>
-                {order.label}
-              </Link>
+              <TI m="Pending for approve"/>
+            </td>
+            <td>{st.balance.pendingTokens - st.balance.effectiveTokens}</td>
+          </tr>
+          <tr>
+            <td>
+              <TI m="Available tokens" />
             </td>
             <td>
-              <Link href={`/festival/visitor/order/control/${p.fid}/${order.label}`}>
-                {order.state}
-              </Link>
+              {st.balance.effectiveTokens}
             </td>
-          </tr>)}
+          </tr>
         </table>}
         <div class={bulma.buttons}>
-          {!!st.orders && !st.orders.length && <Link
-            class={jne(bulma.button, bulma.isPrimary)}
-            href={`/festival/visitor/menu/${p.fid}`}>
-            <TI m="meal menu" />
+          <Link
+            class={jne(bulma.button, bulma.isSuccess)}
+            href={`/festival/visitor/request-tokens/${p.fid}`}>
+            <TI m="refill balance" />
+          </Link>
+          {!!st.balance && st.balance.effectiveTokens > 0 && <Link
+            class={jne(bulma.button, bulma.isWarning)}
+            href={`/festival/visitor/request-token-return/${p.fid}/${st.balance.effectiveTokens}`}>
+            <TI m="return cash" />
           </Link>}
           <button class={jne(bulma.button, bulma.isPrimary)}
                   onClick={reloadPage}>
@@ -100,9 +104,9 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
 }
 
 export default function loadBundle(bundleName: string, mainContainer: Container)
-  : Instantiable<CustomerOrders> {
-  return regBundleCtx(bundleName, mainContainer, CustomerOrders,
+  : Instantiable<CustomerBalance> {
+  return regBundleCtx(bundleName, mainContainer, CustomerBalance,
       o => o.bind([
-        ['orderSr', OrderSr]
+        ['tokenSr', TokenSr]
       ]) as FwdContainer);
 }

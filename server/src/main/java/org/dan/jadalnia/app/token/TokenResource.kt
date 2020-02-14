@@ -108,6 +108,15 @@ class TokenResource @Inject constructor(
   }
 
   @POST
+  @Path(REQUEST_TOKEN_RETURN + "/{amount}")
+  fun customerRequestsTokenReturnNoBody(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("amount") amount: TokenPoints) {
+    customerRequestsTokenReturn(response, session, amount)
+  }
+
+  @POST
   @Path(REQUEST_TOKEN_RETURN)
   fun customerRequestsTokenReturn(
       @Suspended response: AsyncResponse,

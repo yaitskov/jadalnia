@@ -117,6 +117,15 @@ export class MainCom extends InjSubCom<{}, {}> {
   CustomerOrders = async() => await import('app/page/festival/customer/customer-orders')
     .then(m => this.inj(m as AsyncModule, 'customer-orders'));
 
+  CustomerRequestToken = async() => await import('app/page/festival/customer/customer-request-token')
+    .then(m => this.inj(m as AsyncModule, 'customer-request-token'));
+
+  CustomerRequestTokenReturn = async() => await import('app/page/festival/customer/customer-request-token-return')
+    .then(m => this.inj(m as AsyncModule, 'customer-request-token-return'));
+
+  CustomerBalance = async() => await import('app/page/festival/customer/customer-balance')
+    .then(m => this.inj(m as AsyncModule, 'customer-balance'));
+
   VisitorOrderCtrl = async() => await import('app/page/festival/customer/customer-order-control')
     .then(m => this.inj(m as AsyncModule, 'customer-order-control'));
 
@@ -143,14 +152,17 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/festival/kelner/serve/:fid' getComponent={this.KelnerServe} />
       <AsyncRoute path='/festival/kelner/missing/meals/:fid' getComponent={this.KelnerMissingMeals} />
       <AsyncRoute path='/festival/kasier/serve/:fid' getComponent={this.KasierServe} />
-      <AsyncRoute path='/festival/kasier/visitor-token-requests/:fid:/:vid' getComponent={this.KasierTokenRequests} />
+      <AsyncRoute path='/festival/kasier/visitor-token-requests/:fid/:vid' getComponent={this.KasierTokenRequests} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />
       <AsyncRoute path='/festival/invite/cashier/:fid' getComponent={this.CashierLanding} />
       <AsyncRoute path='/festival/registration/kelner/:fid' getComponent={this.WaiterReg} />
       <AsyncRoute path='/festival/registration/kasier/:fid' getComponent={this.KasierReg} />
       <AsyncRoute path='/festival/visitor/orders/:fid' getComponent={this.CustomerOrders} />
+      <AsyncRoute path='/festival/visitor/balance/:fid' getComponent={this.CustomerBalance} />
       <AsyncRoute path='/festival/visitor/order/modify/:fid/:order' getComponent={this.OrderModification} />
       <AsyncRoute path='/festival/visitor/order/control/:fid/:order' getComponent={this.VisitorOrderCtrl} />
+      <AsyncRoute path='/festival/visitor/request-token-return/:fid/:maxQuote' getComponent={this.CustomerRequestTokenReturn} />
+      <AsyncRoute path='/festival/visitor/request-tokens/:fid' getComponent={this.CustomerRequestToken} />
       <AsyncRoute path='/festival/visitor/token-request/:fid/:tokReq/:order' getComponent={this.TokenRequest} />
       <AsyncRoute path='/festival/visitor/order/autopay/:fid/:order' getComponent={this.CustomerAutoPay} />
       <AsyncRoute path='/festival/visitor/menu/:fid' getComponent={this.CustomerMenu} />

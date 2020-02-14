@@ -37,6 +37,10 @@ export class TokenSr {
     return this.$restSr.postJ(`/api/token/request/${amount}`, {});
   }
 
+  requestTokenReturn(amount: number): Thenable<TokenRequestId> {
+    return this.$restSr.postJ(`/api/token/request-return/${amount}`, {});
+  }
+
   approveSelectedRequest(data: TokenRequestApprove): Thenable<TokenRequestForApprove[]> {
     return this.$restSr.postJ(`/api/token/approve`, data);
   }

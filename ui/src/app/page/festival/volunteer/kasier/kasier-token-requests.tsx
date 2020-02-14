@@ -88,19 +88,18 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
   render(p, st) {
     const [TI, TitleStdMainMenuI, LoadingI] = this.c3(T, TitleStdMainMenu, Loading);
     return <div>
-      <TitleStdMainMenuI t$title="Token Requests"/>
+      <TitleStdMainMenuI t$title="Token Requests &amp; Returns"/>
       <SecCon css={bulma.content}>
         { !st.e && !st.tokenRequests && <LoadingI /> }
         <p>
           <TI m="Visitor id" id={p.vid}/>
         </p>
         { !!st.tokenRequests && !st.tokenRequests.length && <p>
-          <TI m="Visitor hasn't filed any request. Check visitor ID." />
+          <TI m="Visitor does not have any open request. Check visitor ID." />
         </p> }
         { !!st.tokenRequests && !!st.tokenRequests.length && <div class={bulma.content}>
           <p>
             <TI m="Visitor requested following token requests."/>
-            <TI m="Click on rows, visitor wants to approve." />
           </p>
           <p>
             <TI m="If not enough change ask visitor to file another request with different amount." />
@@ -112,13 +111,17 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
             </tr>
             { st.tokenRequests.map((req, idx) => <tr
               onClick={() => this.flipRequestSelection(idx)}>
-              <td class={st.tokensForApprove[idx] ? bulma.isSuccess : ''}>{req.tokenId}</td>
-              <td class={st.tokensForApprove[idx] ? bulma.isSuccess : ''}>{req.amount}</td>
+              <td class={st.tokensForApprove[idx] ? bulma.isPrimary : ''}>{req.tokenId}</td>
+              <td class={req.amount < 0 ? bulma.isDanger : bulma.isSuccess}>
+                {req.amount}
+              </td>
             </tr>)}
           </table>
 
           <p>
-            <TI m="Collect money first, then click approve." />
+            <TI m="Click on rows, visitor wants to approve." />
+            <TI m="Green rows with positive amount are requests for token purchase. " />
+            <TI m="Red rows with negative amount are requests to return token and get cash back. " />
           </p>
 
           { st.approvingInProgress && <TI m="Approving in progress..."/> }
@@ -150,7 +153,7 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
           </div> }
         </div>}
         <div class={bulma.buttons}>
-          { !st.approvingInProgress && this.sumSelectedRequests() > 0 &&
+          { !st.approvingInProgress && (this.sumSelectedRequests() < 0 || this.sumSelectedRequests() > 0) &&
           <button class={jne(bulma.button, bulma.isPrimary)}
                   onClick={this.approveSelectedRequests}>
             <TI m="Approve x tokens" x={this.sumSelectedRequests()}/>

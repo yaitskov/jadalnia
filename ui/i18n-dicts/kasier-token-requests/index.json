@@ -6,20 +6,21 @@
   ],
   "Approving in progress...": [],
   "Click on rows, visitor wants to approve.": [],
-  "Collect money first, then click approve.": [],
   "Fest control": [],
+  "Green rows with positive amount are requests for token purchase. ": [],
   "If not enough change ask visitor to file another request with different amount.": [],
   "List of rejected requests:": [],
   "Loading...": [],
   "Menu": [],
   "Next person": [],
   "Not all selected token requests have been accepted.": [],
+  "Red rows with negative amount are requests to return token and get cash back. ": [],
   "Request ID": [],
   "So return part of money (x) back to visitor.": [
     "x"
   ],
-  "Token Requests": [],
-  "Visitor hasn't filed any request. Check visitor ID.": [],
+  "Token Requests & Returns": [],
+  "Visitor does not have any open request. Check visitor ID.": [],
   "Visitor id": [
     "id"
   ],
