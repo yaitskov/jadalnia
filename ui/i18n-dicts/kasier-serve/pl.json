@@ -3,6 +3,6 @@
   "Ask visitor for his ID, assigned him at registration and lookup his token requests.":
     ["Zapytaj klienta o jego identifikator, przeznaczony jemu pod czas rejestracji",
       " i znaleź jego zapytania o tokeny. " ],
-  "Find token requests": "Znaleść zapytania o tokeny",
+  "Search requests": "Znaleść zapytania",
   "Visitor ID": "Identifikator klienta",
   "Cancel": "Anulować"}

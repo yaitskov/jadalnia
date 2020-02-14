@@ -49,7 +49,7 @@ class KasierServe extends TransCom<{fid: Fid}, KasierServeS> {
           <TI m="Ask visitor for his ID, assigned him at registration and lookup his token requests. "/>
         </p>
         <VisitorLookupFormI origin={{uid: 0}}
-                           t$next="Find token requests"
+                           t$next="Search requests"
                            next={this.onSubmit}>
           <div class={bulma.field}>
             <TxtFieldI name="uid" t$lbl="Visitor ID" mit="!e r:^[0-9]+$"/>
