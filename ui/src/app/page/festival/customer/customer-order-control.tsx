@@ -48,7 +48,7 @@ class CustomerOrderControl extends TransCom<CustomerOrderControlP, CustomerOrder
       <TitleStdMainMenuI t$title="Order control"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/visitor/balance/${p.fid}`}
-                                           t$label="balance" />,
+                                           t$label="My balance" />,
                            <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
                                            t$label="my orders" />,
                            <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}

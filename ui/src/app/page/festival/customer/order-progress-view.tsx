@@ -77,6 +77,10 @@ export class OrderProgressView extends TransCom<OrderProgressViewP, OrderProgres
                   class={jne(bulma.button, bulma.isPrimary)}>
               <TI m="pay for the order" />
             </Link>
+            <Link class={jne(bulma.button, bulma.isPrimary)}
+                  href={`/festival/visitor/order/modify/${p.fid}/${p.ordLbl}`}>
+              <TI m="Modify order" />
+            </Link>
             <button class={jne(bulma.button, bulma.isWarning)}
                     onClick={this.cancelOrder}>
               <TI m="Cancel order" />

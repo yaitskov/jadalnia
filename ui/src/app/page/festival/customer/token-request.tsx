@@ -64,7 +64,6 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
                          ]}/>
       <SecCon css={bulma.content}>
         <p>
-          <TI m="Token request tri." tri={p.tokReq}/>
           { !!st.tokenRequestInfo && <TI m="x tokens is requested." x={st.tokenRequestInfo.amount}/> }
         </p>
         <p>
