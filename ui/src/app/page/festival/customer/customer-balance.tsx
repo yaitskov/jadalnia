@@ -48,7 +48,7 @@ class CustomerBalance extends TransCom<CustomerBalanceP, CustomerBalanceS> {
   render(p, st) {
     const [TI, TitleStdMainMenuI, LoadingI] = this.c3(T, TitleStdMainMenu, Loading);
     return <div>
-      <TitleStdMainMenuI t$title="Balance"
+      <TitleStdMainMenuI t$title="My Balance"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
                                            t$label="my orders" />,

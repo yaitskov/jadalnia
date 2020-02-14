@@ -1,12 +1,12 @@
 {"Token Requests": "Zapytania o tokeny",
-  "Visitor id":["Gość ","id", " "],
-  "Visitor hasn't filed any request. Check visitor ID.":
-    "Gość jeszcze nie zapytał o tokeny. Sprawdź indentyfikator gościa. ",
+  "Visitor hasn't filed any request. Check visitor ID.": [
+    "Gość ", "id", " nie ma zapytań do uchwały. Sprawdź indentyfikator gościa. "],
   "Click on rows, visitor wants to approve.": "Klikaj na rekordach które, gość chce uchwalić. ",
   "If not enough change ask visitor to file another request with different amount.":[],
   "Request ID": "Numer zapytania",
   "Amount": "Kwota",
-  "Visitor requested following token requests.": "Gość wysłał następujące zapytania o tokeny. ",
+  "Visitor requested following token requests.": [
+    "Gość ", "id", " wysłał następujące zapytania o tokeny. "],
   "Collect money first, then click approve.": "Najpierw weź gotówkie a potem klikaj uchwalić. ",
   "Approve x tokens":["Uchwalić ","x", " tokenów"],
   "Approving in progress...": "Uchwalianie trwa...",

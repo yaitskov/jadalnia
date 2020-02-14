@@ -14,6 +14,8 @@ import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import {Loading} from "component/loading";
 import { Link } from 'preact-router';
 import {jne} from "collection/join-non-empty";
+import {BackBtn} from "../../../../../component/form/back-button";
+import { U } from 'util/const';
 
 
 export interface KasierTokenRequestsP {
@@ -50,6 +52,7 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
       })
       .tn(acceptedRequests => this.ust(st => ({...st,
         approvingInProgress: false,
+        tokensForApprove: st.tokenRequests.map(() => false),
         rejectedRequests: this.findRejectedRequests(acceptedRequests)})))
       .ctch(e => this.ust(st => ({...st, e: e,
         approvingInProgress: false,
@@ -91,44 +94,52 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
       <TitleStdMainMenuI t$title="Token Requests &amp; Returns"/>
       <SecCon css={bulma.content}>
         { !st.e && !st.tokenRequests && <LoadingI /> }
-        <p>
-          <TI m="Visitor id" id={p.vid}/>
-        </p>
-        { !!st.tokenRequests && !st.tokenRequests.length && <p>
-          <TI m="Visitor does not have any open request. Check visitor ID." />
-        </p> }
-        { !!st.tokenRequests && !!st.tokenRequests.length && <div class={bulma.content}>
-          <p>
-            <TI m="Visitor requested following token requests."/>
-          </p>
-          <p>
-            <TI m="If not enough change ask visitor to file another request with different amount." />
-          </p>
-          <table class={bulma.table}>
-            <tr>
-              <td><TI m="Request ID"/></td>
-              <td><TI m="Amount"/></td>
-            </tr>
-            { st.tokenRequests.map((req, idx) => <tr
-              onClick={() => this.flipRequestSelection(idx)}>
-              <td class={st.tokensForApprove[idx] ? bulma.isPrimary : ''}>{req.tokenId}</td>
-              <td class={req.amount < 0 ? bulma.isDanger : bulma.isSuccess}>
-                {req.amount}
-              </td>
-            </tr>)}
-          </table>
-
-          <p>
-            <TI m="Click on rows, visitor wants to approve." />
-            <TI m="Green rows with positive amount are requests for token purchase. " />
-            <TI m="Red rows with negative amount are requests to return token and get cash back. " />
-          </p>
-
-          { st.approvingInProgress && <TI m="Approving in progress..."/> }
-          { !!st.rejectedRequests && !!st.rejectedRequests.length && <div>
+        { !st.rejectedRequests && <div class={bulma.content}>
+          { !!st.tokenRequests && !st.tokenRequests.length && <p>
+            <TI m="Visitor does not have any open request. Check visitor ID."
+                id={p.vid}/>
+          </p> }
+          { !!st.tokenRequests && !!st.tokenRequests.length && <div>
             <p>
-              <TI m="Not all selected token requests have been accepted."/>
-              <TI m="So return part of money (x) back to visitor." x={this.sumRejectedRequests()} />
+              <TI m="Visitor requested following token requests."
+                  id={p.vid}/>
+            </p>
+            <p>
+              <TI m="If not enough change ask visitor to file another request with different amount." />
+            </p>
+            <table class={bulma.table}>
+              <tr>
+                <td><TI m="Request ID"/></td>
+                <td><TI m="Amount"/></td>
+              </tr>
+              { st.tokenRequests.map((req, idx) => <tr
+                onClick={() => this.flipRequestSelection(idx)}>
+                <td class={st.tokensForApprove[idx] ? bulma.isPrimary : ''}>{req.tokenId}</td>
+                <td class={req.amount < 0 ? bulma.isDanger : bulma.isSuccess}>
+                  {req.amount}
+                </td>
+              </tr>)}
+            </table>
+
+            <p>
+              <TI m="Click on rows, visitor wants to approve." />
+              <TI m="Green rows with positive amount are requests for token purchase. " />
+              <TI m="Red rows with negative amount are requests to return token and get cash back. " />
+            </p>
+          </div>}
+        </div>}
+
+        { st.approvingInProgress && <TI m="Approving in progress..."/> }
+        { !!st.rejectedRequests && !!st.rejectedRequests.length && <div class={jne(bulma.message, bulma.isWarning)}>
+          <div class={bulma.messageHeader}>
+            <TI m="Requests are rejected" />
+          </div>
+          <div class={bulma.messageBody}>
+            <p>
+              { this.sumRejectedRequests() < 0 && <TI m="So return withhold part of money (x). "
+                                                      x={-1 * this.sumRejectedRequests()} />}
+              { this.sumRejectedRequests() > 0 && <TI m="So return part of money (x) back to visitor. "
+                                                      x={this.sumRejectedRequests()} /> }
             </p>
             <p>
               <TI m="List of rejected requests:"/>
@@ -143,25 +154,29 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
                 <td>{req.amount}</td>
               </tr>) }
             </table>
-          </div>}
-
-          { !!st.rejectedRequests && !st.rejectedRequests.length && <div>
-            <p>
-              <TI m="All token requests are accepted." />
-              <TI m="You can start serving next person in line." />
-            </p>
-          </div> }
+          </div>
         </div>}
+
+        { !!st.rejectedRequests && !st.rejectedRequests.length && <div class={jne(bulma.message, bulma.isSuccess)}>
+            <div class={bulma.messageHeader}>
+              <TI m="All token requests are approved." />
+            </div>
+            <div class={bulma.messageBody}>
+              <TI m="You can start serving next person in line." />
+            </div>
+        </div> }
+
         <div class={bulma.buttons}>
           { !st.approvingInProgress && (this.sumSelectedRequests() < 0 || this.sumSelectedRequests() > 0) &&
-          <button class={jne(bulma.button, bulma.isPrimary)}
+          <button class={jne(bulma.button, this.sumSelectedRequests() < 0  ? bulma.isWarning : bulma.isPrimary)}
                   onClick={this.approveSelectedRequests}>
             <TI m="Approve x tokens" x={this.sumSelectedRequests()}/>
           </button>}
-          <Link href={`/festival/kasier/serve/${p.fid}`}
+          { st.rejectedRequests === U && <BackBtn/> }
+          { st.rejectedRequests !== U && <Link href={`/festival/kasier/serve/${p.fid}`}
                 class={jne(bulma.button, bulma.isSuccess)}>
             <TI m="Next person"/>
-          </Link>
+          </Link>}
         </div>
       </SecCon>
     </div>

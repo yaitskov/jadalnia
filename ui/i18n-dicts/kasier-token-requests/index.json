@@ -1,5 +1,5 @@
 {
-  "All token requests are accepted.": [],
+  "All token requests are approved.": [],
   "Amount": [],
   "Approve x tokens": [
     "x"
@@ -13,17 +13,21 @@
   "Loading...": [],
   "Menu": [],
   "Next person": [],
-  "Not all selected token requests have been accepted.": [],
   "Red rows with negative amount are requests to return token and get cash back. ": [],
   "Request ID": [],
-  "So return part of money (x) back to visitor.": [
+  "Requests are rejected": [],
+  "So return part of money (x) back to visitor. ": [
+    "x"
+  ],
+  "So return withhold part of money (x). ": [
     "x"
   ],
   "Token Requests & Returns": [],
-  "Visitor does not have any open request. Check visitor ID.": [],
-  "Visitor id": [
+  "Visitor does not have any open request. Check visitor ID.": [
     "id"
   ],
-  "Visitor requested following token requests.": [],
+  "Visitor requested following token requests.": [
+    "id"
+  ],
   "You can start serving next person in line.": []
 }

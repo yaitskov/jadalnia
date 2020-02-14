@@ -49,7 +49,7 @@ class CustomerOrders extends TransCom<CustomerOrdersP, CustomerOrdersS> {
       <TitleStdMainMenuI t$title="My orders"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/visitor/balance/${p.fid}`}
-                                           t$label="balance" />,
+                                           t$label="My balance" />,
                            <NavbarLinkItem path={`/festival/visitor/menu/${p.fid}`}
                                            t$label="meal menu" />
                          ]}/>

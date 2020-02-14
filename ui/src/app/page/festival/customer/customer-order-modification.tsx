@@ -111,7 +111,7 @@ extends TransCom<CustomerOrderModificationP, CustomerOrderModificationS> {
       <TitleStdMainMenuI t$title="Order update"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/visitor/balance/${p.fid}`}
-                                           t$label="balance" />,
+                                           t$label="My balance" />,
                            <NavbarLinkItem path={`/festival/visitor/orders/${p.fid}`}
                                            t$label="my orders" />
                          ]}/>

@@ -45,8 +45,8 @@ class KasierServe extends TransCom<{fid: Fid}, KasierServeS> {
       <TitleStdMainMenuI t$title="Kasier service"/>
       <SecCon css={bulma.content}>
         <p>
-          <TI m="Your duty is to exchange cash for tokens and backwards."/>
-          <TI m="Ask visitor for his ID, assigned him at registration and lookup his token requests."/>
+          <TI m="Your duty is to exchange cash for tokens and backwards. "/>
+          <TI m="Ask visitor for his ID, assigned him at registration and lookup his token requests. "/>
         </p>
         <VisitorLookupFormI origin={{uid: 0}}
                            t$next="Find token requests"
