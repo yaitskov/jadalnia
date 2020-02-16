@@ -1,4 +1,5 @@
-{"Token request": "Zapytanie o tokieny",
+{
+  "Token request": "Zapytanie o tokieny",
   "my orders": "moje zamówienia",
   "meal menu": "karta dań",
   "Pay order": [
@@ -13,4 +14,5 @@
   "check token request that approved": "sprawdzić stan zapytania o tokeny",
   "To my order": "Do zamówień",
   "Fest control":[],"Menu":[],"Sign up":[],"Log in":[],
-  "Loading...":"Ladowanie..."}
+  "Loading...":"Ladowanie..."
+}

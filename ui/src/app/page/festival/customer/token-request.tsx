@@ -83,14 +83,14 @@ class TokenRequest extends TransCom<TokenRequestP, TokenRequestS> {
           </button>}
           {!!st.tokenRequestInfo
             && st.tokenRequestInfo.approved
-            && !!(+p.order)
+            && (p.order != '0')
             && <Link href={`/festival/visitor/order/autopay/${p.fid}/${p.order}`}
                      class={jne(bulma.button, bulma.isPrimary)}>
                  <TI m="Pay order" o={p.order} />
                </Link>}
           {!!st.tokenRequestInfo
             && st.tokenRequestInfo.approved
-            && !(+p.order)
+            && (p.order == '0')
             && <Link href={`/festival/visitor/orders/${p.fid}`}
                      class={jne(bulma.button, bulma.isPrimary)}>
                  <TI m="To my order" />

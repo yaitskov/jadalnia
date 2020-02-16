@@ -152,7 +152,7 @@ class TokenDao: AsyncDao() {
         .fetchOne())
         .map { r -> TokenRequestVisitorView(
             tokenRequestId = tokenReqId,
-            amount = r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION.sign())),
+            amount = r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION).sign()),
             approved = r.get(TOKEN.KASIER_ID) != null)
         }}
   }

@@ -4,11 +4,14 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.dan.jadalnia.app.order.pojo.OrderItem;
 import org.dan.jadalnia.app.order.pojo.OrderLabel;
+import org.dan.jadalnia.app.token.TokenId;
 import org.dan.jadalnia.app.token.TokenPoints;
+import org.dan.jadalnia.app.token.TokenRequestVisitorView;
 import org.dan.jadalnia.app.user.UserSession;
 import org.dan.jadalnia.mock.MyRest;
 import org.dan.jadalnia.test.ws.WsIntegrationTest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.Is;
 import org.junit.Test;
 
@@ -42,6 +45,12 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
         return createPaidOrder(mockBaseFestival, wsClient, FRYTKI_ORDER);
     }
 
+    public static TokenRequestVisitorView showTokenToCustomer(
+            MyRest myRest, UserSession session, TokenId tokenid) {
+        return myRest.get("/token/visitor-view/" + tokenid,
+                session, TokenRequestVisitorView.class);
+    }
+
     public static OrderLabel createPaidOrder(
             MockBaseFestival mockBaseFestival,
             WebSocketClient wsClient, List<OrderItem> orderItems) {
@@ -58,6 +67,12 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
                 myRest, customerSession.getUid(),
                 asList(tokenId), kasierSession);
         assertThat(approved, hasItem(hasProperty("tokenId", Is.is(tokenId))));
+
+        assertThat(showTokenToCustomer(myRest, customerSession, tokenId),
+                Matchers.allOf(
+                        hasProperty("amount", Is.is(pointsInToken)),
+                        hasProperty("approved", Is.is(true))));
+
         val orderLabel = putOrder(myRest, customerSession, orderItems);
         val wsKelnerHandler = festivalStatusAndOrderPaidWaiter(kelnerSession, orderLabel);
         bindUserWsHandler(wsKelnerHandler, wsClient);
