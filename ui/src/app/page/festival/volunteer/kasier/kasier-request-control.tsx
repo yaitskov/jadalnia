@@ -2,7 +2,7 @@ import { h } from 'preact';
 
 import {Container, FwdContainer} from 'injection/inject-1k';
 import { regBundleCtx} from 'injection/bundle';
-import { Instantiable } from 'collection/typed-object';
+import { Instantiable, deepEq } from 'collection/typed-object';
 import { T } from 'i18n/translate-tag';
 import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import { TransCom, TransComS } from 'i18n/trans-component';
@@ -42,6 +42,12 @@ class KasierRequestControl extends TransCom<KasierRequestControlP, KasierRequest
     this.$tokenSr.cancelToken(this.pr.tok)
       .tn(outcome => this.ust(st => ({...st, outcome})))
       .ctch(e => this.ust(st => ({...st, e: e})));
+  }
+
+  onUp(prevProps: any) {
+    if (!deepEq(this.pr as any, prevProps)) {
+      this.wMnt()
+    }
   }
 
   wMnt() {
