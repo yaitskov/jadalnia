@@ -14,7 +14,7 @@ import { TitleStdMainMenu } from 'app/title-std-main-menu';
 import {Loading} from "component/loading";
 import { Link } from 'preact-router';
 import {jne} from "collection/join-non-empty";
-import {BackBtn} from "../../../../../component/form/back-button";
+import {BackBtn} from "component/form/back-button";
 import { U } from 'util/const';
 
 
@@ -60,7 +60,7 @@ class KasierTokenRequests extends TransCom<KasierTokenRequestsP, KasierTokenRequ
   }
 
   findRejectedRequests(acceptedRequests: TokenRequestForApprove[]): TokenRequestForApprove[] {
-    return this.st.tokenRequests!!.filter(req => acceptedRequests.findIndex(
+    return this.st.tokenRequests!!.filter((req, idx) => this.st.tokensForApprove[idx] && acceptedRequests.findIndex(
       acReq => acReq.tokenId == req.tokenId) < 0);
   }
 
