@@ -233,6 +233,16 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*token\.approved_at</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>TokenId</name>
+                                    <expression>.*token\.cancelled_by</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
                                     <name>TokenOp</name>
                                     <expression>.*token\.operation</expression>
                                     <types>.*</types>

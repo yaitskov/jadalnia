@@ -14,6 +14,7 @@ import { NextCancelForm } from 'app/component/next-cancel-form';
 import {Thenable, resolved} from "async/abortable-promise";
 import { TxtField } from 'app/component/field/txt-field';
 import { T } from 'i18n/translate-tag';
+import { NavbarLinkItem } from 'app/component/navbar-link-item';
 
 export interface KasierServeS extends TransComS {
   e?: Error;
@@ -42,7 +43,11 @@ class KasierServe extends TransCom<{fid: Fid}, KasierServeS> {
       this.c4(TitleStdMainMenu, VisitorLookupForm, TxtField, T);
 
     return <div>
-      <TitleStdMainMenuI t$title="Kasier service"/>
+      <TitleStdMainMenuI t$title="Kasier service"
+                         extraItems={[
+                           <NavbarLinkItem path={`/festival/kasier/history/${p.fid}/0`}
+                                           t$label="Request history" />
+                         ]}/>
       <SecCon css={bulma.content}>
         <p>
           <TI m="Your duty is to exchange cash for tokens and backwards. "/>

@@ -1,15 +1,12 @@
 package org.dan.jadalnia.app.token
 
-import org.dan.jadalnia.app.auth.ctx.UserCacheFactory.Companion.USER_SESSIONS
-import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
-import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.token.TokenBalanceCacheFactory.Companion.TOKEN_BALANCE_CACHE
 import org.dan.jadalnia.app.user.Uid
-import org.dan.jadalnia.app.user.UserInfo
 import org.dan.jadalnia.app.user.UserSession
+import org.dan.jadalnia.app.user.WithUser
 import org.dan.jadalnia.org.dan.jadalnia.app.auth.AuthService.SESSION
-import org.dan.jadalnia.sys.async.AsynSync
+import org.dan.jadalnia.util.Futures
 import org.dan.jadalnia.util.collection.AsyncCache
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -29,14 +26,10 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 class TokenResource @Inject constructor(
+    val with: WithUser,
     @Named(TOKEN_BALANCE_CACHE)
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
-    val tokenService: TokenService,
-    @Named(USER_SESSIONS)
-    val userSessions: AsyncCache<UserSession, UserInfo>,
-    @Named(FESTIVAL_CACHE)
-    val festivalCache: AsyncCache<Fid, Festival>,
-    val asynSync: AsynSync) {
+    val tokenService: TokenService) {
   companion object {
     val log = LoggerFactory.getLogger(TokenResource::class.java)
     const val TOKEN = "token/"
@@ -53,14 +46,12 @@ class TokenResource @Inject constructor(
   fun invalidateBalanceCache(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenAccept { fid ->
-              log.info("Invalidate balance cache {} in fid {}", session.uid, fid)
-              tokenBalanceCache.invalidate(Pair(fid, session.uid))
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      val fid = festival.fid()
+      log.info("Invalidate balance cache {} in fid {}", session.uid, fid)
+      tokenBalanceCache.invalidate(Pair(fid, session.uid))
+      Futures.voidF()
+    }
   }
 
   @POST
@@ -74,20 +65,49 @@ class TokenResource @Inject constructor(
   }
 
   @GET
+  @Path("${TOKEN}request-kasier-history/{page}")
+  fun kasierRequestHistory(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("page")
+      page: Int) {
+    with.kasierFest(response, session) { festival ->
+      tokenService.listKasierHistory(session.uid, festival, page, 100)
+    }
+  }
+
+  @GET
   @Path(TOKEN + "visitor-view/{tokReq}")
   fun showVisitorTokenRequest(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("tokReq")
       tokenReqId: TokenId) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.showVisitorTokenRequest(festival.info.get().fid, tokenReqId)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      tokenService.showVisitorTokenRequest(festival.fid(), tokenReqId)
+    }
+  }
+
+  @POST
+  @Path("token/cancel-approved/{requestId}")
+  fun cancelApproved(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("requestId") requestId: TokenId) {
+    with.kasierFest(response, session) { festival ->
+      tokenService.cancelApproved(festival, requestId, session.uid)
+    }
+  }
+
+  @GET
+  @Path("token/cashier-view/{requestId}")
+  fun showRequestToCashier(
+      @Suspended response: AsyncResponse,
+      @HeaderParam(SESSION) session: UserSession,
+      @PathParam("requestId") requestId: TokenId) {
+    with.kasierFest(response, session) { festival ->
+      tokenService.showRequestToCashier(festival, requestId)
+    }
   }
 
   @POST
@@ -96,15 +116,10 @@ class TokenResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       amount: TokenPoints) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.requestTokensPurchase(
-                  festival, session.uid, amount, TokenOp.Buy)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      tokenService.requestTokensPurchase(
+          festival, session.uid, amount, TokenOp.Buy)
+    }
   }
 
   @POST
@@ -122,15 +137,10 @@ class TokenResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       amount: TokenPoints) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.requestTokensPurchase(
-                  festival, session.uid, amount, TokenOp.Sel)
-            },
-        response)
+    with.customerFest(response, session) { festival ->
+      tokenService.requestTokensPurchase(
+          festival, session.uid, amount, TokenOp.Sel)
+    }
   }
 
   @GET
@@ -140,29 +150,19 @@ class TokenResource @Inject constructor(
       @HeaderParam(SESSION) session: UserSession,
       @PathParam("customerUid")
       customer: Uid) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKasier().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.findTokensForApprove(festival, customer)
-            },
-        response)
+    with.kasierFest(response, session) { festival ->
+      tokenService.findTokensForApprove(festival, customer)
+    }
   }
 
   @GET
   @Path(GET_MY_BALANCE)
   fun getMyBalance(
       @Suspended response: AsyncResponse,
-      @HeaderParam(SESSION) customerSession: UserSession) {
-    asynSync.sync(
-        userSessions.get(customerSession)
-            .thenApply { user -> user.ensureCustomer().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.getBalance(festival, customerSession.uid)
-            },
-        response)
+      @HeaderParam(SESSION) session: UserSession) {
+    with.customerFest(response, session) { festival ->
+      tokenService.getBalance(festival, session.uid)
+    }
   }
 
   @POST
@@ -171,13 +171,8 @@ class TokenResource @Inject constructor(
       @Suspended response: AsyncResponse,
       @HeaderParam(SESSION) session: UserSession,
       approveReq: TokensApproveReq) {
-    asynSync.sync(
-        userSessions.get(session)
-            .thenApply { user -> user.ensureKasier().fid }
-            .thenCompose(festivalCache::get)
-            .thenCompose { festival ->
-              tokenService.approveTokens(festival, session.uid, approveReq)
-            },
-        response)
+    with.kasierFest(response, session) { festival ->
+      tokenService.approveTokens(festival, session.uid, approveReq)
+    }
   }
 }

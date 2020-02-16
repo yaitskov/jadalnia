@@ -7,6 +7,7 @@ import org.dan.jadalnia.jooq.Tables.TOKEN
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
 import org.dan.jadalnia.util.NullForKotlin.nullValue
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
@@ -69,10 +70,11 @@ class TokenDao: AsyncDao() {
     }
   }
 
-  fun approveToken(fid: Fid, tokenId: TokenId, kasierUid: Uid)
+  fun approveToken(fid: Fid, tokenId: TokenId, kasierUid: Uid, now: Instant)
       : CompletableFuture<Void> {
     return execQuery { jooq -> jooq.update(TOKEN)
         .set(TOKEN.KASIER_ID, kasierUid)
+        .set(TOKEN.APPROVED_AT, now)
         .where(
             TOKEN.FESTIVAL_ID.eq(fid),
             TOKEN.TID.eq(tokenId),
@@ -141,16 +143,58 @@ class TokenDao: AsyncDao() {
     }
   }
 
-  fun getToken(fid: Fid, tokenReqId: TokenId): CompletableFuture<Optional<TokenRequestVisitorView>> {
+  fun getTokenForCustomer(fid: Fid, tokenReqId: TokenId)
+      : CompletableFuture<Optional<TokenRequestVisitorView>> {
     return execQuery { jooq -> ofNullable(jooq
-        .select(TOKEN.KASIER_ID, TOKEN.AMOUNT)
+        .select(TOKEN.KASIER_ID, TOKEN.AMOUNT, TOKEN.OPERATION)
         .from(TOKEN)
         .where(TOKEN.FESTIVAL_ID.eq(fid), TOKEN.TID.eq(tokenReqId))
         .fetchOne())
         .map { r -> TokenRequestVisitorView(
             tokenRequestId = tokenReqId,
-            amount = r.get(TOKEN.AMOUNT),
+            amount = r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION.sign())),
             approved = r.get(TOKEN.KASIER_ID) != null)
         }}
+  }
+
+  fun getTokenForCashier(fid: Fid, tokenReqId: TokenId)
+      : CompletableFuture<Optional<TokenRequestCashierView>> {
+    return execQuery { jooq -> ofNullable(jooq
+        .select(TOKEN.KASIER_ID, TOKEN.AMOUNT, TOKEN.CANCELLED_BY,
+            TOKEN.APPROVED_AT, TOKEN.OPERATION, TOKEN.CUSTOMER_ID)
+        .from(TOKEN)
+        .where(TOKEN.FESTIVAL_ID.eq(fid), TOKEN.TID.eq(tokenReqId))
+        .fetchOne())
+        .map { r -> TokenRequestCashierView(
+            tokenId = tokenReqId,
+            amount = r.get(TOKEN.AMOUNT).scale(r.get(TOKEN.OPERATION).sign()),
+            approvedAt = r.get(TOKEN.APPROVED_AT),
+            cancelledBy = r.get(TOKEN.CANCELLED_BY),
+            customer = r.get(TOKEN.CUSTOMER_ID))
+        }}
+  }
+
+  fun markAsCancelled(fid: Fid, requestId: TokenId, antiTokenId: TokenId) = execQuery { jooq -> jooq
+      .update(TOKEN)
+      .set(TOKEN.CANCELLED_BY, antiTokenId)
+      .where(TOKEN.FESTIVAL_ID.eq(fid),
+          TOKEN.TID.eq(requestId),
+          TOKEN.CANCELLED_BY.isNull)
+      .execute()
+  }.thenApply { rowsUpdated -> rowsUpdated > 0 }
+
+  fun listPageOfKasierHistory(fid: Fid, kasierUid: Uid, page: Int, pageSize: Int)
+      : CompletableFuture<List<KasierHistoryRecord>> {
+    return execQuery { jooq -> jooq
+        .select(TOKEN.TID, TOKEN.AMOUNT)
+        .from(TOKEN)
+        .where(TOKEN.FESTIVAL_ID.eq(fid),
+            TOKEN.KASIER_ID.eq(kasierUid))
+        .orderBy(TOKEN.APPROVED_AT)
+        .offset(page * pageSize)
+        .limit(pageSize)
+        .fetch()
+        .map { r -> KasierHistoryRecord(r.get(TOKEN.TID), r.get(TOKEN.AMOUNT)) }
+    }
   }
 }

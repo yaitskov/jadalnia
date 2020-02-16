@@ -150,6 +150,10 @@ public class MyRest {
                 .get(gt);
     }
 
+    public <T> T get(String path, UserSession session, GenericType<T> gt) {
+        return get(path, () -> session, gt);
+    }
+
     public <T> T get(String path, UserSession session, Class<T> resultClass) {
         return request().path(path).request(APPLICATION_JSON)
                 .header(SESSION, session)

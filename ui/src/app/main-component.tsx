@@ -101,6 +101,12 @@ export class MainCom extends InjSubCom<{}, {}> {
   KasierServe = async() => await import('app/page/festival/volunteer/kasier/kasier-serve')
     .then(m => this.inj(m as AsyncModule, 'kasier-serve'));
 
+  KasierRequestControl = async() => await import('app/page/festival/volunteer/kasier/kasier-request-control')
+    .then(m => this.inj(m as AsyncModule, 'kasier-request-control'));
+
+  KasierHistory = async() => await import('app/page/festival/volunteer/kasier/kasier-history')
+    .then(m => this.inj(m as AsyncModule, 'kasier-history'));
+
   KasierTokenRequests = async() => await import(
     'app/page/festival/volunteer/kasier/kasier-token-requests')
     .then(m => this.inj(m as AsyncModule, 'kasier-token-requests'));
@@ -151,6 +157,8 @@ export class MainCom extends InjSubCom<{}, {}> {
       <AsyncRoute path='/festival/kelner/serve/order/:fid/:order' getComponent={this.KelnerTakenOrder}/>
       <AsyncRoute path='/festival/kelner/serve/:fid' getComponent={this.KelnerServe} />
       <AsyncRoute path='/festival/kelner/missing/meals/:fid' getComponent={this.KelnerMissingMeals} />
+      <AsyncRoute path='/festival/kasier/request/control/:fid/:tok' getComponent={this.KasierRequestControl} />
+      <AsyncRoute path='/festival/kasier/history/:fid/:page' getComponent={this.KasierHistory} />
       <AsyncRoute path='/festival/kasier/serve/:fid' getComponent={this.KasierServe} />
       <AsyncRoute path='/festival/kasier/visitor-token-requests/:fid/:vid' getComponent={this.KasierTokenRequests} />
       <AsyncRoute path='/admin/festival/state/control/:fid' getComponent={this.FestStateCtrl} />

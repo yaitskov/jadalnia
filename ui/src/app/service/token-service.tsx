@@ -25,12 +25,39 @@ export interface TokenRequestForApprove {
   amount: number;
 }
 
+export interface KasierHistoryRecord {
+  tokenId: TokenRequestId;
+  amount: number;
+}
+
+export interface KasierTokenView {
+  tokenId: TokenRequestId;
+  amount: number;
+  approvedAt: string;
+  cancelledBy?: TokenRequestId;
+  customer: Uid;
+}
+
+export type TokenCancelOutcome = 'CANCELLED' | 'NOT_ENOUGH_FUNDS';
+
 export class TokenSr {
   // @ts-ignore
   private $restSr: RestSr;
 
+  showRequestTokenToKasier(tok: TokenRequestId): Thenable<KasierTokenView> {
+    return this.$restSr.getS(`/api/token/cashier-view/${tok}`);
+  }
+
+  cancelToken(tok: TokenRequestId): Thenable<TokenCancelOutcome> {
+    return this.$restSr.postJ(`/api/token/cancel-approved/${tok}`, {});
+  }
+
   getBalance(): Thenable<TokenBalanceView> {
     return this.$restSr.getS('/api/token/myBalance');
+  }
+
+  kasierRequestHistory(page: number): Thenable<KasierHistoryRecord[]> {
+    return this.$restSr.getS(`/api/token/request-kasier-history/${page}`);
   }
 
   requestTokens(amount: number): Thenable<TokenRequestId> {

@@ -39,6 +39,8 @@ create table token(
     amount int(11) not null,
     customer_id int(11) not null,
     kasier_id int(11) null,
+    cancelled_by int(11) null,
+    approved_at timestamp(3) null,
     created timestamp(3) default current_timestamp(3),
     primary key (festival_id, tid),
     foreign key (festival_id) references festival(fid),

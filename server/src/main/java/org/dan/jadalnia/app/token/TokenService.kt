@@ -5,12 +5,13 @@ import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.app.ws.WsBroadcast
-import org.dan.jadalnia.sys.error.JadEx
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.conflict
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
+import org.dan.jadalnia.sys.error.JadEx.Companion.notFound
 import org.dan.jadalnia.util.Futures
 import org.dan.jadalnia.util.collection.AsyncCache
+import org.dan.jadalnia.util.time.Clocker
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -19,6 +20,7 @@ import javax.inject.Inject
 
 
 class TokenService @Inject constructor(
+    val clock: Clocker,
     val tokenDao: TokenDao,
     val tokenBalanceCache: AsyncCache<Pair<Fid, Uid>, TokenBalance>,
     val wsBroadcast: WsBroadcast) {
@@ -32,8 +34,8 @@ class TokenService @Inject constructor(
     if (amount.value < 1) {
       throw badRequest("min amount tokens to request is 1")
     }
-    if (amount.value > 100) {
-      throw badRequest("max amount tokens to request is 100")
+    if (amount.value > 1000) {
+      throw badRequest("max amount tokens to request is 1000")
     }
     return requestTokensNoValidation(festival, customerUid, amount, tokOp)
   }
@@ -115,13 +117,14 @@ class TokenService @Inject constructor(
                         if (balance.effective.compareAndSet(currentBalance, nextBalance)) {
                           log.info("Increase effective balance {} by {} for {}:{}",
                               nextBalance, token.amount, fid, approveReq.customer)
-                          tokenDao.approveToken(fid, token.tokenId, kasierUid).thenApply {
-                            Optional.of(token)
-                          }.exceptionally { e ->
-                            log.error("Attempt to approve token {} failed", token.tokenId, e)
-                            balance.effective.updateAndGet { tokens -> tokens.minus(token.amount) }
-                            Optional.empty()
-                          }
+                          tokenDao.approveToken(fid, token.tokenId, kasierUid, clock.get())
+                              .thenApply {
+                                Optional.of(token)
+                              }.exceptionally { e ->
+                                log.error("Attempt to approve token {} failed", token.tokenId, e)
+                                balance.effective.updateAndGet { tokens -> tokens.minus(token.amount) }
+                                Optional.empty()
+                              }
                         } else {
                           log.error("Reject token request {}:{} due effective balance changed",
                               fid, token.tokenId)
@@ -157,9 +160,84 @@ class TokenService @Inject constructor(
         }
   }
 
-  fun showVisitorTokenRequest(fid: Fid, tokenReqId: TokenId): CompletableFuture<TokenRequestVisitorView> {
-    return tokenDao.getToken(fid, tokenReqId).thenApply {
-      viewO -> viewO.orElseThrow { JadEx.notFound("token request not found")}
+  fun showVisitorTokenRequest(fid: Fid, tokenReqId: TokenId)
+      : CompletableFuture<TokenRequestVisitorView> {
+    return tokenDao.getTokenForCustomer(fid, tokenReqId).thenApply {
+      viewO -> viewO.orElseThrow { notFound("token request not found")}
     }
+  }
+
+  fun showRequestToCashier(festival: Festival, requestId: TokenId)
+      : CompletableFuture<TokenRequestCashierView> {
+    return tokenDao.getTokenForCashier(festival.fid(), requestId)
+        .thenCompose { tokenO ->
+          completedFuture(tokenO.orElseThrow {
+            notFound("token id is not valid", "id", requestId)
+          })
+        }
+  }
+
+  fun cancelApproved(festival: Festival, requestId: TokenId, kasierUid: Uid)
+      : CompletableFuture<TokenRequestCancelOutcome> {
+    log.info("Cashier {} is trying to cancel token request {}:{}",
+        kasierUid, festival.fid(), requestId)
+    return showRequestToCashier(festival, requestId)
+        .thenCompose { token ->
+          if (token.cancelledBy != null) {
+            log.info("Reject cancellation of token request {}:{} due it was cancelled by {}",
+                festival.fid(), requestId, token.cancelledBy)
+            completedFuture(TokenRequestCancelOutcome.CANCELLED)
+          } else if (token.approvedAt == null) {
+            log.info("Reject cancellation of token request {}:{} due it is not approved yet",
+                festival.fid(), requestId)
+            completedFuture(TokenRequestCancelOutcome.BAD_STATE)
+          } else {
+            tokenBalanceCache.get(Pair(festival.fid(), token.customer))
+                .thenCompose { balance ->
+                  if (token.amount.value < 0) {
+                    cancelApprovedContinue(festival, token.customer, token.amount.scale(-1),
+                        TokenOp.Buy, kasierUid, requestId)
+
+                  } else {
+                    cancelApprovedContinue(festival, token.customer, token.amount,
+                        TokenOp.Sel, kasierUid, requestId)
+                  }
+            }
+          }
+        }
+  }
+
+  fun cancelApprovedContinue(
+      festival: Festival, customer: Uid, amount: TokenPoints,
+      tokOp: TokenOp, kasierUid: Uid, requestId: TokenId)
+      : CompletableFuture<TokenRequestCancelOutcome> {
+    return requestTokensPurchase(festival, customer, amount, tokOp)
+        .thenCompose { antiTokenId ->
+          approveTokens(festival, kasierUid,
+              TokensApproveReq(customer, listOf(antiTokenId)))
+              .thenCompose { approvedList ->
+                if (approvedList.isEmpty()) {
+                  log.info("Reject cancellation of token request {}:{} by {} not enough funds or bad state",
+                      festival.fid(), requestId, antiTokenId)
+                  completedFuture(TokenRequestCancelOutcome.NOT_ENOUGH_FUNDS)
+                } else {
+                  tokenDao.markAsCancelled(festival.fid(), requestId, antiTokenId)
+                      .thenCompose { markedAsCancelled ->
+                        if (!markedAsCancelled) {
+                          log.warn("Request {}:{} is was cancelled before",
+                              festival.fid(), requestId)
+                          cancelApproved(festival, antiTokenId, kasierUid)
+                        } else {
+                          completedFuture(TokenRequestCancelOutcome.CANCELLED)
+                        }
+                      }
+                }
+              }
+        }
+  }
+
+  fun listKasierHistory(kasierUid: Uid, festival: Festival, page: Int, pageSize: Int)
+      : CompletableFuture<List<KasierHistoryRecord>> {
+    return tokenDao.listPageOfKasierHistory(festival.fid(), kasierUid, page, pageSize)
   }
 }
