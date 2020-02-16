@@ -47,9 +47,6 @@ class TokenService @Inject constructor(
     val currentBalance = balance.pending.get()
     val change = amount.value * tokOp.sign()
     val newBalance = currentBalance.value + change
-    if (newBalance < 0) {
-      throw badRequest("Balance would be less than 0")
-    }
     val fid = festival.fid()
     var attempts = 10;
     while (--attempts > 0) {
