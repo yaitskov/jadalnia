@@ -54,7 +54,7 @@ class KasierRequestControl extends TransCom<KasierRequestControlP, KasierRequest
     const [TI, LoadingI, TitleStdMainMenuI] = this.c3(T, Loading, TitleStdMainMenu);
 
     return <div>
-      <TitleStdMainMenuI t$title="Order control"
+      <TitleStdMainMenuI t$title="Token control"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/kasier/history/${p.fid}/0`}
                                            t$label="History" />

@@ -5,7 +5,7 @@ import bulma from 'app/style/my-bulma.sass';
 
 import {Container, FwdContainer} from 'injection/inject-1k';
 import {regBundleCtx} from 'injection/bundle';
-import { Instantiable } from 'collection/typed-object';
+import { Instantiable, deepEq } from 'collection/typed-object';
 import {Fid} from 'app/page/festival/festival-types';
 import {TransCom, TransComS} from "i18n/trans-component";
 import {TitleStdMainMenu} from "app/title-std-main-menu";
@@ -41,6 +41,12 @@ class KasierHistory extends TransCom<KasierHistoryP, KasierHistoryS> {
       .ctch(e => this.ust(st => ({...st, e: e})));
   }
 
+  onUp(prevProps: any) {
+    if (!deepEq(this.pr as any, prevProps)) {
+      this.wMnt()
+    }
+  }
+
   render(p, st) {
     const [TitleStdMainMenuI, LoadingI, TI] =
       this.c3(TitleStdMainMenu, Loading, T);
@@ -49,38 +55,36 @@ class KasierHistory extends TransCom<KasierHistoryP, KasierHistoryS> {
       <TitleStdMainMenuI t$title="Kasier history" />
       <section class={bulma.section}>
         <div class={bulma.content}>
-          {!st.e && !!st.records && <LoadingI/>}
+          {!st.e && !st.records && <LoadingI/>}
           <RestErrCo e={st.e} />
           {!!st.records && !st.records.length && <div class={jne(bulma.message, bulma.isInfo)}>
             <div class={bulma.messageHeader}>
               <TI m="There is no records on the page. " />
             </div>
           </div>}
-          {!!st.records && !!st.records.length && <div>
-            <table class={bulma.table}>
-              <tr>
-                <td>
-                  <TI m="Request" />
-                </td>
-                <td>
-                  <TI m="Amount" />
-                </td>
-              </tr>
-              {st.records.map((rec: KasierHistoryRecord) => <tr>
-                <td>
-                  <Link href={`/festival/kasier/request/control/${p.fid}/${rec.tokenId}`}>
-                    {rec.tokenId}
-                  </Link>
-                </td>
-                <td>{rec.amount}</td>
-              </tr>)}
-            </table>
-          </div>}
+          {!!st.records && !!st.records.length && <table class={bulma.table}>
+            <tr>
+              <td>
+                <TI m="Request" />
+              </td>
+              <td>
+                <TI m="Amount" />
+              </td>
+            </tr>
+            {st.records.map((rec: KasierHistoryRecord) => <tr>
+              <td>
+                <Link href={`/festival/kasier/request/control/${p.fid}/${rec.tokenId}`}>
+                  {rec.tokenId}
+                </Link>
+              </td>
+              <td>{rec.amount}</td>
+            </tr>)}
+          </table>}
           <div class={bulma.buttons}>
             <BackBtn />
-            {!!st.records.length && <Link class={jne(bulma.button, bulma.isPrimary)}
-                  href={`/festival/kasier/history/${p.fid}/${p.page + 1}`}>
-              <TI m="Next page" p={p.page + 1} />
+            {!!st.records && !!st.records.length && <Link class={jne(bulma.button, bulma.isPrimary)}
+                  href={`/festival/kasier/history/${p.fid}/${+p.page + 1}`}>
+              <TI m="Next page" p={+p.page + 1} />
             </Link>}
           </div>
         </div>
