@@ -46,7 +46,9 @@ class KelnerServe extends TransCom<{fid: Fid}, KelnerServeS> {
       <TitleStdMainMenuI t$title="Kelner service"
                          extraItems={[
                            <NavbarLinkItem path={`/festival/kelner/missing/meals/${p.fid}`}
-                                           t$label="Missing meals" />
+                                           t$label="Missing meals" />,
+                           <NavbarLinkItem path={`/festival/performance/kelner/${p.fid}`}
+                                           t$label="Kelner performance" />
                          ]}/>
       <SecCon css={bulma.content}>
         <RestErrCo e={st.e} />
