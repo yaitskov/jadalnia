@@ -49,11 +49,7 @@ class KasierPerformance extends TransCom<KasierPerformanceP, KasierPerformanceS>
       = this.c3(T, TitleStdMainMenu, Loading);
 
     return <div>
-      <TitleStdMainMenuI t$title="Cashier performance"
-                         extraItems={[
-                           <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
-                                           t$label="Fest control" />
-                         ]}/>
+      <TitleStdMainMenuI t$title="Cashier performance" />
       <section class={jne(bulma.section, bulma.content)}>
         {st.stats === U  && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />

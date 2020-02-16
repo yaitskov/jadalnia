@@ -45,6 +45,8 @@ class KasierServe extends TransCom<{fid: Fid}, KasierServeS> {
     return <div>
       <TitleStdMainMenuI t$title="Kasier service"
                          extraItems={[
+                           <NavbarLinkItem path={`/festival/performance/cashier/${p.fid}`}
+                                           t$label="Cashier performance" />,
                            <NavbarLinkItem path={`/festival/kasier/history/${p.fid}/0`}
                                            t$label="Request history" />
                          ]}/>

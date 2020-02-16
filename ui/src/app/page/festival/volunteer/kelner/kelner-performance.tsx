@@ -11,7 +11,6 @@ import { TransCom, TransComS } from 'i18n/trans-component';
 import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
 import bulma from 'app/style/my-bulma.sass';
-import { NavbarLinkItem } from 'app/component/navbar-link-item';
 import {jne} from "collection/join-non-empty";
 import {KelnerPerformanceRow, PerformanceSr } from "app/service/performance-service";
 
@@ -49,11 +48,7 @@ class KelnerPerformance extends TransCom<KelnerPerformanceP, KelnerPerformanceS>
       = this.c3(T, TitleStdMainMenu, Loading);
 
     return <div>
-      <TitleStdMainMenuI t$title="Kelner performance"
-                         extraItems={[
-                           <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
-                                           t$label="Fest control" />
-                         ]}/>
+      <TitleStdMainMenuI t$title="Kelner performance" />
       <section class={jne(bulma.section, bulma.content)}>
         {st.stats === U  && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />

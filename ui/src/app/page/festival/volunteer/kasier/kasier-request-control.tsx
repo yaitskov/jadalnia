@@ -56,8 +56,6 @@ class KasierRequestControl extends TransCom<KasierRequestControlP, KasierRequest
     return <div>
       <TitleStdMainMenuI t$title="Order control"
                          extraItems={[
-                           <NavbarLinkItem path={`/festival/kasier/serve/${p.fid}`}
-                                           t$label="Kasier service" />,
                            <NavbarLinkItem path={`/festival/kasier/history/${p.fid}/0`}
                                            t$label="History" />
                          ]}/>

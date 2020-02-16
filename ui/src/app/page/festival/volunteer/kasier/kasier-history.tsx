@@ -10,7 +10,6 @@ import {Fid} from 'app/page/festival/festival-types';
 import {TransCom, TransComS} from "i18n/trans-component";
 import {TitleStdMainMenu} from "app/title-std-main-menu";
 import { T } from 'i18n/translate-tag';
-import { NavbarLinkItem } from 'app/component/navbar-link-item';
 import {KasierHistoryRecord, TokenSr} from "app/service/token-service";
 import {BackBtn} from "component/form/back-button";
 import {Loading} from "component/loading";
@@ -47,11 +46,7 @@ class KasierHistory extends TransCom<KasierHistoryP, KasierHistoryS> {
       this.c3(TitleStdMainMenu, Loading, T);
 
     return <div>
-      <TitleStdMainMenuI t$title="Kasier history"
-                         extraItems={[
-                           <NavbarLinkItem path={`/festival/kasier/serve/${p.fid}`}
-                                           t$label="Kasier service" />
-                         ]}/>
+      <TitleStdMainMenuI t$title="Kasier history" />
       <section class={bulma.section}>
         <div class={bulma.content}>
           {!st.e && !!st.records && <LoadingI/>}

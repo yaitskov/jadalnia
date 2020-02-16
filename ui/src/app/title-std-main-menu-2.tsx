@@ -30,7 +30,21 @@ export class TitleStdMainMenu2 extends TransCom<TitleStdMainMenuP2, TransComS> {
       this.$userAuth.myFid().ifV(fid => items.unshift(
         <NavbarLinkItem path={`/admin/festival/control/${fid}`}
                         t$label="Fest control" />))
-     }
+    } else if (this.$userAuth.userType() == "Kasier") {
+      if (items.length > 0) {
+        items.push(<hr class={bulma.navbarDivider}/>);
+      }
+      this.$userAuth.myFid().ifV(fid => items.unshift(
+        <NavbarLinkItem path={`/festival/kasier/serve/${fid}`}
+                        t$label="Kasier service" />))
+    } else if (this.$userAuth.userType() == "Kelner") {
+      if (items.length > 0) {
+        items.push(<hr class={bulma.navbarDivider}/>);
+      }
+      this.$userAuth.myFid().ifV(fid => items.unshift(
+        <NavbarLinkItem path={`/festival/kelner/serve/${fid}`}
+                        t$label="Kelner service" />))
+    }
     return <TitleMainMenu2I title={this.props.title} menuItems={items} />;
   }
 

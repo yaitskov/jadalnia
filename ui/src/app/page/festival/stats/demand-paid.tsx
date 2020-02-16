@@ -12,7 +12,6 @@ import {Fid} from 'app/page/festival/festival-types';
 import {RestErrCo} from "component/err/error";
 import { DishName  } from "app/types/menu";
 import bulma from 'app/style/my-bulma.sass';
-import { NavbarLinkItem } from 'app/component/navbar-link-item';
 import {Dish2Quantity, OrderStatsSr} from 'app/service/order-stats-service';
 import {jne} from "collection/join-non-empty";
 
@@ -57,11 +56,7 @@ class DemandPaid  extends TransCom<DemandPaidP, DemandPaidS> {
       = this.c3(T, TitleStdMainMenu, Loading);
 
     return <div>
-      <TitleStdMainMenuI t$title="Demand of paid orders"
-                         extraItems={[
-                           <NavbarLinkItem path={`/admin/festival/control/${p.fid}`}
-                                           t$label="Fest control" />
-                         ]}/>
+      <TitleStdMainMenuI t$title="Demand of paid orders" />
       <section class={jne(bulma.section, bulma.content)}>
         {st.stats === U  && !st.e && <LoadingI/>}
         <RestErrCo e={st.e} />

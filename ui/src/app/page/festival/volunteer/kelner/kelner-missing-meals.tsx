@@ -15,8 +15,6 @@ import {OrderSr} from "app/service/order-service";
 import { T } from 'i18n/translate-tag';
 import { U } from 'util/const';
 import { Fid } from 'app/page/festival/festival-types';
-import {Thenable} from "async/abortable-promise";
-import { NavbarLinkItem } from 'app/component/navbar-link-item';
 
 export interface KelnerMissingMealsS extends TransComS {
   missingMeals?: DishName[];
@@ -53,11 +51,7 @@ class KelnerMissingMeals extends TransCom<{fid: Fid}, KelnerMissingMealsS> {
       = this.c3(TitleStdMainMenu, Loading, T);
 
     return <div>
-      <TitleStdMainMenuI t$title="Missing meals"
-                         extraItems={[
-                           <NavbarLinkItem path={`/festival/kelner/serve/${p.fid}`}
-                                           t$label="Kelner service" />
-                         ]}/>
+      <TitleStdMainMenuI t$title="Missing meals" />
       <SecCon css={bulma.content}>
         <RestErrCo e={this.st.e} />
         {st.missingMeals === U && !st.e && <LoadingI/>}
