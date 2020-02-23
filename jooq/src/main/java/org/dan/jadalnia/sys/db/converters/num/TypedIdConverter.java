@@ -1,18 +1,20 @@
 package org.dan.jadalnia.sys.db.converters.num;
 
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.dan.jadalnia.sys.type.number.ImmutableNumber;
 import org.jooq.Converter;
 
 import java.util.function.Function;
 
-@RequiredArgsConstructor
 @FieldDefaults(makeFinal = true)
 public abstract class TypedIdConverter
         <JT extends ImmutableNumber>
         implements Converter<Integer, JT> {
     Function<Integer, JT> factory;
+
+    protected TypedIdConverter(Function<Integer, JT> factory) {
+        this.factory = factory;
+    }
 
     @Override
     public JT from(Integer c) {

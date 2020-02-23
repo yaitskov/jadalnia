@@ -57,6 +57,7 @@ create table orders(
     customer_id int(11) not null,
     requirements text not null, -- json
     created timestamp(3) default current_timestamp(3),
+    queue_insert_idx int(11) null,
     state varchar(10) not null, -- sent, paid, ready, handed, cancelled, returned
     cancel_reason varchar(8) null, -- nomeal, customer, festover
     foreign key (customer_id) references users(uid),

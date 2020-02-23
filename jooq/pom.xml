@@ -64,6 +64,11 @@
                             </schemata>
                             <customTypes>
                                 <customType>
+                                    <name>QueueInsertIdx</name>
+                                    <type>org.dan.jadalnia.util.collection.MapQ.QueueInsertIdx</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.num.QueueInsertIdxConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>Oid</name>
                                     <type>org.dan.jadalnia.app.order.pojo.Oid</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.num.OidConverter</binding>
@@ -212,6 +217,11 @@
                                     <types>.*</types>
                                 </forcedType>
 
+                                <forcedType>
+                                    <name>QueueInsertIdx</name>
+                                    <expression>.*orders\.queue_insert_idx</expression>
+                                    <types>.*</types>
+                                </forcedType>
                                 <forcedType>
                                     <name>OrderState</name>
                                     <expression>.*orders\.state</expression>

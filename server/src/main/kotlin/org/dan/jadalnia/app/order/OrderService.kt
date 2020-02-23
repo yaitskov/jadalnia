@@ -17,6 +17,8 @@ import org.dan.jadalnia.app.order.complete.CustomerAbsent
 import org.dan.jadalnia.app.order.complete.KelnerResigns
 import org.dan.jadalnia.app.order.complete.LowFood
 import org.dan.jadalnia.app.order.complete.OrderReady
+import org.dan.jadalnia.app.order.line.ActiveKelnerSearch
+import org.dan.jadalnia.app.order.line.OrderExecTimeEstimator
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -40,6 +42,7 @@ import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
+import org.dan.jadalnia.util.time.Clocker
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Optional.empty
@@ -53,6 +56,9 @@ class OrderService @Inject constructor(
     val wsBroadcast: WsBroadcast,
     @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
+    val orderExecTimeEstimator: OrderExecTimeEstimator,
+    val clocker: Clocker,
+    val activeKelnerSearch: ActiveKelnerSearch,
     val orderDao: OrderDao,
     val delayedOrderDao: DelayedOrderDao,
     val orderReady: OrderReady,
@@ -74,34 +80,33 @@ class OrderService @Inject constructor(
         Executing, Ready, Cancelled, Handed, Abandoned, Delayed)
   }
 
-  fun showOrderProgressToVisitor(fid: Fid, label: OrderLabel)
+  fun showOrderProgressToVisitor(festival: Festival, label: OrderLabel)
       : CompletableFuture<OrderProgress> {
-    return orderCacheByLabel.get(Pair(fid, label))
+    val fid = festival.fid()
+    val orderKey = Pair(fid, label)
+    return orderCacheByLabel.get(orderKey)
         .thenCompose { orderMem ->
           festivalCache.get(fid).thenCompose { festival ->
-            val ordersAhead = countOrdersAhead(festival, label)
+            val orderQueueInsertIdx = orderMem.insertQueueIdx.get()
+                ?: throw internalError("no queue idx ${fid}:${label}")
+            val queuePosition = festival.readyToExecOrders
+                .positionByIdx(orderQueueInsertIdx)
+            log.info("Order {} has line index {} position {}",
+                orderKey, orderQueueInsertIdx, queuePosition)
+            val past60 = clocker.get().minusSeconds(60)
+            val activeKelners = activeKelnerSearch.find(past60, festival)
+
             completedFuture(
                 OrderProgress(
-                    ordersAhead = ordersAhead,
-                    etaSeconds = orderEtaInSec(ordersAhead),
+                    ordersAhead = queuePosition,
+                    etaSeconds = orderExecTimeEstimator
+                        .estimateFor(festival, queuePosition, activeKelners)
+                        .minutes * 60,
                     state = orderMem.state.get()
                 ))
           }
         }
   }
-
-  fun countOrdersAhead(festival: Festival, stopOrder: OrderLabel): Int {
-    var counter = 0
-    for (label in festival.readyToExecOrders) {
-      if (stopOrder == label) {
-        return counter
-      }
-      counter += 1
-    }
-    return -1
-  }
-
-  private fun orderEtaInSec(ordersAhead: Int) = ordersAhead * 60
 
   fun putNewOrder(
       festival: Festival,
@@ -120,6 +125,7 @@ class OrderService @Inject constructor(
                   customer = customerSession.uid,
                   items = AtomicReference(newOrderItems),
                   cost = AtomicReference(cost),
+                  insertQueueIdx = AtomicReference(),
                   state = AtomicReference(Accepted)
               ))
         }
@@ -154,10 +160,11 @@ class OrderService @Inject constructor(
 
   private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem)
       : CompletableFuture<Unit> {
-    festival.readyToExecOrders.offer(order.label)
+    val queueInsertIdx = festival.readyToExecOrders.enqueue(order.label)
+    order.insertQueueIdx.set(queueInsertIdx)
     wsBroadcast.broadcastToFreeKelners(
         festival, OrderStateEvent(order.label, Paid))
-    return orderDao.updateState(festival.fid(), order.label, Paid)
+    return orderDao.markPaid(festival.fid(), order.label, queueInsertIdx)
   }
 
   private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
@@ -186,18 +193,25 @@ class OrderService @Inject constructor(
     if (previousOrder != null) {
       throw badRequest("kelner is busy with", "order", previousOrder)
     }
-    festival.freeKelners.remove(kelnerUid)
-    opLog.add { festival.freeKelners[kelnerUid] = kelnerUid }
-    val label = festival.readyToExecOrders.poll()
+    val freeKelnerInfo = festival.freeKelners.remove(kelnerUid)
+    opLog.add { festival.freeKelners[kelnerUid] = freeKelnerInfo }
+    val idxAndLabel = festival.readyToExecOrders.poll()
 
-    if (label == null) {
+    if (idxAndLabel == null) {
       log.info("No orders to execute for {}", kelnerUid)
       opLog.rollback()
       return completedFuture(empty())
     }
-    opLog.add { festival.readyToExecOrders.offerFirst(label) }
+    val label = idxAndLabel.second
+    val orderRef = AtomicReference<OrderMem>()
+    opLog.add {
+      val insertIdx = festival.readyToExecOrders.enqueueHead(label)
+      val order = orderRef.get()
+      order?.insertQueueIdx?.set(insertIdx)
+    }
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
+          orderRef.set(order)
           log.info("Kelner {} started executing order {}", kelnerUid, label)
           if (skipOrderStates.contains(order.state.get())) {
             log.info("Skip order {}:{} due state {}",
@@ -393,7 +407,8 @@ class OrderService @Inject constructor(
     return orderDao.findOrdersForCustomer(fid, customerUid)
   }
 
-  fun countReadyForExec(fest: Festival) = completedFuture(fest.readyToExecOrders.count())
+  fun countReadyForExec(fest: Festival) = completedFuture(
+      fest.readyToExecOrders.count())
 
   fun customerDidNotShowUpToStartOrderExecution(
       festival: Festival, kelnerUid: Uid, label: OrderLabel)
@@ -472,7 +487,7 @@ class OrderService @Inject constructor(
     val label = orders.removeLast()
     val fid = festival.fid()
 
-    return orderCacheByLabel.get(Pair(festival.fid(), label))
+    return orderCacheByLabel.get(Pair(fid, label))
         .thenCompose { order ->
           if (order.state.compareAndSet(Delayed, Paid)) {
             log.info("Move delayed order {}:{} to exec queue", fid, label)
@@ -482,8 +497,9 @@ class OrderService @Inject constructor(
                 festival.fid(),
                 listOf(order.customer),
                 OrderStateEvent(label, Paid))
-            festival.readyToExecOrders.offerFirst(label)
-            orderDao.updateState(festival.fid(), label, Paid).thenCompose {
+            val insertIdx = festival.readyToExecOrders.enqueueHead(order.label)
+            order.insertQueueIdx.set(insertIdx)
+            orderDao.markPaid(festival.fid(), label, insertIdx).thenCompose {
               delayedOrderDao.remove(festival.fid(), label).thenCompose {
                 resumeOrdersBackward(festival, orders)
               }
@@ -608,15 +624,17 @@ class OrderService @Inject constructor(
                          festival: Festival, update: OrderUpdate,
                          newCost: TokenPoints)
       : CompletableFuture<UpdateAttemptOutcome> {
+    val fid = festival.fid()
     return modifyPaidOrder(op, order, festival, update, newCost)
         .thenCompose { outcome ->
           if (outcome == UpdateAttemptOutcome.UPDATED) {
             val missingMeals = festival.queuesForMissingMeals.keys()
             if (!update.newItems.any { item -> missingMeals.contains(item.name) }
                 && order.state.compareAndSet(Delayed, Paid)) {
-              festival.readyToExecOrders.addFirst(order.label)
-              delayedOrderDao.remove(festival.fid(), order.label).thenCompose {
-                orderDao.updateState(festival.fid(), order.label, Paid)
+              val insertIdx = festival.readyToExecOrders.enqueueHead(order.label)
+              order.insertQueueIdx.set(insertIdx)
+              delayedOrderDao.remove(fid, order.label).thenCompose {
+                orderDao.markPaid(fid, order.label, insertIdx)
               }.thenApply {
                 outcome
               }

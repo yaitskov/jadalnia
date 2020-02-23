@@ -8,61 +8,53 @@ import org.dan.jadalnia.app.order.pojo.OrderState
 import org.dan.jadalnia.app.token.TokenPoints
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.jooq.Tables.ORDERS
+import org.dan.jadalnia.util.collection.MapQ
+import org.dan.jadalnia.util.collection.MapQ.QueueInsertIdx
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicReference
-import java.util.stream.Collectors.toList
-import java.util.stream.Collectors.toMap
 
 class OrderDao : AsyncDao() {
   companion object {
     val log = LoggerFactory.getLogger(OrderDao::class.java)
   }
 
-  fun loadReadyToExecOrders(fid: Fid): CompletableFuture<List<OrderLabel>> {
+  fun loadReadyToExecOrders(fid: Fid): CompletableFuture<MapQ<OrderLabel>> {
     return execQuery { jooq ->
-      jooq.select(ORDERS.LABEL)
+      MapQ(jooq.select(ORDERS.LABEL, ORDERS.QUEUE_INSERT_IDX)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.STATE.eq(OrderState.Paid))
-          .orderBy(ORDERS.OID)
-          .stream()
-          .map { r -> r.get(ORDERS.LABEL) }
-          .collect(toList())
+          .associateTo(
+              ConcurrentHashMap<QueueInsertIdx, OrderLabel>()) { r ->
+            Pair(r[ORDERS.QUEUE_INSERT_IDX], r[ORDERS.LABEL])
+          })
     }
   }
 
-  fun loadReadyOrders(fid: Fid): CompletableFuture<Map<OrderLabel, Unit>> {
+  fun loadReadyOrders(fid: Fid): CompletableFuture<ConcurrentMap<OrderLabel, Unit>> {
     return execQuery { jooq ->
       jooq.select(ORDERS.LABEL)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.STATE.eq(OrderState.Ready))
-          .orderBy(ORDERS.OID)
-          .stream()
-          .map { r -> r.get(ORDERS.LABEL) }
-          .collect(
-              toMap<OrderLabel, OrderLabel, Unit>(
-                  { p -> p },
-                  { p -> Unit }))
+          .associateTo(ConcurrentHashMap<OrderLabel, Unit>())
+           { r -> Pair(r.get(ORDERS.LABEL), Unit) }
     }
   }
 
-  fun loadExecutingOrders(fid: Fid): CompletableFuture<Map<OrderLabel, Uid>> {
+  fun loadExecutingOrders(fid: Fid): CompletableFuture<ConcurrentMap<OrderLabel, Uid>> {
     return execQuery { jooq ->
       jooq.select(ORDERS.LABEL, ORDERS.KELNER_ID)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.STATE.eq(OrderState.Executing))
-          .orderBy(ORDERS.OID)
-          .stream()
-          .map { r -> Pair(r.get(ORDERS.LABEL), r.get(ORDERS.KELNER_ID)) }
-          .collect(
-              toMap<Pair<OrderLabel, Uid>, OrderLabel, Uid>(
-                  { p -> p.first },
-                  { p -> p.second }))
+          .associateTo(ConcurrentHashMap<OrderLabel, Uid>())
+          { r -> Pair(r.get(ORDERS.LABEL), r.get(ORDERS.KELNER_ID)) }
     }
   }
 
@@ -97,7 +89,8 @@ class OrderDao : AsyncDao() {
           .execute()
     }
         .thenApply { updated ->
-          log.info("Order {}:{} changed paid status ({})", fid, label, updated)
+          log.info("Order {}:{} changed state to {} ({})",
+              fid, label, state, updated)
         }
   }
 
@@ -120,6 +113,7 @@ class OrderDao : AsyncDao() {
   fun load(fid: Fid, label: OrderLabel): CompletableFuture<Optional<OrderMem>> {
     return execQuery { jooq ->
       ofNullable(jooq.select(
+          ORDERS.QUEUE_INSERT_IDX,
           ORDERS.CUSTOMER_ID, ORDERS.STATE,
           ORDERS.POINTS_COST, ORDERS.REQUIREMENTS)
           .from(ORDERS)
@@ -132,8 +126,8 @@ class OrderDao : AsyncDao() {
                 state = AtomicReference(record.get(ORDERS.STATE)),
                 label = label,
                 cost = AtomicReference(record.get(ORDERS.POINTS_COST)),
-                items = AtomicReference(record.get(ORDERS.REQUIREMENTS))
-            )
+                items = AtomicReference(record.get(ORDERS.REQUIREMENTS)),
+                insertQueueIdx = AtomicReference(record.get(ORDERS.QUEUE_INSERT_IDX)))
           }
     }
   }
@@ -205,5 +199,20 @@ class OrderDao : AsyncDao() {
           fid, update.label, update.newItems, cost)
       updated
     }
+  }
+
+  fun markPaid(fid: Fid, label: OrderLabel,
+               queueInsertIdx: QueueInsertIdx)
+      : CompletableFuture<Unit> {
+    return execQuery { jooq ->
+      jooq.update(ORDERS)
+          .set(ORDERS.STATE, OrderState.Paid)
+          .set(ORDERS.QUEUE_INSERT_IDX, queueInsertIdx)
+          .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
+          .execute()
+    }
+        .thenApply { updated ->
+          log.info("Order {}:{} changed paid status ({})", fid, label, updated)
+        }
   }
 }

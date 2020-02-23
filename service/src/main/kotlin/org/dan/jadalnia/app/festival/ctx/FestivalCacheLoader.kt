@@ -9,6 +9,7 @@ import org.dan.jadalnia.app.label.LabelDao
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
+import org.dan.jadalnia.app.order.line.OrderExecEstimationState
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.token.TokenDao
 import org.dan.jadalnia.app.user.Uid
@@ -16,11 +17,9 @@ import org.dan.jadalnia.app.ws.WsBroadcast
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.locks.ReentrantLock
-import java.util.stream.Collectors.toConcurrentMap
 import javax.inject.Inject
 
 class FestivalCacheLoader @Inject constructor(
@@ -45,17 +44,15 @@ class FestivalCacheLoader @Inject constructor(
                       completedFuture(
                           Festival(
                               info = AtomicReference(festInfo),
-                              readyToExecOrders = LinkedBlockingDeque(readyToExecOrders),
-                              readyToPickupOrders = ConcurrentHashMap(readies),
-                              busyKelners = orderKelnerId.entries.stream()
-                                  .collect(toConcurrentMap<
-                                      Map.Entry<OrderLabel, Uid>,
-                                      Uid, OrderLabel>(
-                                      { e -> e.value },
-                                      { e -> e.key })),
+                              readyToExecOrders = readyToExecOrders,
+                              readyToPickupOrders = readies,
+                              busyKelners = orderKelnerId.keys.associateByTo(
+                                  ConcurrentHashMap<Uid, OrderLabel>())
+                              { orderLabel -> orderKelnerId[orderLabel]!! },
                               freeKelners = ConcurrentHashMap(),
-                              executingOrders = ConcurrentHashMap(orderKelnerId),
+                              executingOrders = orderKelnerId,
                               nextToken = AtomicInteger(maxTokenId.value),
+                              estimatorState = OrderExecEstimationState.create(60_000),
                               queuesForMissingMeals = MapOfQueues(
                                   ReentrantLock(false),
                                   dish2Orders),

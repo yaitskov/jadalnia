@@ -4,6 +4,8 @@ import org.dan.jadalnia.app.order.complete.CustomerAbsent
 import org.dan.jadalnia.app.order.complete.KelnerResigns
 import org.dan.jadalnia.app.order.complete.LowFood
 import org.dan.jadalnia.app.order.complete.OrderReady
+import org.dan.jadalnia.app.order.line.ActiveKelnerSearch
+import org.dan.jadalnia.app.order.line.OrderExecTimeEstimator
 import org.dan.jadalnia.app.order.pref.KelnerPerfomanceService
 import org.dan.jadalnia.app.order.pref.KelnerPerformanceResource
 import org.dan.jadalnia.app.order.stats.OrderStatsResource
@@ -29,5 +31,7 @@ import org.springframework.context.annotation.Import
     KelnerPerfomanceService::class,
     KelnerPerformacenDao::class,
     CustomerAbsent::class,
+    OrderExecTimeEstimator::class,
+    ActiveKelnerSearch::class,
     OrderAggregator::class)
 class OrderCtx

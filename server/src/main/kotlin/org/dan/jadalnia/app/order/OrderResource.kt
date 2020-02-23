@@ -107,7 +107,9 @@ class OrderResource @Inject constructor(
       fid: Fid,
       @PathParam("label")
       label: OrderLabel) {
-    with.anonymous(response, orderService.showOrderProgressToVisitor(fid, label))
+    with.withFest(fid, response) { festival ->
+      orderService.showOrderProgressToVisitor(festival, label)
+    }
   }
 
   @GET
