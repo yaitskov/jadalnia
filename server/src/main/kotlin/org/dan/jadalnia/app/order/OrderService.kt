@@ -86,27 +86,39 @@ class OrderService @Inject constructor(
     return orderCacheByLabel.get(orderKey)
         .thenCompose { orderMem ->
           festivalCache.get(fid).thenCompose { festival ->
-            val orderQueueInsertIdx = orderMem.insertQueueIdx.get()
-                ?: throw internalError("no queue idx ${fid}:${label}")
-            val queuePosition = festival.readyToExecOrders
-                .positionByIdx(orderQueueInsertIdx)
-            log.info("Order {} has line index {} position {}",
-                orderKey, orderQueueInsertIdx, queuePosition)
-            val params = festival.info.get().params
-            val activeKelners = activeKelnerSearch.find(clocker.get().minusMillis(
-                params.freeKelnerActiveWithInMs.toLong())
-                , festival)
-
-            completedFuture(
-                OrderProgress(
-                    ordersAhead = queuePosition,
-                    etaSeconds = orderExecTimeEstimator
-                        .estimateFor(festival, queuePosition, activeKelners, params)
-                        .minutes * 60,
-                    state = orderMem.state.get()
-                ))
+            val state = orderMem.state.get()
+            if (state != Paid) {
+              completedFuture(OrderProgress(-1, -1,  state))
+            } else {
+              showProgressOfPaidOrder(festival, orderMem, fid, label, orderKey)
+            }
           }
         }
+  }
+
+  fun showProgressOfPaidOrder(
+      festival: Festival, orderMem: OrderMem, fid: Fid,
+      label: OrderLabel, orderKey: Pair<Fid, OrderLabel>)
+      : CompletableFuture<OrderProgress> {
+    val orderQueueInsertIdx = orderMem.insertQueueIdx.get()
+        ?: throw internalError("no queue idx ${fid}:${label}")
+    val queuePosition = festival.readyToExecOrders
+        .positionByIdx(orderQueueInsertIdx)
+    log.info("Order {} has line index {} position {}",
+        orderKey, orderQueueInsertIdx, queuePosition)
+    val params = festival.info.get().params
+    val activeKelners = activeKelnerSearch.find(clocker.get().minusMillis(
+        params.freeKelnerActiveWithInMs.toLong())
+        , festival)
+
+    return completedFuture(
+        OrderProgress(
+            ordersAhead = queuePosition,
+            etaSeconds = orderExecTimeEstimator
+                .estimateFor(festival, queuePosition, activeKelners, params)
+                .minutes * 60,
+            state = orderMem.state.get()
+        ))
   }
 
   fun putNewOrder(

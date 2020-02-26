@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.line
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import org.dan.jadalnia.app.festival.menu.DishName
+import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.order.line.OrderExecEstimationState.Companion.defaultOrderBookKeepTimeKey
 import org.dan.jadalnia.app.order.line.OrderExecEstimationState.Companion.emptyOrder
 import org.dan.jadalnia.app.user.Uid
@@ -12,6 +13,7 @@ import java.util.*
 class OrderExecEstimationStateTest {
   val frytki = DishName.of("frytki")
   val suszy = DishName.of("suszy")
+  val params = FestParams()
 
   @Test
   fun zero() {
