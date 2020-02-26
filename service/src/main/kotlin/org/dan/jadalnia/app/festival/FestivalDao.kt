@@ -76,4 +76,12 @@ class FestivalDao : AsyncDao() {
           .orElseThrow { notFound("Festival not found", "fid", fid) }
     }
   }
+
+  fun updateParams(fid: Fid, params: FestParams)
+      = execQuery { jooq ->
+    jooq.update(FESTIVAL)
+        .set(FESTIVAL.PARAMS, params)
+        .where(FESTIVAL.FID.eq(fid))
+        .execute()
+  }
 }

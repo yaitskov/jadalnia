@@ -4,6 +4,7 @@ import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL
 
 import org.dan.jadalnia.app.festival.menu.MenuItem
 import org.dan.jadalnia.app.festival.pojo.CreatedFestival
+import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalInfo
 import org.dan.jadalnia.app.festival.pojo.FestivalState
@@ -95,4 +96,20 @@ public class FestivalService @Inject constructor(
     festival.info.updateAndGet { info -> info.withMenu(items) }
     return festivalDao.setMenu(festival.info.get().fid, items)
   }
+
+  fun updateParams(fest: Festival, params: FestParams)
+      : CompletableFuture<Void> {
+    val fid = fest.fid()
+    val info = fest.info.get()
+    log.info("Update fest params {} {}/{}", fid, info.params , params)
+    if (!fest.info.compareAndSet(info, info.copy(params = params))) {
+      log.info("Params are same")
+      return completedFuture(null)
+    }
+    return festivalDao.updateParams(fid, params).thenAccept { updated ->
+      log.info("Fest params are updated {} in DB {}", updated, fid)
+    }
+  }
+
+  fun getParams(festival: Festival) = completedFuture(festival.info.get().params)
 }

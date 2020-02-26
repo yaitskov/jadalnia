@@ -68,6 +68,12 @@ class WithUser @Inject constructor (
       action: Function1<Festival, CompletableFuture<T>>)
       = withUserFest(UserInfo::ensureKelner, response, session, action)
 
+  fun <T> adminFest(
+      response: AsyncResponse,
+      session: UserSession,
+      action: Function1<Festival, CompletableFuture<T>>)
+      = withUserFest(UserInfo::ensureAdmin, response, session, action)
+
   fun <T> customer(
       response: AsyncResponse,
       session: UserSession,
