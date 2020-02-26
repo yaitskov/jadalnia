@@ -2,6 +2,7 @@ package org.dan.jadalnia.app.festival
 
 import com.google.common.collect.ImmutableMap
 import org.dan.jadalnia.app.festival.menu.MenuItem
+import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.festival.pojo.FestivalInfo
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
@@ -69,6 +70,7 @@ class FestivalDao : AsyncDao() {
                 name = r.get(FESTIVAL.NAME),
                 state = r.get(FESTIVAL.STATE),
                 menu = r.get(FESTIVAL.MENU),
+                params = r.get(FESTIVAL.PARAMS) ?: FestParams(),
                 opensAt = r.get(FESTIVAL.OPENS_AT))
           }
           .orElseThrow { notFound("Festival not found", "fid", fid) }

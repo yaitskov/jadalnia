@@ -109,6 +109,11 @@
                                     <binding>org.dan.jadalnia.sys.db.converters.InstantToTimestampConverter</binding>
                                 </customType>
                                 <customType>
+                                    <name>FestParams</name>
+                                    <type>org.dan.jadalnia.app.festival.pojo.FestParams</type>
+                                    <binding>org.dan.jadalnia.sys.db.converters.json.FestParamsConverter</binding>
+                                </customType>
+                                <customType>
                                     <name>MenuItems</name>
                                     <type>java.util.List&lt;org.dan.jadalnia.app.festival.menu.MenuItem&gt;</type>
                                     <binding>org.dan.jadalnia.sys.db.converters.json.MenuItemsConverter</binding>
@@ -194,6 +199,11 @@
                                 <forcedType>
                                     <name>Instant</name>
                                     <expression>.*festival\.opens_at</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
+                                    <name>FestParams</name>
+                                    <expression>.*festival\.params</expression>
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>

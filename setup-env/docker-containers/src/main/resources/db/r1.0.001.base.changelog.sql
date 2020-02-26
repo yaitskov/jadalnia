@@ -9,6 +9,7 @@ create table festival(
     opens_at timestamp(3) not null,
     name varchar(90) not null unique,
     menu text,
+    params text,
     created timestamp(3) default current_timestamp(3)
 );
 

@@ -1,6 +1,7 @@
 package org.dan.jadalnia.app.order.line
 
 import org.dan.jadalnia.app.festival.menu.DishName
+import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import java.util.*
@@ -8,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 
 class OrderExecEstimationState(
-    val defaultAvgDishTimeMs: Int,
+    var defaultAvgDishTimeMs: Int,
     val defaultDishTimeMs: ConcurrentMap<DishName, Int>,
     val mealKelnerAvgMs: ConcurrentMap<
         Pair<Map<DishName, Int>, Optional<Uid>>, Int>,
@@ -21,6 +22,11 @@ class OrderExecEstimationState(
         Pair<Map<DishName, Int>, Optional<Uid>>(emptyOrder, Optional.empty())
 
     fun create(avgOrderBookKeepTimeMs: Int): OrderExecEstimationState {
+      return create(avgOrderBookKeepTimeMs, defaultAvgDishTimeMs)
+    }
+
+    fun create(avgOrderBookKeepTimeMs: Int, defaultAvgDishTimeMs: Int)
+        : OrderExecEstimationState {
       val mealKelnerAvgMs = ConcurrentHashMap<Pair<Map<DishName, Int>, Optional<Uid>>, Int>()
       mealKelnerAvgMs[defaultOrderBookKeepTimeKey] = avgOrderBookKeepTimeMs
       return OrderExecEstimationState(
@@ -31,11 +37,12 @@ class OrderExecEstimationState(
     }
   }
 
-  fun estimate(activeKelners: Set<Uid>, queueIdx: Int): OrderExecEstimate {
+  fun estimate(activeKelners: Set<Uid>, queueIdx: Int, params: FestParams)
+      : OrderExecEstimate {
     val agg = mealsAgg.getAggOrNew(queueIdx)
     var sumTimeMs = 0.0
     agg.orderMeals2Count.asMap().forEach { (orderMeals, count) ->
-      sumTimeMs += estimateOrderMs(orderMeals, activeKelners) * count
+      sumTimeMs += (params.manualAdjustPerOrderMs + estimateOrderMs(orderMeals, activeKelners)) * count
     }
     return OrderExecEstimate(msToMinutes(sumTimeMs.toLong()))
   }

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 
 
 object ObjectMapperFactory {
-  fun create() = ObjectMapper()
+  val m = ObjectMapper()
       .setSerializationInclusion(NON_EMPTY)
       .enable(ALLOW_UNQUOTED_FIELD_NAMES)
       .enable(ALLOW_FINAL_FIELDS_AS_MUTATORS)
@@ -22,4 +22,6 @@ object ObjectMapperFactory {
               nullToEmptyCollection = true,
               nullToEmptyMap = true))
       .registerModule(JavaTimeModule())
+
+  fun create() = m
 }

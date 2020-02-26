@@ -92,14 +92,16 @@ class OrderService @Inject constructor(
                 .positionByIdx(orderQueueInsertIdx)
             log.info("Order {} has line index {} position {}",
                 orderKey, orderQueueInsertIdx, queuePosition)
-            val past60 = clocker.get().minusSeconds(60)
-            val activeKelners = activeKelnerSearch.find(past60, festival)
+            val params = festival.info.get().params
+            val activeKelners = activeKelnerSearch.find(clocker.get().minusMillis(
+                params.freeKelnerActiveWithInMs.toLong())
+                , festival)
 
             completedFuture(
                 OrderProgress(
                     ordersAhead = queuePosition,
                     etaSeconds = orderExecTimeEstimator
-                        .estimateFor(festival, queuePosition, activeKelners)
+                        .estimateFor(festival, queuePosition, activeKelners, params)
                         .minutes * 60,
                     state = orderMem.state.get()
                 ))

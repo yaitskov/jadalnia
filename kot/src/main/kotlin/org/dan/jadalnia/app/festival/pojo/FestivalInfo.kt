@@ -8,6 +8,7 @@ data class FestivalInfo(
         val name: String,
         val state: FestivalState,
         val menu: List<MenuItem>,
+        val params: FestParams,
         val opensAt: Instant) {
 
     fun withState(state1: FestivalState) = copy(state = state1)

@@ -16,7 +16,7 @@ class OrderExecEstimationStateTest {
   @Test
   fun zero() {
     val state = OrderExecEstimationState.create(60_000)
-    assertThat(state.estimate(setOf(Uid(1)), 1)).isEqualTo(OrderExecEstimate(0))
+    assertThat(state.estimate(setOf(Uid(1)), 1, params)).isEqualTo(OrderExecEstimate(0))
   }
 
   @Test
@@ -31,7 +31,7 @@ class OrderExecEstimationStateTest {
     state.mealKelnerAvgMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
     state.mealKelnerAvgMs[Pair(mapOf(Pair(suszy, 3)), Optional.of(Uid(1)))] = minutesToMs(9)
 
-    assertThat(state.estimate(setOf(Uid(1)), 1))
+    assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(14 + 9))
   }
 
@@ -50,7 +50,7 @@ class OrderExecEstimationStateTest {
 
     state.mealKelnerAvgMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
 
-    assertThat(state.estimate(setOf(Uid(1)), 1))
+    assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(1 * 2 + 9))
   }
 
@@ -68,7 +68,7 @@ class OrderExecEstimationStateTest {
     state.mealKelnerAvgMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
     state.defaultDishTimeMs[frytki] = minutesToMs(11)
 
-    assertThat(state.estimate(setOf(Uid(1)), 1))
+    assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(11 * 2 + 9))
   }
 
@@ -85,7 +85,7 @@ class OrderExecEstimationStateTest {
     state.mealKelnerAvgMs[Pair(emptyOrder, Optional.of(Uid(1)))] = minutesToMs(13)
     state.defaultDishTimeMs[frytki] = minutesToMs(11)
 
-    assertThat(state.estimate(setOf(Uid(1)), 1))
+    assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(11 * 2 + 13))
   }
 }

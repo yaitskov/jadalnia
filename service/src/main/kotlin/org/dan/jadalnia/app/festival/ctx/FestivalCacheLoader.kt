@@ -52,7 +52,9 @@ class FestivalCacheLoader @Inject constructor(
                               freeKelners = ConcurrentHashMap(),
                               executingOrders = orderKelnerId,
                               nextToken = AtomicInteger(maxTokenId.value),
-                              estimatorState = OrderExecEstimationState.create(60_000),
+                              estimatorState = OrderExecEstimationState.create(
+                                  festInfo.params.defaultOrderKeepMs,
+                                  festInfo.params.defaultAvgMealMs),
                               queuesForMissingMeals = MapOfQueues(
                                   ReentrantLock(false),
                                   dish2Orders),

@@ -1,5 +1,6 @@
 package org.dan.jadalnia.app.order.line
 
+import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.user.Uid
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
@@ -10,21 +11,23 @@ class OrderExecTimeEstimator {
         100, 200, 500, 1000)
   }
 
-  fun estimateFor(festival: Festival, queuePosition: Int, activeKelners: Set<Uid>)
+  fun estimateFor(festival: Festival, queuePosition: Int,
+                  activeKelners: Set<Uid>, params: FestParams)
       : OrderExecEstimate {
     val idxAfter = findQueueIdxAfterWithEstimate(queuePosition)
     if (idxAfter < 0) { // too far
       return approximateByLeftOnly(indexes.last(), queuePosition,
-          festival.estimatorState, activeKelners)
+          festival.estimatorState, activeKelners, params)
     } else if (indexes[idxAfter] == queuePosition) { // exact match
-      return exactMatch(queuePosition, festival.estimatorState, activeKelners)
+      return exactMatch(queuePosition, festival.estimatorState,
+          activeKelners, params)
     } else {
       if (0 == idxAfter) {
         throw internalError("idx = 0")
       } else {
         val leftIdx = indexes[idxAfter - 1]
         return approximateBetween(leftIdx, indexes[idxAfter], queuePosition,
-            festival.estimatorState, activeKelners)
+            festival.estimatorState, activeKelners, params)
       }
     }
   }
@@ -33,9 +36,10 @@ class OrderExecTimeEstimator {
   private fun approximateByLeftOnly(
       biggestIdx: Int, queuePosition: Int,
       estimatorState: OrderExecEstimationState,
-      activeKelners: Set<Uid>)
+      activeKelners: Set<Uid>,
+      params: FestParams)
       : OrderExecEstimate {
-    val ex = exactMatch(biggestIdx, estimatorState, activeKelners)
+    val ex = exactMatch(biggestIdx, estimatorState, activeKelners, params)
     return OrderExecEstimate(
         (ex.minutes.toDouble() * queuePosition /
             biggestIdx.toDouble()).toInt())
@@ -44,7 +48,9 @@ class OrderExecTimeEstimator {
   private fun exactMatch(
       queueIdx: Int,
       estimatorState: OrderExecEstimationState,
-      activeKelners: Set<Uid>) = estimatorState.estimate(activeKelners, queueIdx)
+      activeKelners: Set<Uid>,
+      params: FestParams)
+      = estimatorState.estimate(activeKelners, queueIdx, params)
 
   private fun findQueueIdxAfterWithEstimate(queuePosition: Int): Int {
     val v = indexes.binarySearch(queuePosition)
@@ -63,12 +69,13 @@ class OrderExecTimeEstimator {
       idxWithEstimateFromRight: Int,
       idx: Int,
       estimatorState: OrderExecEstimationState,
-      activeKelners: Set<Uid>)
+      activeKelners: Set<Uid>,
+      params: FestParams)
       : OrderExecEstimate {
     val leftEstimate = exactMatch(idxWithEstimateFromLeft,
-        estimatorState, activeKelners)
+        estimatorState, activeKelners, params)
     val rightEstimate = exactMatch(idxWithEstimateFromRight,
-        estimatorState, activeKelners)
+        estimatorState, activeKelners, params)
 
     val betweenLeftAndRight = (idxWithEstimateFromRight - idxWithEstimateFromLeft).toDouble()
     val diffEstimate = (rightEstimate.minutes - leftEstimate.minutes).toDouble()
