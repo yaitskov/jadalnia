@@ -2,7 +2,6 @@ package org.dan.jadalnia.app.order
 
 import com.google.common.collect.ImmutableSet
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
-import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
@@ -479,48 +478,6 @@ class OrderService @Inject constructor(
     return lowFood.complete(festival, uid, problemOrder)
   }
 
-  fun resumeOrdersBackward(festival: Festival, orders: LinkedList<OrderLabel>)
-      : CompletableFuture<Void> {
-    if (orders.isEmpty()) {
-      return completedFuture(null)
-    }
-    val label = orders.removeLast()
-    val fid = festival.fid()
-
-    return orderCacheByLabel.get(Pair(fid, label))
-        .thenCompose { order ->
-          if (order.state.compareAndSet(Delayed, Paid)) {
-            log.info("Move delayed order {}:{} to exec queue", fid, label)
-            wsBroadcast.broadcastToFreeKelners(
-                festival, OrderStateEvent(label, Paid))
-            wsBroadcast.notifyCustomers(
-                festival.fid(),
-                listOf(order.customer),
-                OrderStateEvent(label, Paid))
-            val insertIdx = festival.readyToExecOrders.enqueueHead(order.label)
-            order.insertQueueIdx.set(insertIdx)
-            orderDao.markPaid(festival.fid(), label, insertIdx).thenCompose {
-              delayedOrderDao.remove(festival.fid(), label).thenCompose {
-                resumeOrdersBackward(festival, orders)
-              }
-            }
-          } else {
-            log.info("Drop delayed order {}:{} due not Delayed but state {} ",
-                fid, label, order.state.get())
-            resumeOrdersBackward(festival, orders)
-          }
-        }
-  }
-
-  fun resumeOrdersWithMeal(festival: Festival, meal: DishName)
-      : CompletableFuture<Int> {
-    val fid = festival.fid()
-    val suspendedOrders = festival.queuesForMissingMeals.takeAll(meal)
-    val size = suspendedOrders.size
-    log.info("Meal {}:{} was blocking {} orders", fid, meal, size)
-
-    return resumeOrdersBackward(festival, suspendedOrders).thenApply { size }
-  }
 
   private fun customerTryCancel(order: OrderMem, festival: Festival,
                                 opLog: OpLog, balance: TokenBalance,

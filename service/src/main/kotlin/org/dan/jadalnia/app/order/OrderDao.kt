@@ -97,6 +97,24 @@ class OrderDao : AsyncDao() {
   fun assignKelner(fid: Fid,
                    label: OrderLabel,
                    kelnerUid: Uid?,
+                   queueIdx: QueueInsertIdx?,
+                   orderState: OrderState): CompletableFuture<Unit> {
+    return execQuery { jooq ->
+      jooq.update(ORDERS)
+          .set(ORDERS.STATE, orderState)
+          .set(ORDERS.KELNER_ID, kelnerUid)
+          .set(ORDERS.QUEUE_INSERT_IDX, queueIdx)
+          .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
+          .execute()
+    }
+        .thenApply {
+          log.info("Order $fid:$label is $orderState by ($kelnerUid)")
+        }
+  }
+
+  fun assignKelner(fid: Fid,
+                   label: OrderLabel,
+                   kelnerUid: Uid?,
                    orderState: OrderState): CompletableFuture<Unit> {
     return execQuery { jooq ->
       jooq.update(ORDERS)

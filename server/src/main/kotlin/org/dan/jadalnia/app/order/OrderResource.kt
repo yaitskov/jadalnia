@@ -2,6 +2,7 @@ package org.dan.jadalnia.app.order
 
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.order.complete.OrderReady
 import org.dan.jadalnia.app.order.pojo.MarkOrderPaid
 import org.dan.jadalnia.app.order.pojo.OrderItem
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -28,7 +29,9 @@ import javax.ws.rs.core.MediaType.APPLICATION_JSON
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 class OrderResource @Inject constructor(
-    val with: WithUser, val orderService: OrderService) {
+    val with: WithUser,
+    val orderReady: OrderReady,
+    val orderService: OrderService) {
   companion object {
     const val ORDER = "order/"
     const val PUT_ORDER = ORDER + "put"
@@ -218,7 +221,7 @@ class OrderResource @Inject constructor(
     with.kelnerFest(response, session) { festival ->
       log.info("Kelner {} in {}: orders with meal {} can be served",
           session.uid, festival.fid(), meal)
-      orderService.resumeOrdersWithMeal(festival, meal)
+      orderReady.resumeOrdersWithMeal(festival, meal)
     }
   }
 

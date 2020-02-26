@@ -2,6 +2,7 @@ package org.dan.jadalnia.app.order.complete
 
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.FreeKelnerInfo
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.OrderStateEvent
@@ -15,12 +16,16 @@ import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.collection.AsyncCache
+import org.dan.jadalnia.util.collection.MapQ
+import org.dan.jadalnia.util.time.Clocker
 import org.slf4j.LoggerFactory
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 
 
 abstract class BaseOrderCompleteStrategy(
+    val clock: Clocker,
     val wsBroadcast: WsBroadcast,
     val orderDao: OrderDao,
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>)
@@ -36,7 +41,7 @@ abstract class BaseOrderCompleteStrategy(
       throw badRequest("kelner was not busy with", "order", label)
     }
     opLog.add { festival.busyKelners[kelnerUid] = label }
-    festival.freeKelners[kelnerUid] = kelnerUid
+    festival.freeKelners[kelnerUid] = FreeKelnerInfo(clock.get())
     opLog.add { festival.freeKelners.remove(kelnerUid) }
     if (!festival.executingOrders.remove(label, kelnerUid)) {
       opLog.rollback()
@@ -61,8 +66,9 @@ abstract class BaseOrderCompleteStrategy(
           opLog.add { order.state.set(Executing) }
           log.info("Kelner {} completed executing order {} as {}",
               kelnerUid, label, targetState)
-          updateTargetState(festival, problemOrder, opLog).thenCompose {
-            orderDao.assignKelner(festival.fid(), label, kelnerUid, targetState)
+          updateTargetState(festival, problemOrder, opLog).thenCompose { queueIdxO ->
+            orderDao.assignKelner(festival.fid(), label, kelnerUid,
+                queueIdxO.orElse(null), targetState)
                 .thenAccept {
                   wsBroadcast.notifyCustomers(
                       festival.fid(),
@@ -79,5 +85,5 @@ abstract class BaseOrderCompleteStrategy(
 
   abstract fun updateTargetState(
       festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
-      : CompletableFuture<Void>;
+      : CompletableFuture<Optional<MapQ.QueueInsertIdx>>
 }

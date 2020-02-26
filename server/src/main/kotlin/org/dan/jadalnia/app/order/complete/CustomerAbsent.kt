@@ -10,23 +10,27 @@ import org.dan.jadalnia.app.order.pojo.OrderState
 import org.dan.jadalnia.app.order.pojo.ProblemOrder
 import org.dan.jadalnia.app.ws.WsBroadcast
 import org.dan.jadalnia.util.collection.AsyncCache
+import org.dan.jadalnia.util.collection.MapQ
+import org.dan.jadalnia.util.time.Clocker
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
 class CustomerAbsent @Inject constructor(
+    clocker: Clocker,
     wsBroadcast: WsBroadcast,
     orderDao: OrderDao,
     orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>)
-  : BaseOrderCompleteStrategy(wsBroadcast, orderDao, orderCacheByLabel) {
+  : BaseOrderCompleteStrategy(clocker, wsBroadcast, orderDao, orderCacheByLabel) {
 
   override val targetState = OrderState.Abandoned
 
   override fun updateTargetState(
       festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
-      : CompletableFuture<Void> {
-    // user has reinitiate manually
+      : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
+    // user has to reinitiate manually
     log.info("Order {} in {} is abandoned", problemOrder.label, festival.fid())
-    return completedFuture(null)
+    return completedFuture(Optional.empty())
   }
 }
