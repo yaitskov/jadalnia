@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.complete
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
@@ -31,7 +32,7 @@ class OrderReady @Inject constructor(
   override val targetState: OrderState = OrderState.Ready
 
   override fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, taca: Taca)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
     val label = problemOrder.label
     festival.readyToPickupOrders[label] = Unit
@@ -54,41 +55,43 @@ class OrderReady @Inject constructor(
     if (meals.isEmpty()) {
       return completedFuture(null)
     }
-    return resumeOrdersBackward(festival, festival.queuesForMissingMeals.takeAll(meals[0]))
+    return resumeOrdersBackward(festival,
+        LinkedList(festival.queuesForMissingMeals.takeAll(meals[0])))
         .thenCompose {
           resumeMeals(festival, meals.subList(1, meals.size))
         }
   }
 
-  fun resumeOrdersBackward(festival: Festival, orders: LinkedList<OrderLabel>)
+  fun resumeOrdersBackward(festival: Festival, tacy: LinkedList<Taca>)
       : CompletableFuture<Void> {
-    if (orders.isEmpty()) {
+    if (tacy.isEmpty()) {
       return completedFuture(null)
     }
-    val label = orders.removeLast()
+    val taca = tacy.removeLast()
+    val label = taca.label
     val fid = festival.fid()
 
     return orderCacheByLabel.get(Pair(fid, label))
         .thenCompose { order ->
           if (order.state.compareAndSet(OrderState.Delayed, OrderState.Paid)) {
-            log.info("Move delayed order {}:{} to exec queue", fid, label)
+            log.info("Move delayed order {}:{} to exec queue", fid, taca)
             wsBroadcast.broadcastToFreeKelners(
                 festival, OrderStateEvent(label, OrderState.Paid))
             wsBroadcast.notifyCustomers(
                 festival.fid(),
                 listOf(order.customer),
                 OrderStateEvent(label, OrderState.Paid))
-            val insertIdx = festival.readyToExecOrders.enqueueHead(order.label)
+            val insertIdx = festival.readyToExecOrders.enqueueHead(taca)
             order.insertQueueIdx.set(insertIdx)
-            orderDao.markPaid(festival.fid(), label, insertIdx).thenCompose {
+            orderDao.markPaid(festival.fid(), label, taca.paidAt, insertIdx).thenCompose {
               delayedOrderDao.remove(festival.fid(), label).thenCompose {
-                resumeOrdersBackward(festival, orders)
+                resumeOrdersBackward(festival, tacy)
               }
             }
           } else {
             log.info("Drop delayed order {}:{} due not Delayed but state {} ",
-                fid, label, order.state.get())
-            resumeOrdersBackward(festival, orders)
+                fid, taca, order.state.get())
+            resumeOrdersBackward(festival, tacy)
           }
         }
   }
@@ -100,6 +103,7 @@ class OrderReady @Inject constructor(
     val size = suspendedOrders.size
     log.info("Meal {}:{} was blocking {} orders", fid, meal, size)
 
-    return resumeOrdersBackward(festival, suspendedOrders).thenApply { size }
+    return resumeOrdersBackward(festival, LinkedList(suspendedOrders))
+        .thenApply { size }
   }
 }

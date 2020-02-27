@@ -3,7 +3,6 @@ package org.dan.jadalnia.app.order.line
 import org.dan.jadalnia.app.festival.pojo.FestParams
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.user.Uid
-import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 
 class OrderExecTimeEstimator {
   companion object {
@@ -23,7 +22,7 @@ class OrderExecTimeEstimator {
           activeKelners, params)
     } else {
       if (0 == idxAfter) {
-        throw internalError("idx = 0")
+        return OrderExecEstimate(0)
       } else {
         val leftIdx = indexes[idxAfter - 1]
         return approximateBetween(leftIdx, indexes[idxAfter], queuePosition,

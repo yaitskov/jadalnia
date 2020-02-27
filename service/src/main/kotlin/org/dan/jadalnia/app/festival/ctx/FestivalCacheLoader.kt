@@ -5,21 +5,18 @@ import org.dan.jadalnia.app.festival.FestivalDao
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.MapOfQueues
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.label.LabelDao
 import org.dan.jadalnia.app.order.DelayedOrderDao
-import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.line.OrderExecEstimationState
-import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.token.TokenDao
 import org.dan.jadalnia.app.user.Uid
-import org.dan.jadalnia.app.ws.WsBroadcast
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 
 class FestivalCacheLoader @Inject constructor(
@@ -27,9 +24,7 @@ class FestivalCacheLoader @Inject constructor(
     val orderDao: OrderDao,
     val tokenDao: TokenDao,
     val festivalDao: FestivalDao,
-    val delayedOrderDao: DelayedOrderDao,
-    val orderAggregator: OrderAggregator,
-    val wsBroadcast: WsBroadcast) :
+    val delayedOrderDao: DelayedOrderDao) :
     CacheLoader<Fid, CompletableFuture<Festival>>()  {
 
   override fun load(fid: Fid): CompletableFuture<Festival> {
@@ -47,17 +42,21 @@ class FestivalCacheLoader @Inject constructor(
                               readyToExecOrders = readyToExecOrders,
                               readyToPickupOrders = readies,
                               busyKelners = orderKelnerId.keys.associateByTo(
-                                  ConcurrentHashMap<Uid, OrderLabel>())
-                              { orderLabel -> orderKelnerId[orderLabel]!! },
+                                  ConcurrentHashMap<Uid, Taca>(),
+                                  { orderLabel -> orderKelnerId[orderLabel]!!.first },
+                                  { orderLabel -> Taca(
+                                      orderLabel,
+                                      orderKelnerId[orderLabel]!!.second)}),
                               freeKelners = ConcurrentHashMap(),
-                              executingOrders = orderKelnerId,
+                              executingOrders = orderKelnerId
+                                  .mapValuesTo(
+                                      ConcurrentHashMap(),
+                                      { e -> e.value.first }),
                               nextToken = AtomicInteger(maxTokenId.value),
                               estimatorState = OrderExecEstimationState.create(
                                   festInfo.params.defaultOrderKeepMs,
                                   festInfo.params.defaultAvgMealMs),
-                              queuesForMissingMeals = MapOfQueues(
-                                  ReentrantLock(false),
-                                  dish2Orders),
+                              queuesForMissingMeals = MapOfQueues(dish2Orders),
                               nextLabel = AtomicInteger(maxLabelId.getId() + 1)))
                     }
                   }

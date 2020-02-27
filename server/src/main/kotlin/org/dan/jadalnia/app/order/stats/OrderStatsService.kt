@@ -21,8 +21,8 @@ class OrderStatsService @Inject constructor(
   fun paidDemand(festival: Festival): CompletableFuture<MealsCount> {
     val fid = festival.fid()
     return Futures.reduce(
-        { label, map ->
-          orderCacheByLabel.get(Pair(fid, label)).thenCompose { order ->
+        { taca, map ->
+          orderCacheByLabel.get(Pair(fid, taca.label)).thenCompose { order ->
             if (order.state.get() == OrderState.Paid) {
               order.items.get().forEach { item ->
                 map.merge(item.name, item.quantity) { a, b -> a + b }

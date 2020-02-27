@@ -1,6 +1,7 @@
 package org.dan.jadalnia.app.order
 
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.app.order.pojo.OrderMem
@@ -11,6 +12,7 @@ import org.dan.jadalnia.jooq.Tables.ORDERS
 import org.dan.jadalnia.util.collection.MapQ
 import org.dan.jadalnia.util.collection.MapQ.QueueInsertIdx
 import org.slf4j.LoggerFactory
+import java.time.Instant
 import java.util.*
 import java.util.Optional.ofNullable
 import java.util.concurrent.CompletableFuture
@@ -23,15 +25,21 @@ class OrderDao : AsyncDao() {
     val log = LoggerFactory.getLogger(OrderDao::class.java)
   }
 
-  fun loadReadyToExecOrders(fid: Fid): CompletableFuture<MapQ<OrderLabel>> {
+  fun loadReadyToExecOrders(fid: Fid): CompletableFuture<MapQ<Taca>> {
     return execQuery { jooq ->
-      MapQ(jooq.select(ORDERS.LABEL, ORDERS.QUEUE_INSERT_IDX)
+      MapQ(jooq
+          .select(
+              ORDERS.LABEL,
+              ORDERS.PAID_AT,
+              ORDERS.QUEUE_INSERT_IDX)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.STATE.eq(OrderState.Paid))
           .associateTo(
-              ConcurrentHashMap<QueueInsertIdx, OrderLabel>()) { r ->
-            Pair(r[ORDERS.QUEUE_INSERT_IDX], r[ORDERS.LABEL])
+              ConcurrentHashMap<QueueInsertIdx, Taca>()) { r ->
+            Pair(
+                r[ORDERS.QUEUE_INSERT_IDX],
+                Taca(r[ORDERS.LABEL], r[ORDERS.PAID_AT]))
           })
     }
   }
@@ -47,14 +55,18 @@ class OrderDao : AsyncDao() {
     }
   }
 
-  fun loadExecutingOrders(fid: Fid): CompletableFuture<ConcurrentMap<OrderLabel, Uid>> {
+  fun loadExecutingOrders(fid: Fid)
+      : CompletableFuture<Map<OrderLabel, Pair<Uid, Instant>>> {
     return execQuery { jooq ->
-      jooq.select(ORDERS.LABEL, ORDERS.KELNER_ID)
+      jooq.select(ORDERS.LABEL, ORDERS.KELNER_ID, ORDERS.PAID_AT)
           .from(ORDERS)
           .where(ORDERS.FESTIVAL_ID.eq(fid),
               ORDERS.STATE.eq(OrderState.Executing))
-          .associateTo(ConcurrentHashMap<OrderLabel, Uid>())
-          { r -> Pair(r.get(ORDERS.LABEL), r.get(ORDERS.KELNER_ID)) }
+          .associate {
+            r -> Pair(r.get(ORDERS.LABEL),
+              Pair(r.get(ORDERS.KELNER_ID),
+                  r.get(ORDERS.PAID_AT)))
+          }
     }
   }
 
@@ -220,11 +232,13 @@ class OrderDao : AsyncDao() {
   }
 
   fun markPaid(fid: Fid, label: OrderLabel,
+               now: Instant,
                queueInsertIdx: QueueInsertIdx)
       : CompletableFuture<Unit> {
     return execQuery { jooq ->
       jooq.update(ORDERS)
           .set(ORDERS.STATE, OrderState.Paid)
+          .set(ORDERS.PAID_AT, now)
           .set(ORDERS.QUEUE_INSERT_IDX, queueInsertIdx)
           .where(ORDERS.FESTIVAL_ID.eq(fid), ORDERS.LABEL.eq(label))
           .execute()

@@ -5,6 +5,7 @@ import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.label.LabelService
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ALREADY_PAID
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.CANCELLED
@@ -52,6 +53,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class OrderService @Inject constructor(
+    val orderAggregator: OrderAggregator,
     val wsBroadcast: WsBroadcast,
     @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
@@ -107,15 +109,17 @@ class OrderService @Inject constructor(
     log.info("Order {} has line index {} position {}",
         orderKey, orderQueueInsertIdx, queuePosition)
     val params = festival.info.get().params
-    val activeKelners = activeKelnerSearch.find(clocker.get().minusMillis(
-        params.freeKelnerActiveWithInMs.toLong())
-        , festival)
+    val activeKelners = activeKelnerSearch.find(
+        clocker.get().minusMillis(
+            params.freeKelnerActiveWithInMs.toLong()),
+        festival)
 
     return completedFuture(
         OrderProgress(
             ordersAhead = queuePosition,
             etaSeconds = orderExecTimeEstimator
-                .estimateFor(festival, queuePosition, activeKelners, params)
+                .estimateFor(festival, queuePosition,
+                    activeKelners, params)
                 .minutes * 60,
             state = orderMem.state.get()
         ))
@@ -173,11 +177,14 @@ class OrderService @Inject constructor(
 
   private fun persistPaidOrderAndNotify(festival: Festival, order: OrderMem)
       : CompletableFuture<Unit> {
-    val queueInsertIdx = festival.readyToExecOrders.enqueue(order.label)
+    val now = clocker.get()
+    val queueInsertIdx = festival.readyToExecOrders.enqueue(
+        Taca(order.label, now))
+    orderAggregator.aggregateIn(festival, queueInsertIdx, order)
     order.insertQueueIdx.set(queueInsertIdx)
     wsBroadcast.broadcastToFreeKelners(
         festival, OrderStateEvent(order.label, Paid))
-    return orderDao.markPaid(festival.fid(), order.label, queueInsertIdx)
+    return orderDao.markPaid(festival.fid(), order.label, now, queueInsertIdx)
   }
 
   private fun key(festival: Festival, label: OrderLabel) = Pair(festival.fid(), label)
@@ -202,9 +209,9 @@ class OrderService @Inject constructor(
   fun tryToExecOrder(festival: Festival, kelnerUid: Uid)
       : CompletableFuture<Optional<OrderLabel>> {
     val opLog = OpLog()
-    val previousOrder = festival.busyKelners[kelnerUid]
-    if (previousOrder != null) {
-      throw badRequest("kelner is busy with", "order", previousOrder)
+    val previousTaca = festival.busyKelners[kelnerUid]
+    if (previousTaca != null) {
+      throw badRequest("kelner is busy with", "order", previousTaca.label)
     }
     val freeKelnerInfo = festival.freeKelners.remove(kelnerUid)
     opLog.add { festival.freeKelners[kelnerUid] = freeKelnerInfo }
@@ -215,10 +222,11 @@ class OrderService @Inject constructor(
       opLog.rollback()
       return completedFuture(empty())
     }
-    val label = idxAndLabel.second
+    val taca = idxAndLabel.second
+    val label = taca.label
     val orderRef = AtomicReference<OrderMem>()
     opLog.add {
-      val insertIdx = festival.readyToExecOrders.enqueueHead(label)
+      val insertIdx = festival.readyToExecOrders.enqueueHead(taca)
       val order = orderRef.get()
       order?.insertQueueIdx?.set(insertIdx)
     }
@@ -231,11 +239,11 @@ class OrderService @Inject constructor(
                 festival.fid(), label, order.state.get())
             completedFuture(empty())
           } else {
-            val prevOrder = festival.busyKelners.putIfAbsent(kelnerUid, label)
+            val prevOrder = festival.busyKelners.putIfAbsent(kelnerUid, taca)
             if (prevOrder != null) {
               throw badRequest("kelner is busy with", "order", prevOrder)
             }
-            opLog.add { festival.busyKelners.remove(kelnerUid, label) }
+            opLog.add { festival.busyKelners.remove(kelnerUid, taca) }
             if (!order.state.compareAndSet(Paid, Executing)) {
               throw internalError("order is not paid", "state", order.state.get())
             }
@@ -602,10 +610,12 @@ class OrderService @Inject constructor(
             val missingMeals = festival.queuesForMissingMeals.keys()
             if (!update.newItems.any { item -> missingMeals.contains(item.name) }
                 && order.state.compareAndSet(Delayed, Paid)) {
-              val insertIdx = festival.readyToExecOrders.enqueueHead(order.label)
+              val now = clocker.get()
+              val insertIdx = festival.readyToExecOrders.enqueueHead(
+                  Taca(order.label, now))
               order.insertQueueIdx.set(insertIdx)
               delayedOrderDao.remove(fid, order.label).thenCompose {
-                orderDao.markPaid(fid, order.label, insertIdx)
+                orderDao.markPaid(fid, order.label, now, insertIdx)
               }.thenApply {
                 outcome
               }

@@ -52,6 +52,11 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
     }
 
     public static OrderLabel createPaidOrder(
+            MockBaseFestival mockBaseFestival, List<OrderItem> orderItems) {
+         return createPaidOrder(mockBaseFestival, null, orderItems);
+    }
+
+    public static OrderLabel createPaidOrder(
             MockBaseFestival mockBaseFestival,
             WebSocketClient wsClient, List<OrderItem> orderItems) {
         val sessions = mockBaseFestival.sessions;
@@ -75,7 +80,8 @@ public class CustomerPaysForHisOrderTest extends WsIntegrationTest {
 
         val orderLabel = putOrder(myRest, customerSession, orderItems);
         val wsKelnerHandler = festivalStatusAndOrderPaidWaiter(kelnerSession, orderLabel);
-        bindUserWsHandler(wsKelnerHandler, wsClient);
+        if (wsClient != null)
+            bindUserWsHandler(wsKelnerHandler, wsClient);
 
         wsKelnerHandler.waitTillMatcherSatisfied(FESTIVAL_STATUS_COND);
 

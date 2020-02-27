@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.complete
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.FreeKelnerInfo
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.OrderStateEvent
@@ -35,12 +36,17 @@ abstract class BaseOrderCompleteStrategy(
     val log = LoggerFactory.getLogger(BaseOrderCompleteStrategy::class.java)
   }
 
-  fun freeOrderAndKelner(festival: Festival, kelnerUid: Uid, label: OrderLabel): OpLog {
-    val opLog = OpLog()
-    if (!festival.busyKelners.remove(kelnerUid, label)) {
+  fun freeOrderAndKelner(festival: Festival, kelnerUid: Uid,
+                         label: OrderLabel, opLog: OpLog): Taca {
+
+    val taca = festival.busyKelners.get(kelnerUid)
+    if (taca == null || taca.label != label) {
       throw badRequest("kelner was not busy with", "order", label)
     }
-    opLog.add { festival.busyKelners[kelnerUid] = label }
+    if (!festival.busyKelners.remove(kelnerUid, taca)) {
+      throw badRequest("kelner was not busy with", "order", label)
+    }
+    opLog.add { festival.busyKelners[kelnerUid] = taca }
     festival.freeKelners[kelnerUid] = FreeKelnerInfo(clock.get())
     opLog.add { festival.freeKelners.remove(kelnerUid) }
     if (!festival.executingOrders.remove(label, kelnerUid)) {
@@ -51,32 +57,36 @@ abstract class BaseOrderCompleteStrategy(
               Pair("order", label)))
     }
     opLog.add { festival.executingOrders[label] = kelnerUid }
-    return opLog
+    return taca
   }
 
-  override fun complete(festival: Festival, kelnerUid: Uid, problemOrder: ProblemOrder)
+  override fun complete(festival: Festival,
+                        kelnerUid: Uid, problemOrder: ProblemOrder)
       : CompletableFuture<Uid> {
     val label = problemOrder.label
-    val opLog = freeOrderAndKelner(festival, kelnerUid, label)
+    val opLog = OpLog()
+    val taca = freeOrderAndKelner(festival, kelnerUid, label, opLog)
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
           if (!order.state.compareAndSet(Executing, targetState)) {
-            throw internalError("order is not executing", "state", order.state.get())
+            throw internalError(
+                "order is not executing", "state", order.state.get())
           }
           opLog.add { order.state.set(Executing) }
           log.info("Kelner {} completed executing order {} as {}",
               kelnerUid, label, targetState)
-          updateTargetState(festival, problemOrder, opLog).thenCompose { queueIdxO ->
-            orderDao.assignKelner(festival.fid(), label, kelnerUid,
-                queueIdxO.orElse(null), targetState)
-                .thenAccept {
-                  wsBroadcast.notifyCustomers(
-                      festival.fid(),
-                      listOf(order.customer),
-                      OrderStateEvent(label, targetState))
-                }
-            completedFuture(kelnerUid)
-          }
+          updateTargetState(festival, problemOrder, opLog, taca)
+              .thenCompose { queueIdxO ->
+                orderDao.assignKelner(festival.fid(), label, kelnerUid,
+                    queueIdxO.orElse(null), targetState)
+                    .thenAccept {
+                      wsBroadcast.notifyCustomers(
+                          festival.fid(),
+                          listOf(order.customer),
+                          OrderStateEvent(label, targetState))
+                    }
+                completedFuture(kelnerUid)
+              }
         }
         .exceptionally { e -> throw opLog.rollback(e) }
   }
@@ -84,6 +94,6 @@ abstract class BaseOrderCompleteStrategy(
   abstract val targetState: OrderState;
 
   abstract fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, taca: Taca)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>>
 }

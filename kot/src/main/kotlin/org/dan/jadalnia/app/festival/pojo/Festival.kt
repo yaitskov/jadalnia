@@ -11,11 +11,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 class Festival(
     val info: AtomicReference<FestivalInfo>,
-    val readyToExecOrders: MapQ<OrderLabel>,
+    val readyToExecOrders: MapQ<Taca>,
     val readyToPickupOrders: ConcurrentMap<OrderLabel, Unit>,
     val executingOrders: ConcurrentMap<OrderLabel, Uid>,
     val freeKelners: ConcurrentMap<Uid, FreeKelnerInfo>,
-    val busyKelners: ConcurrentMap<Uid, OrderLabel>,
+    val busyKelners: ConcurrentMap<Uid, Taca>,
     val nextLabel: AtomicInteger,
     val queuesForMissingMeals: MapOfQueues,
     val estimatorState: OrderExecEstimationState,

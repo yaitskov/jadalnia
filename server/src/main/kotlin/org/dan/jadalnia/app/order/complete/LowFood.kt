@@ -2,6 +2,7 @@ package org.dan.jadalnia.app.order.complete
 
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
@@ -28,14 +29,16 @@ class LowFood @Inject constructor(
   override val targetState: OrderState = OrderState.Delayed
 
   override fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog)
+      festival: Festival, problemOrder: ProblemOrder,
+      opLog: OpLog, taca: Taca)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
     festival.queuesForMissingMeals.put(
-        problemOrder.meal!!, problemOrder.label)
+        problemOrder.meal!!, taca)
     opLog.add {
-      festival.queuesForMissingMeals.remove(problemOrder.meal!!, problemOrder.label)
+      festival.queuesForMissingMeals.remove(problemOrder.meal!!, taca)
     }
-    return delayedOrderDao.delayed(festival.fid(), problemOrder.meal!!, problemOrder.label)
+    return delayedOrderDao
+        .delayed(festival.fid(), problemOrder.meal!!, problemOrder.label)
         .thenApply { Optional.empty<MapQ.QueueInsertIdx>() }
   }
 }

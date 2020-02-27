@@ -338,6 +338,11 @@
                                     <types>.*</types>
                                 </forcedType>
                                 <forcedType>
+                                    <name>Instant</name>
+                                    <expression>.*orders\.paid_at</expression>
+                                    <types>.*</types>
+                                </forcedType>
+                                <forcedType>
                                     <name>Fid</name>
                                     <expression>.*orders\.festival_id</expression>
                                     <types>.*</types>

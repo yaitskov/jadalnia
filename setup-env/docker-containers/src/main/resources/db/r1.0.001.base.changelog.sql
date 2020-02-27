@@ -58,6 +58,7 @@ create table orders(
     customer_id int(11) not null,
     requirements text not null, -- json
     created timestamp(3) default current_timestamp(3),
+    paid_at timestamp(3) null,
     queue_insert_idx int(11) null,
     state varchar(10) not null, -- sent, paid, ready, handed, cancelled, returned
     cancel_reason varchar(8) null, -- nomeal, customer, festover

@@ -2,28 +2,33 @@ package org.dan.jadalnia.app.order
 
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Fid
+import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.label.AsyncDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
 import org.dan.jadalnia.jooq.Tables.DELAYED_ORDER
+import org.dan.jadalnia.jooq.Tables.ORDERS
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 class DelayedOrderDao : AsyncDao() {
   companion object {
     val log = LoggerFactory.getLogger(DelayedOrderDao::class.java)
   }
 
-  fun load(fid: Fid): CompletableFuture<MutableMap<DishName, LinkedList<OrderLabel>>> {
-    return execQuery { jooq ->
-      KotlinSucks.group(jooq.select(
-          DELAYED_ORDER.MISSING_DISH, DELAYED_ORDER.LABEL)
-          .from(DELAYED_ORDER)
-          .where(DELAYED_ORDER.FESTIVAL_ID.eq(fid))
-          .stream()
-          .map<Pair<DishName, OrderLabel>> { r -> Pair(
-              r.get(DELAYED_ORDER.MISSING_DISH),
-              r.get(DELAYED_ORDER.LABEL)) })
+  fun load(fid: Fid): CompletableFuture<ConcurrentMap<DishName, List<Taca>>> {
+    return execQuery { jooq -> ConcurrentHashMap(jooq.select(
+        DELAYED_ORDER.MISSING_DISH, DELAYED_ORDER.LABEL, ORDERS.PAID_AT)
+        .from(DELAYED_ORDER)
+        .innerJoin(ORDERS)
+        .on(ORDERS.FESTIVAL_ID.eq(DELAYED_ORDER.FESTIVAL_ID)
+            .and(ORDERS.LABEL.eq(DELAYED_ORDER.LABEL)))
+        .where(DELAYED_ORDER.FESTIVAL_ID.eq(fid))
+        .fetch()
+        .groupBy(
+            { r -> r.get(DELAYED_ORDER.MISSING_DISH) },
+            { r -> Taca(r.get(DELAYED_ORDER.LABEL), r.get(ORDERS.PAID_AT)) }))
     }
   }
 
