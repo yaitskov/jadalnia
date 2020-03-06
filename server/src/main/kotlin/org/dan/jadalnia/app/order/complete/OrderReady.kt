@@ -1,11 +1,13 @@
 package org.dan.jadalnia.app.order.complete
 
+import kotlinx.coroutines.withTimeoutOrNull
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.Taca
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OpLog
+import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.OrderStateEvent
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -22,6 +24,7 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
 class OrderReady @Inject constructor(
+    val orderAggregator: OrderAggregator,
     val delayedOrderDao: DelayedOrderDao,
     clocker: Clocker,
     wsBroadcast: WsBroadcast,
@@ -83,6 +86,7 @@ class OrderReady @Inject constructor(
                 OrderStateEvent(label, OrderState.Paid))
             val insertIdx = festival.readyToExecOrders.enqueueHead(taca)
             order.insertQueueIdx.set(insertIdx)
+            orderAggregator.aggregateHeadIn(festival, insertIdx, order)
             orderDao.markPaid(festival.fid(), label, taca.paidAt, insertIdx).thenCompose {
               delayedOrderDao.remove(festival.fid(), label).thenCompose {
                 resumeOrdersBackward(festival, tacy)

@@ -36,6 +36,7 @@ data class MapQ<Q> private constructor(
     fun distance(idxO: QueueInsertIdx) = value - idxO.value
     fun inc() = QueueInsertIdx(value + 1)
     fun dec() = QueueInsertIdx(value - 1)
+    fun plus(n: Int) = QueueInsertIdx(value + n)
   }
 
   data class MapQueueState(
@@ -56,6 +57,8 @@ data class MapQ<Q> private constructor(
   fun positionByIdx(insertIdx: QueueInsertIdx): Int {
     return insertIdx.distance(queueState.get().firstIndex)
   }
+
+  operator fun get(idx: QueueInsertIdx): Q? = map[idx]
 
   fun enqueueHead(q: Q): QueueInsertIdx {
     val newSt = queueState.updateAndGet { st ->
