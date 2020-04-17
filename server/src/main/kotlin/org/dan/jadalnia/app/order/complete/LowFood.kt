@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.complete
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.Taca
+import org.dan.jadalnia.app.festival.pojo.TacaExec
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
@@ -30,12 +31,12 @@ class LowFood @Inject constructor(
 
   override fun updateTargetState(
       festival: Festival, problemOrder: ProblemOrder,
-      opLog: OpLog, taca: Taca)
+      opLog: OpLog, tacaPair: Pair<Taca, TacaExec>, order: OrderMem)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
     festival.queuesForMissingMeals.put(
-        problemOrder.meal!!, taca)
+        problemOrder.meal!!, tacaPair.first)
     opLog.add {
-      festival.queuesForMissingMeals.remove(problemOrder.meal!!, taca)
+      festival.queuesForMissingMeals.remove(problemOrder.meal!!, tacaPair.first)
     }
     return delayedOrderDao
         .delayed(festival.fid(), problemOrder.meal!!, problemOrder.label)

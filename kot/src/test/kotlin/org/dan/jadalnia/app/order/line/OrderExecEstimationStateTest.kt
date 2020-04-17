@@ -30,8 +30,8 @@ class OrderExecEstimationStateTest {
     queueState.put(mapOf(Pair(frytki, 1)), 2L)
     queueState.put(mapOf(Pair(suszy, 3)), 1L)
 
-    state.mealKelnerAvgMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
-    state.mealKelnerAvgMs[Pair(mapOf(Pair(suszy, 3)), Optional.of(Uid(1)))] = minutesToMs(9)
+    state.orderKelner2AvgExecMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
+    state.orderKelner2AvgExecMs[Pair(mapOf(Pair(suszy, 3)), Optional.of(Uid(1)))] = minutesToMs(9)
 
     assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(14 + 9))
@@ -48,9 +48,9 @@ class OrderExecEstimationStateTest {
     queueState.put(mapOf(Pair(frytki, 2)), 1L)
 
     // ignore
-    state.mealKelnerAvgMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
+    state.orderKelner2AvgExecMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
 
-    state.mealKelnerAvgMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
+    state.orderKelner2AvgExecMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
 
     assertThat(state.estimate(setOf(Uid(1)), 1, params))
         .isEqualTo(OrderExecEstimate(1 * 2 + 9))
@@ -65,9 +65,9 @@ class OrderExecEstimationStateTest {
     queueState.put(mapOf(Pair(frytki, 2)), 1L)
 
     // ignore
-    state.mealKelnerAvgMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
+    state.orderKelner2AvgExecMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
 
-    state.mealKelnerAvgMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
+    state.orderKelner2AvgExecMs[defaultOrderBookKeepTimeKey] = minutesToMs(9)
     state.defaultDishTimeMs[frytki] = minutesToMs(11)
 
     assertThat(state.estimate(setOf(Uid(1)), 1, params))
@@ -83,8 +83,8 @@ class OrderExecEstimationStateTest {
     queueState.put(mapOf(Pair(frytki, 2)), 1L)
 
     // ignore
-    state.mealKelnerAvgMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
-    state.mealKelnerAvgMs[Pair(emptyOrder, Optional.of(Uid(1)))] = minutesToMs(13)
+    state.orderKelner2AvgExecMs[Pair(mapOf(Pair(frytki, 1)), Optional.of(Uid(1)))] = minutesToMs(7)
+    state.orderKelner2AvgExecMs[Pair(emptyOrder, Optional.of(Uid(1)))] = minutesToMs(13)
     state.defaultDishTimeMs[frytki] = minutesToMs(11)
 
     assertThat(state.estimate(setOf(Uid(1)), 1, params))

@@ -11,9 +11,8 @@ import java.util.concurrent.ConcurrentMap
 class OrderExecEstimationState(
     var defaultAvgDishTimeMs: Int,
     val defaultDishTimeMs: ConcurrentMap<DishName, Int>,
-    val mealKelnerAvgMs: ConcurrentMap<
-        Pair<Map<DishName, Int>, Optional<Uid>>, Int>,
-    val mealsAgg: QueueRanges) {
+    val orderKelner2AvgExecMs: ConcurrentMap<
+        Pair<Map<DishName, Int>, Optional<Uid>>, Int>) {
 
   companion object {
     val defaultAvgDishTimeMs = 60_000
@@ -32,16 +31,33 @@ class OrderExecEstimationState(
       return OrderExecEstimationState(
           defaultAvgDishTimeMs = defaultAvgDishTimeMs,
           defaultDishTimeMs = ConcurrentHashMap(),
-          mealKelnerAvgMs = mealKelnerAvgMs,
-          mealsAgg = QueueRanges(ConcurrentHashMap()))
+          orderKelner2AvgExecMs = mealKelnerAvgMs)
     }
   }
 
-  fun estimate(activeKelners: Set<Uid>, queueIdx: Int, params: FestParams)
+  fun orderReady(orderContent: Map<DishName, Int>, kelner: Uid, durationMs: Int) {
+    orderReady(orderContent, Optional.of(kelner), durationMs)
+    orderReady(orderContent, Optional.empty(), durationMs)
+    orderReady(emptyMap(), Optional.empty(), durationMs)
+  }
+
+  private fun orderReady(orderContent: Map<DishName, Int>, kelnerO: Optional<Uid>, durationMs: Int) {
+    orderKelner2AvgExecMs.compute(Pair(orderContent, kelnerO))
+        { _, msO ->
+          if (msO == null) {
+            durationMs
+          } else {
+            (durationMs + msO) / 2
+          }
+        }
+  }
+
+  fun estimate(activeKelners: Set<Uid>, params: FestParams,
+               aggDemand: Map<Map<DishName, Int>, Int>)
       : OrderExecEstimate {
-    val agg = mealsAgg.getAggOrNew(queueIdx)
+
     var sumTimeMs = 0.0
-    agg.orderMeals2Count.asMap().forEach { (orderMeals, count) ->
+    aggDemand.forEach { (orderMeals, count) ->
       sumTimeMs += (params.manualAdjustPerOrderMs + estimateOrderMs(orderMeals, activeKelners)) * count
     }
     return OrderExecEstimate(msToMinutes(sumTimeMs.toLong()))
@@ -59,11 +75,11 @@ class OrderExecEstimationState(
       orderMeals: Map<DishName, Int>,
       activeKelners: Set<Uid>): Map<Uid, Int> =
       activeKelners.associate { uid ->
-        val exactO = mealKelnerAvgMs[Pair(orderMeals, Optional.of(uid))]
+        val exactO = orderKelner2AvgExecMs[Pair(orderMeals, Optional.of(uid))]
         if (exactO != null) {
           Pair(uid, exactO)
         } else {
-          val aveO = mealKelnerAvgMs[Pair(orderMeals, Optional.empty())]
+          val aveO = orderKelner2AvgExecMs[Pair(orderMeals, Optional.empty())]
           if (aveO != null) {
             Pair(uid, aveO)
           } else {
@@ -74,8 +90,8 @@ class OrderExecEstimationState(
 
   fun estimateByMealsMs(uid: Uid, orderMeals: Map<DishName, Int>): Int {
     val orderKeepingBase =
-        mealKelnerAvgMs[Pair(emptyOrder, Optional.of(uid))] ?:
-            mealKelnerAvgMs[defaultOrderBookKeepTimeKey]
+        orderKelner2AvgExecMs[Pair(emptyOrder, Optional.of(uid))] ?:
+            orderKelner2AvgExecMs[defaultOrderBookKeepTimeKey]
         ?: throw internalError("defaultOrderBookKeepTimeKey is not set")
 
     val mealsDuration = orderMeals

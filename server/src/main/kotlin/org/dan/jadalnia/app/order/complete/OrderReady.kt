@@ -1,13 +1,12 @@
 package org.dan.jadalnia.app.order.complete
 
-import kotlinx.coroutines.withTimeoutOrNull
 import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.Taca
+import org.dan.jadalnia.app.festival.pojo.TacaExec
 import org.dan.jadalnia.app.order.DelayedOrderDao
 import org.dan.jadalnia.app.order.OpLog
-import org.dan.jadalnia.app.order.OrderAggregator
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.OrderStateEvent
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -24,7 +23,6 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import javax.inject.Inject
 
 class OrderReady @Inject constructor(
-    val orderAggregator: OrderAggregator,
     val delayedOrderDao: DelayedOrderDao,
     clocker: Clocker,
     wsBroadcast: WsBroadcast,
@@ -35,21 +33,24 @@ class OrderReady @Inject constructor(
   override val targetState: OrderState = OrderState.Ready
 
   override fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, taca: Taca)
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, tacaPair: Pair<Taca, TacaExec>, order: OrderMem)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
     val label = problemOrder.label
     festival.readyToPickupOrders[label] = Unit
+
+    festival.estimatorState.orderReady(order.toContentMap(),
+        tacaPair.second.kelner,
+        (clock.get().toEpochMilli() - tacaPair.second.paidAt.toEpochMilli()).toInt())
+
     opLog.add { festival.readyToPickupOrders.remove(label) }
 
     if (festival.queuesForMissingMeals.isEmpty()) {
       return completedFuture(Optional.empty())
     }
     val fid = festival.fid()
-    return orderCacheByLabel.get(Pair(fid, label))
-        .thenCompose { order ->
-          val names = order.items.get().map { it.name }
-          resumeMeals(festival, names)
-        }.thenApply {
+    val names = order.items.get().map { it.name }
+    return resumeMeals(festival, names)
+        .thenApply {
           Optional.empty<MapQ.QueueInsertIdx>()
         }
   }
@@ -86,7 +87,6 @@ class OrderReady @Inject constructor(
                 OrderStateEvent(label, OrderState.Paid))
             val insertIdx = festival.readyToExecOrders.enqueueHead(taca)
             order.insertQueueIdx.set(insertIdx)
-            orderAggregator.aggregateHeadIn(festival, insertIdx, order)
             orderDao.markPaid(festival.fid(), label, taca.paidAt, insertIdx).thenCompose {
               delayedOrderDao.remove(festival.fid(), label).thenCompose {
                 resumeOrdersBackward(festival, tacy)

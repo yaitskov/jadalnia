@@ -3,6 +3,7 @@ package org.dan.jadalnia.app.order.complete
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.Taca
+import org.dan.jadalnia.app.festival.pojo.TacaExec
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.pojo.OrderLabel
@@ -28,7 +29,7 @@ class CustomerAbsent @Inject constructor(
   override val targetState = OrderState.Abandoned
 
   override fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, taca: Taca)
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, tacaPair: Pair<Taca, TacaExec>, order: OrderMem)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>> {
     // user has to reinitiate manually
     log.info("Order {} in {} is abandoned", problemOrder.label, festival.fid())

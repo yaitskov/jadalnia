@@ -4,6 +4,7 @@ import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.FreeKelnerInfo
 import org.dan.jadalnia.app.festival.pojo.Taca
+import org.dan.jadalnia.app.festival.pojo.TacaExec
 import org.dan.jadalnia.app.order.OpLog
 import org.dan.jadalnia.app.order.OrderDao
 import org.dan.jadalnia.app.order.OrderStateEvent
@@ -37,7 +38,7 @@ abstract class BaseOrderCompleteStrategy(
   }
 
   fun freeOrderAndKelner(festival: Festival, kelnerUid: Uid,
-                         label: OrderLabel, opLog: OpLog): Taca {
+                         label: OrderLabel, opLog: OpLog): Pair<Taca, TacaExec> {
 
     val taca = festival.busyKelners.get(kelnerUid)
     if (taca == null || taca.label != label) {
@@ -49,15 +50,19 @@ abstract class BaseOrderCompleteStrategy(
     opLog.add { festival.busyKelners[kelnerUid] = taca }
     festival.freeKelners[kelnerUid] = FreeKelnerInfo(clock.get())
     opLog.add { festival.freeKelners.remove(kelnerUid) }
-    if (!festival.executingOrders.remove(label, kelnerUid)) {
+    val tacExec = festival.executingOrders[label]
+    if (tacExec == null
+        || tacExec.kelner != kelnerUid
+        || festival.executingOrders.remove(label, tacExec)) {
       opLog.rollback()
       throw internalError(
-          "Order was not executed by",
+          "Order was not executed by k but ok",
           mapOf(Pair("kelner", kelnerUid),
+              Pair("okelner", tacExec?.kelner ?: kelnerUid),
               Pair("order", label)))
     }
-    opLog.add { festival.executingOrders[label] = kelnerUid }
-    return taca
+    opLog.add { festival.executingOrders.putIfAbsent(label, tacExec) }
+    return Pair(taca, tacExec)
   }
 
   override fun complete(festival: Festival,
@@ -65,7 +70,7 @@ abstract class BaseOrderCompleteStrategy(
       : CompletableFuture<Uid> {
     val label = problemOrder.label
     val opLog = OpLog()
-    val taca = freeOrderAndKelner(festival, kelnerUid, label, opLog)
+    val tacaPair = freeOrderAndKelner(festival, kelnerUid, label, opLog)
     return orderCacheByLabel.get(Pair(festival.fid(), label))
         .thenCompose { order ->
           if (!order.state.compareAndSet(Executing, targetState)) {
@@ -75,7 +80,7 @@ abstract class BaseOrderCompleteStrategy(
           opLog.add { order.state.set(Executing) }
           log.info("Kelner {} completed executing order {} as {}",
               kelnerUid, label, targetState)
-          updateTargetState(festival, problemOrder, opLog, taca)
+          updateTargetState(festival, problemOrder, opLog, tacaPair, order)
               .thenCompose { queueIdxO ->
                 orderDao.assignKelner(festival.fid(), label, kelnerUid,
                     queueIdxO.orElse(null), targetState)
@@ -94,6 +99,6 @@ abstract class BaseOrderCompleteStrategy(
   abstract val targetState: OrderState;
 
   abstract fun updateTargetState(
-      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, taca: Taca)
+      festival: Festival, problemOrder: ProblemOrder, opLog: OpLog, tacaPair: Pair<Taca, TacaExec>, order: OrderMem)
       : CompletableFuture<Optional<MapQ.QueueInsertIdx>>
 }

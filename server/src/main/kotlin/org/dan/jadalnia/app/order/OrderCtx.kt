@@ -32,6 +32,5 @@ import org.springframework.context.annotation.Import
     KelnerPerformacenDao::class,
     CustomerAbsent::class,
     OrderExecTimeEstimator::class,
-    ActiveKelnerSearch::class,
-    OrderAggregator::class)
+    ActiveKelnerSearch::class)
 class OrderCtx

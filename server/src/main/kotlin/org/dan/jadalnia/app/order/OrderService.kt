@@ -2,10 +2,12 @@ package org.dan.jadalnia.app.order
 
 import com.google.common.collect.ImmutableSet
 import org.dan.jadalnia.app.festival.ctx.FestivalCacheFactory.Companion.FESTIVAL_CACHE
+import org.dan.jadalnia.app.festival.menu.DishName
 import org.dan.jadalnia.app.festival.pojo.Festival
 import org.dan.jadalnia.app.festival.pojo.FestivalState
 import org.dan.jadalnia.app.festival.pojo.Fid
 import org.dan.jadalnia.app.festival.pojo.Taca
+import org.dan.jadalnia.app.festival.pojo.TacaExec
 import org.dan.jadalnia.app.label.LabelService
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.ALREADY_PAID
 import org.dan.jadalnia.app.order.PaymentAttemptOutcome.CANCELLED
@@ -42,18 +44,19 @@ import org.dan.jadalnia.sys.error.JadEx.Companion.badRequest
 import org.dan.jadalnia.sys.error.JadEx.Companion.internalError
 import org.dan.jadalnia.util.Futures.allOf
 import org.dan.jadalnia.util.collection.AsyncCache
+import org.dan.jadalnia.util.collection.MapQ
 import org.dan.jadalnia.util.time.Clocker
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.Optional.empty
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletableFuture.completedFuture
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Named
 
 class OrderService @Inject constructor(
-    val orderAggregator: OrderAggregator,
     val wsBroadcast: WsBroadcast,
     @Named("orderCacheByLabel")
     val orderCacheByLabel: AsyncCache<Pair<Fid, OrderLabel>, OrderMem>,
@@ -118,11 +121,34 @@ class OrderService @Inject constructor(
         OrderProgress(
             ordersAhead = queuePosition,
             etaSeconds = orderExecTimeEstimator
-                .estimateFor(festival, queuePosition,
+                .estimateFor(festival, orderQueueInsertIdx,
                     activeKelners, params)
                 .minutes * 60,
             state = orderMem.state.get()
         ))
+  }
+
+  fun aggregateDemand(
+      fid: Fid,
+      result: ConcurrentMap<Map<DishName, Int>, Int>,
+      count: Int,
+      currentIdx: MapQ.QueueInsertIdx,
+      tillIdx: MapQ.QueueInsertIdx,
+      queue: MapQ<Taca>)
+      : CompletableFuture<Map<Map<DishName, Int>, Int>> {
+    if (currentIdx < tillIdx && count < 30) {
+      val tac = queue[currentIdx]
+      if (tac != null) {
+        return orderCacheByLabel.get(Pair(fid, tac.label))
+            .thenCompose { order ->
+              val con = order.toContentMap()
+              result.compute(con) { _, n -> (n ?: 0) + 1 }
+              aggregateDemand(fid, result, count + 1, currentIdx.inc(),
+                  tillIdx, queue)
+            }
+      }
+    }
+    return completedFuture(result)
   }
 
   fun putNewOrder(
@@ -180,7 +206,6 @@ class OrderService @Inject constructor(
     val now = clocker.get()
     val queueInsertIdx = festival.readyToExecOrders.enqueue(
         Taca(order.label, now))
-    orderAggregator.aggregateIn(festival, queueInsertIdx, order)
     order.insertQueueIdx.set(queueInsertIdx)
     wsBroadcast.broadcastToFreeKelners(
         festival, OrderStateEvent(order.label, Paid))
@@ -248,8 +273,9 @@ class OrderService @Inject constructor(
               throw internalError("order is not paid", "state", order.state.get())
             }
             opLog.add { order.state.set(Paid) }
-            festival.executingOrders[label] = kelnerUid
-            opLog.add { festival.executingOrders.remove(label, kelnerUid) }
+            val tacaExec = TacaExec(kelnerUid, clocker.get())
+            festival.executingOrders[label] = tacaExec
+            opLog.add { festival.executingOrders.remove(label, tacaExec) }
             orderDao.assignKelner(festival.fid(), label, kelnerUid, Executing)
                 .thenAccept {
                   wsBroadcast.notifyCustomers(
